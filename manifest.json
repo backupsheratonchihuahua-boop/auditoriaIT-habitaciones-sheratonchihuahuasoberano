@@ -2,7 +2,7 @@
   "name": "Auditoría de Sistemas - Hotel Sheraton Chihuahua",
   "short_name": "Auditoría Sistemas",
   "description": "Sistema de auditoría de sistemas para Hotel Sheraton Chihuahua Soberano",
-  "start_url": "./auditoria-sistemas-nube.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0a0f1a",
   "theme_color": "#10b981",
