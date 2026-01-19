@@ -1397,6 +1397,200 @@
 
         .issues-list { max-height: 400px; overflow-y: auto; }
 
+        /* Estilos para Reportes por Tipo de Falla */
+        .failure-report-container {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+        }
+        .failure-type-selector {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .failure-select {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .failure-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+        .failure-select optgroup {
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+        .failure-report-result {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            min-height: 150px;
+        }
+        .failure-report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .failure-report-header h4 {
+            color: var(--accent-primary);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .failure-count-badge {
+            background: var(--accent-danger);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .failure-rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            padding: 20px;
+        }
+        .failure-room-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 8px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-danger);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .failure-room-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .failure-room-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-danger);
+        }
+        .failure-room-floor {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .failure-report-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .failure-report-actions .action-btn {
+            padding: 10px 20px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .failure-report-actions .action-btn:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+        .failure-by-floor {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        .failure-floor-group {
+            margin-bottom: 15px;
+        }
+        .failure-floor-title {
+            font-size: 0.85rem;
+            color: var(--accent-info);
+            font-weight: 600;
+            margin-bottom: 8px;
+            padding: 5px 10px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: var(--radius-sm);
+            display: inline-block;
+        }
+        .failure-floor-rooms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .failure-room-badge {
+            padding: 6px 14px;
+            background: var(--accent-danger);
+            color: white;
+            border-radius: 4px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+        
+        /* Resumen general de fallas */
+        .all-failures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .failure-summary-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid var(--accent-danger);
+        }
+        .failure-summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-color: var(--accent-primary);
+        }
+        .failure-summary-card.no-failures {
+            border-left-color: var(--accent-primary);
+            opacity: 0.6;
+        }
+        .failure-summary-icon {
+            font-size: 1.5rem;
+        }
+        .failure-summary-info {
+            flex: 1;
+        }
+        .failure-summary-name {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .failure-summary-count {
+            font-size: 1.3rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-danger);
+        }
+        .failure-summary-card.no-failures .failure-summary-count {
+            color: var(--accent-primary);
+        }
+
         .issue-row {
             display: flex;
             align-items: center;
@@ -2584,6 +2778,8 @@
                                 <option value="40">40"</option>
                                 <option value="42">42"</option>
                                 <option value="43">43"</option>
+                                <option value="47">47"</option>
+                                <option value="49">49"</option>
                                 <option value="50">50"</option>
                                 <option value="55">55"</option>
                                 <option value="65">65"</option>
@@ -2638,6 +2834,8 @@
                                     <option value="40">40"</option>
                                     <option value="42">42"</option>
                                     <option value="43">43"</option>
+                                    <option value="47">47"</option>
+                                    <option value="49">49"</option>
                                     <option value="50">50"</option>
                                     <option value="55">55"</option>
                                     <option value="65">65"</option>
@@ -3034,6 +3232,69 @@
                 <h3>🔴 Detalle de Incidencias</h3>
                 <div class="issues-list" id="issuesDetailList">
                     <p style="color: var(--text-muted); text-align: center; padding: 20px;">No hay incidencias registradas</p>
+                </div>
+            </div>
+
+            <!-- NUEVO: Reportes por Tipo de Falla -->
+            <div class="data-table-container failure-report-container">
+                <h3>📊 Reportes por Tipo de Falla</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.85rem;">
+                    Selecciona un tipo de falla para ver el listado de habitaciones afectadas
+                </p>
+                
+                <div class="failure-type-selector">
+                    <label style="color: var(--text-secondary); font-size: 0.85rem; margin-right: 10px;">Tipo de Falla:</label>
+                    <select id="failureTypeSelect" class="failure-select" onchange="generateFailureReport()">
+                        <option value="">-- Seleccionar tipo de falla --</option>
+                        <optgroup label="📺 TV Principal">
+                            <option value="screen-power">TV Principal - No enciende</option>
+                            <option value="screen-remote">TV Principal - Control remoto no funciona</option>
+                            <option value="screen-image">TV Principal - Problemas de imagen</option>
+                            <option value="tv1-no-hd">TV Principal - No soporta HD</option>
+                        </optgroup>
+                        <optgroup label="📺 TV Secundaria (Suite/Presidencial)">
+                            <option value="screen2-power">TV Secundaria - No enciende</option>
+                            <option value="screen2-remote">TV Secundaria - Control remoto no funciona</option>
+                            <option value="screen2-image">TV Secundaria - Problemas de imagen</option>
+                            <option value="tv2-no-hd">TV Secundaria - No soporta HD</option>
+                        </optgroup>
+                        <optgroup label="📺 Canales de TV">
+                            <option value="channels-fail">Canales con falla</option>
+                        </optgroup>
+                        <optgroup label="📞 Teléfono">
+                            <option value="phone-ring">Teléfono - No suena</option>
+                            <option value="phone-dial">Teléfono - No marca</option>
+                            <option value="phone-display">Teléfono - Display apagado</option>
+                            <option value="phone-panasonic">Teléfono Panasonic (no estándar)</option>
+                        </optgroup>
+                        <optgroup label="🌐 Red / WiFi">
+                            <option value="wifi-baja">WiFi - Cobertura baja</option>
+                            <option value="wifi-media">WiFi - Cobertura media</option>
+                            <option value="router-needed">Necesita Router</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div id="failureReportResult" class="failure-report-result">
+                    <p style="color: var(--text-muted); text-align: center; padding: 30px;">
+                        Selecciona un tipo de falla para generar el reporte
+                    </p>
+                </div>
+
+                <div id="failureReportActions" class="failure-report-actions" style="display: none;">
+                    <button class="action-btn" onclick="copyFailureReport()">📋 Copiar Reporte</button>
+                    <button class="action-btn" onclick="printFailureReport()">🖨️ Imprimir</button>
+                    <button class="action-btn" onclick="exportFailureReportCSV()">📥 Exportar CSV</button>
+                </div>
+            </div>
+
+            <!-- Resumen de Todas las Fallas -->
+            <div class="data-table-container all-failures-summary">
+                <h3>📋 Resumen General de Fallas</h3>
+                <div id="allFailuresSummary" class="all-failures-grid">
+                    <p style="color: var(--text-muted); text-align: center; padding: 20px;">
+                        Completa auditorías para ver el resumen de fallas
+                    </p>
                 </div>
             </div>
         </div>
@@ -4284,6 +4545,9 @@
             
             // Generate Panasonic Phone Report
             generatePanasonicReport();
+            
+            // Generate All Failures Summary
+            updateAllFailuresSummary();
         }
 
         function generateWifiHeatmap() {
@@ -4559,6 +4823,330 @@
             } else {
                 recContainer.style.display = 'none';
             }
+        }
+
+        // ============================================
+        // REPORTES POR TIPO DE FALLA
+        // ============================================
+        
+        const FAILURE_TYPES = {
+            'screen-power': { name: 'TV Principal - No enciende', icon: '📺', category: 'tv' },
+            'screen-remote': { name: 'TV Principal - Control remoto no funciona', icon: '📺', category: 'tv' },
+            'screen-image': { name: 'TV Principal - Problemas de imagen', icon: '📺', category: 'tv' },
+            'tv1-no-hd': { name: 'TV Principal - No soporta HD', icon: '📺', category: 'tv' },
+            'screen2-power': { name: 'TV Secundaria - No enciende', icon: '📺', category: 'tv2' },
+            'screen2-remote': { name: 'TV Secundaria - Control remoto no funciona', icon: '📺', category: 'tv2' },
+            'screen2-image': { name: 'TV Secundaria - Problemas de imagen', icon: '📺', category: 'tv2' },
+            'tv2-no-hd': { name: 'TV Secundaria - No soporta HD', icon: '📺', category: 'tv2' },
+            'channels-fail': { name: 'Canales de TV con falla', icon: '📡', category: 'channels' },
+            'phone-ring': { name: 'Teléfono - No suena (escritorio)', icon: '📞', category: 'phone' },
+            'phone-dial': { name: 'Teléfono - No marca (buró)', icon: '📞', category: 'phone' },
+            'phone-display': { name: 'Teléfono - Display apagado', icon: '📞', category: 'phone' },
+            'phone-panasonic': { name: 'Teléfono Panasonic (no estándar)', icon: '📞', category: 'phone' },
+            'wifi-baja': { name: 'WiFi - Cobertura baja', icon: '📶', category: 'wifi' },
+            'wifi-media': { name: 'WiFi - Cobertura media', icon: '📶', category: 'wifi' },
+            'router-needed': { name: 'Necesita Router', icon: '🔴', category: 'wifi' }
+        };
+
+        function generateFailureReport() {
+            const failureType = document.getElementById('failureTypeSelect').value;
+            const resultContainer = document.getElementById('failureReportResult');
+            const actionsContainer = document.getElementById('failureReportActions');
+            
+            if (!failureType) {
+                resultContainer.innerHTML = `
+                    <p style="color: var(--text-muted); text-align: center; padding: 30px;">
+                        Selecciona un tipo de falla para generar el reporte
+                    </p>
+                `;
+                actionsContainer.style.display = 'none';
+                return;
+            }
+            
+            const failedRooms = getFailedRoomsByType(failureType);
+            const typeInfo = FAILURE_TYPES[failureType];
+            
+            if (failedRooms.length === 0) {
+                resultContainer.innerHTML = `
+                    <div class="failure-report-header" style="background: rgba(16, 185, 129, 0.1);">
+                        <h4>✅ ${typeInfo.name}</h4>
+                        <span class="failure-count-badge" style="background: var(--accent-primary);">0</span>
+                    </div>
+                    <p style="color: var(--accent-primary); text-align: center; padding: 30px;">
+                        ¡Excelente! No hay habitaciones con esta falla registrada.
+                    </p>
+                `;
+                actionsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Agrupar por piso
+            const byFloor = {};
+            failedRooms.forEach(room => {
+                const floor = Math.floor(parseInt(room) / 100);
+                if (!byFloor[floor]) byFloor[floor] = [];
+                byFloor[floor].push(room);
+            });
+            
+            // Generar HTML
+            let html = `
+                <div class="failure-report-header">
+                    <h4>${typeInfo.icon} ${typeInfo.name}</h4>
+                    <span class="failure-count-badge">${failedRooms.length}</span>
+                </div>
+                <div class="failure-by-floor">
+            `;
+            
+            for (let floor = 1; floor <= 5; floor++) {
+                if (byFloor[floor] && byFloor[floor].length > 0) {
+                    const sortedRooms = byFloor[floor].sort((a, b) => parseInt(a) - parseInt(b));
+                    html += `
+                        <div class="failure-floor-group">
+                            <span class="failure-floor-title">Piso ${floor} (${sortedRooms.length} habitaciones)</span>
+                            <div class="failure-floor-rooms">
+                                ${sortedRooms.map(room => `<span class="failure-room-badge">${room}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            html += `</div>`;
+            
+            resultContainer.innerHTML = html;
+            actionsContainer.style.display = 'flex';
+        }
+
+        function getFailedRoomsByType(failureType) {
+            const rooms = Object.keys(auditData);
+            const failedRooms = [];
+            
+            rooms.forEach(room => {
+                const data = auditData[room];
+                let hasFailed = false;
+                
+                switch(failureType) {
+                    case 'screen-power':
+                        hasFailed = data.screen?.['screen-power'] === 'fail';
+                        break;
+                    case 'screen-remote':
+                        hasFailed = data.screen?.['screen-remote'] === 'fail';
+                        break;
+                    case 'screen-image':
+                        hasFailed = data.screen?.['screen-image'] === 'fail';
+                        break;
+                    case 'tv1-no-hd':
+                        hasFailed = data.screen?.['tv1-hd'] === 'no';
+                        break;
+                    case 'screen2-power':
+                        hasFailed = data.screen2?.['screen2-power'] === 'fail';
+                        break;
+                    case 'screen2-remote':
+                        hasFailed = data.screen2?.['screen2-remote'] === 'fail';
+                        break;
+                    case 'screen2-image':
+                        hasFailed = data.screen2?.['screen2-image'] === 'fail';
+                        break;
+                    case 'tv2-no-hd':
+                        hasFailed = data.screen2?.supportsHD === 'no';
+                        break;
+                    case 'channels-fail':
+                        hasFailed = (data.failedChannels && data.failedChannels.length > 0) || data.channels?.startup === 'fail';
+                        break;
+                    case 'phone-ring':
+                        hasFailed = data.phone?.['phone-desk'] === 'fail';
+                        break;
+                    case 'phone-dial':
+                        hasFailed = data.phone?.['phone-nightstand'] === 'fail';
+                        break;
+                    case 'phone-display':
+                        hasFailed = data.phone?.['phone-battery'] === 'fail';
+                        break;
+                    case 'phone-panasonic':
+                        hasFailed = data.phone?.['phone-panasonic'] === 'si';
+                        break;
+                    case 'wifi-baja':
+                        hasFailed = data.network?.['wifi-coverage'] === 'baja';
+                        break;
+                    case 'wifi-media':
+                        hasFailed = data.network?.['wifi-coverage'] === 'media';
+                        break;
+                    case 'router-needed':
+                        hasFailed = data.network?.['wifi-coverage'] === 'baja' || data.network?.['wifi-coverage'] === 'media';
+                        break;
+                }
+                
+                if (hasFailed) {
+                    failedRooms.push(room);
+                }
+            });
+            
+            return failedRooms.sort((a, b) => parseInt(a) - parseInt(b));
+        }
+
+        function copyFailureReport() {
+            const failureType = document.getElementById('failureTypeSelect').value;
+            if (!failureType) return;
+            
+            const failedRooms = getFailedRoomsByType(failureType);
+            const typeInfo = FAILURE_TYPES[failureType];
+            
+            // Agrupar por piso
+            const byFloor = {};
+            failedRooms.forEach(room => {
+                const floor = Math.floor(parseInt(room) / 100);
+                if (!byFloor[floor]) byFloor[floor] = [];
+                byFloor[floor].push(room);
+            });
+            
+            let text = `REPORTE DE FALLAS - ${typeInfo.name}\n`;
+            text += `Fecha: ${new Date().toLocaleDateString('es-MX')}\n`;
+            text += `Total de habitaciones: ${failedRooms.length}\n`;
+            text += `${'='.repeat(50)}\n\n`;
+            
+            for (let floor = 1; floor <= 5; floor++) {
+                if (byFloor[floor] && byFloor[floor].length > 0) {
+                    text += `PISO ${floor} (${byFloor[floor].length} habitaciones):\n`;
+                    text += byFloor[floor].sort((a, b) => parseInt(a) - parseInt(b)).join(', ') + '\n\n';
+                }
+            }
+            
+            text += `${'='.repeat(50)}\n`;
+            text += `Hotel Sheraton Chihuahua Soberano\n`;
+            text += `Sistema de Auditoría de Sistemas\n`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Reporte copiado al portapapeles', 'success');
+            }).catch(() => {
+                showToast('Error al copiar', 'error');
+            });
+        }
+
+        function printFailureReport() {
+            const failureType = document.getElementById('failureTypeSelect').value;
+            if (!failureType) return;
+            
+            const failedRooms = getFailedRoomsByType(failureType);
+            const typeInfo = FAILURE_TYPES[failureType];
+            
+            // Agrupar por piso
+            const byFloor = {};
+            failedRooms.forEach(room => {
+                const floor = Math.floor(parseInt(room) / 100);
+                if (!byFloor[floor]) byFloor[floor] = [];
+                byFloor[floor].push(room);
+            });
+            
+            let printContent = `
+                <html>
+                <head>
+                    <title>Reporte de Fallas - ${typeInfo.name}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #333; border-bottom: 2px solid #10b981; padding-bottom: 10px; }
+                        .info { background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                        .floor-section { margin: 20px 0; }
+                        .floor-title { background: #3b82f6; color: white; padding: 8px 15px; display: inline-block; border-radius: 3px; }
+                        .rooms { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+                        .room { background: #ef4444; color: white; padding: 5px 12px; border-radius: 3px; font-weight: bold; }
+                        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${typeInfo.icon} ${typeInfo.name}</h1>
+                    <div class="info">
+                        <strong>Fecha:</strong> ${new Date().toLocaleDateString('es-MX')}<br>
+                        <strong>Total de habitaciones afectadas:</strong> ${failedRooms.length}
+                    </div>
+            `;
+            
+            for (let floor = 1; floor <= 5; floor++) {
+                if (byFloor[floor] && byFloor[floor].length > 0) {
+                    printContent += `
+                        <div class="floor-section">
+                            <span class="floor-title">Piso ${floor} (${byFloor[floor].length})</span>
+                            <div class="rooms">
+                                ${byFloor[floor].sort((a, b) => parseInt(a) - parseInt(b)).map(r => `<span class="room">${r}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            printContent += `
+                    <div class="footer">
+                        Hotel Sheraton Chihuahua Soberano<br>
+                        Sistema de Auditoría de Sistemas<br>
+                        Generado el ${new Date().toLocaleString('es-MX')}
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function exportFailureReportCSV() {
+            const failureType = document.getElementById('failureTypeSelect').value;
+            if (!failureType) return;
+            
+            const failedRooms = getFailedRoomsByType(failureType);
+            const typeInfo = FAILURE_TYPES[failureType];
+            
+            let csv = 'Habitacion,Piso,Tipo_Falla,Fecha_Reporte\n';
+            
+            failedRooms.forEach(room => {
+                const floor = Math.floor(parseInt(room) / 100);
+                csv += `${room},${floor},"${typeInfo.name}",${new Date().toLocaleDateString('es-MX')}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reporte_fallas_${failureType}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('Archivo CSV descargado', 'success');
+        }
+
+        function updateAllFailuresSummary() {
+            const container = document.getElementById('allFailuresSummary');
+            const rooms = Object.keys(auditData);
+            
+            if (rooms.length === 0) {
+                container.innerHTML = `
+                    <p style="color: var(--text-muted); text-align: center; padding: 20px; grid-column: 1 / -1;">
+                        Completa auditorías para ver el resumen de fallas
+                    </p>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            Object.keys(FAILURE_TYPES).forEach(key => {
+                const failedRooms = getFailedRoomsByType(key);
+                const info = FAILURE_TYPES[key];
+                const hasFailures = failedRooms.length > 0;
+                
+                html += `
+                    <div class="failure-summary-card ${hasFailures ? '' : 'no-failures'}" 
+                         onclick="document.getElementById('failureTypeSelect').value='${key}'; generateFailureReport(); document.getElementById('failureTypeSelect').scrollIntoView({behavior:'smooth'});">
+                        <span class="failure-summary-icon">${info.icon}</span>
+                        <div class="failure-summary-info">
+                            <div class="failure-summary-name">${info.name}</div>
+                            <div class="failure-summary-count">${failedRooms.length}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
         }
 
         function exportToCSV() {
