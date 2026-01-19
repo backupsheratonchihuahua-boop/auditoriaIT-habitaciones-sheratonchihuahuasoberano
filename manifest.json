@@ -1,53 +1,24 @@
-const CACHE_NAME = 'auditoria-sistemas-v4';
-const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json'
-];
-
-// Instalación del Service Worker
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Cache abierto');
-        return cache.addAll(urlsToCache);
-      })
-      .catch(err => console.log('Error en cache:', err))
-  );
-  self.skipWaiting();
-});
-
-// Activación
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-  self.clients.claim();
-});
-
-// Estrategia: Network First, fallback to Cache
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Clonar la respuesta para guardar en cache
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, responseClone);
-        });
-        return response;
-      })
-      .catch(() => {
-        return caches.match(event.request);
-      })
-  );
-});
+{
+  "name": "Auditoría de Sistemas - Hotel Sheraton Chihuahua",
+  "short_name": "Auditoría IT",
+  "description": "Sistema de auditoría de sistemas para Hotel Sheraton Chihuahua Soberano",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0f1a",
+  "theme_color": "#10b981",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAE7klEQVR4nO3dz27bRhSG4TE3cJa9gO4hm0K9gK7aZdFFN0V3XfQCuuiuuy66aYsC3RRIgaQIYDuxZXH+HJ4zQ9Lf+wAOnCgkJfLH4ZAjy5EEAAAAAAAAAAAAAAAAAADASvlfd+B/XL9aN3r/3l9qOh39UJLuIH7bqTyK36vLPPwtqEsfC5Xlz2EX/AzJ//iZJAtufd2J/4gS8Q5ueTz/LkiwHUCuwhHQKOQqeBLQlDD/qAqYf9AeLAD+QRUY/6A9WAD4h+3BAkB7sADwj9uDBYB/0B4sAPyD9mABMBdoDy4+qgL2H7QFr/69tmB/U73D1KHvzHqHqUPfmfUOU4e+M+sdpg59Z9Y7TB36zqx3mDr0nVnvMHXoO7PeYerQd2a9w9Sh78x6h6lD35n1DlOHvjPrHaYOfWfWO0wd+s6sd5g69J1Z7zB16Duz3mHq0HdmvcPUoe/MeoepQ9+Z9Q5Th74z6x2mDn1n1jtMHfrOrHeYOvSdWe8wdeg7s95h6tB3Zr3D1KHvzHqHqUPfmfUOU4e+M+sdpg59Z9Y7TB36zqx3mDr0nVnvMHXoO7PeYerQd2a9w9Sh78x6h6lD35n1DlOHvjPrHaYOfWfWO0wd+s6sd5g69J1Z7zB16Duz3mHq0HdmvcPUoe/MeoepQ9+Z9Q5Th74z6x2mDn1n1jtMHfrOrHeYOvSdWe8wdeg7s95h6tB3Zr3D1KHvzHqHqUPfmfUOU4e+M+sdpg59Z9Y7TB36zqx3mDr0nVnvMHXoO7PeYerQd2a9w9Sh78x6h6lD35n1DlOHvjPrHaYOfWfWO0wdCp1Zb6BDb9YbiAtuctY7TB0KnVlvoENv1hvoH7QFN+u9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvvVoD/uFacPPeqzXgH64FN++9WgP+4Vpw896rNeAfrgU3771aA/7hWnDz3qs14B+uBTfvfbUO/MO14Oa9r9aBf7gW3Lz31TrwD9eCm/e+Wgf+4Vpw895X68A/XAtu3vtqHfiHa8HNe1+tA/9wLbh576t14B+uBTfvfbUO/MO14Oa9r9aBf7gW3Lz31TrwD9eCm/e+Wgf+4Vpw895X68A/XAsK3cvuYO//QVtQ6Jvb+v+Re9DJuODV4xo=",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/png;base64,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",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
