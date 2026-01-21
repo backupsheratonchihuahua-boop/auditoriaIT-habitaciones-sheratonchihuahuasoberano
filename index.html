@@ -1591,6 +1591,218 @@
             color: var(--accent-primary);
         }
 
+        /* Estilos para Reportes por Piso */
+        .floor-report-container {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+        }
+        .floor-selector-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .floor-selector-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 480px) {
+            .floor-selector-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .floor-select-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 12px;
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .floor-select-btn:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.2);
+        }
+        .floor-select-btn.active {
+            border-color: var(--accent-primary);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .floor-select-btn .floor-number {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-primary);
+            line-height: 1;
+        }
+        .floor-select-btn .floor-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .floor-select-btn .floor-issues-count {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            padding: 2px 8px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+        }
+        .floor-select-btn .floor-issues-count.has-issues {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-danger);
+        }
+        .floor-report-result {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            min-height: 200px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .floor-report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(59, 130, 246, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .floor-report-header h4 {
+            color: var(--accent-info);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .floor-stats-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .floor-stat-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .floor-stat-badge.audited {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-primary);
+        }
+        .floor-stat-badge.issues {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-danger);
+        }
+        .floor-stat-badge.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-warning);
+        }
+        .floor-room-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .floor-room-section:last-child {
+            border-bottom: none;
+        }
+        .floor-room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .floor-room-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-info);
+        }
+        .floor-room-type {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            color: var(--text-muted);
+        }
+        .floor-room-type.suite {
+            background: rgba(236, 72, 153, 0.2);
+            color: var(--accent-pink);
+        }
+        .floor-room-type.presidencial {
+            background: rgba(234, 179, 8, 0.2);
+            color: var(--accent-gold);
+        }
+        .floor-room-issues {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .floor-issue-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid var(--accent-danger);
+            border-radius: 4px;
+        }
+        .floor-issue-icon {
+            font-size: 1rem;
+        }
+        .floor-issue-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .floor-room-ok {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 4px;
+            color: var(--accent-primary);
+            font-size: 0.85rem;
+        }
+        .floor-no-issues {
+            padding: 30px;
+            text-align: center;
+            color: var(--accent-primary);
+        }
+        .floor-no-issues .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .floor-report-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .floor-report-actions .action-btn {
+            padding: 10px 20px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .floor-report-actions .action-btn:hover {
+            background: var(--accent-info);
+            border-color: var(--accent-info);
+            color: white;
+        }
+
         .issue-row {
             display: flex;
             align-items: center;
@@ -3285,6 +3497,54 @@
                     <button class="action-btn" onclick="copyFailureReport()">📋 Copiar Reporte</button>
                     <button class="action-btn" onclick="printFailureReport()">🖨️ Imprimir</button>
                     <button class="action-btn" onclick="exportFailureReportCSV()">📥 Exportar CSV</button>
+                </div>
+            </div>
+
+            <!-- NUEVO: Reportes por Piso -->
+            <div class="data-table-container floor-report-container">
+                <h3>🏢 Reportes por Piso</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.85rem;">
+                    Selecciona un piso para ver todas las incidencias detectadas - ideal para presentar a Dirección
+                </p>
+                
+                <div class="floor-selector-grid">
+                    <button class="floor-select-btn" onclick="generateFloorReport(1)">
+                        <span class="floor-number">1</span>
+                        <span class="floor-label">Piso 1</span>
+                        <span class="floor-issues-count" id="floor-1-issues">0 incidencias</span>
+                    </button>
+                    <button class="floor-select-btn" onclick="generateFloorReport(2)">
+                        <span class="floor-number">2</span>
+                        <span class="floor-label">Piso 2</span>
+                        <span class="floor-issues-count" id="floor-2-issues">0 incidencias</span>
+                    </button>
+                    <button class="floor-select-btn" onclick="generateFloorReport(3)">
+                        <span class="floor-number">3</span>
+                        <span class="floor-label">Piso 3</span>
+                        <span class="floor-issues-count" id="floor-3-issues">0 incidencias</span>
+                    </button>
+                    <button class="floor-select-btn" onclick="generateFloorReport(4)">
+                        <span class="floor-number">4</span>
+                        <span class="floor-label">Piso 4</span>
+                        <span class="floor-issues-count" id="floor-4-issues">0 incidencias</span>
+                    </button>
+                    <button class="floor-select-btn" onclick="generateFloorReport(5)">
+                        <span class="floor-number">5</span>
+                        <span class="floor-label">Piso 5</span>
+                        <span class="floor-issues-count" id="floor-5-issues">0 incidencias</span>
+                    </button>
+                </div>
+
+                <div id="floorReportResult" class="floor-report-result">
+                    <p style="color: var(--text-muted); text-align: center; padding: 30px;">
+                        Selecciona un piso para generar el reporte detallado
+                    </p>
+                </div>
+
+                <div id="floorReportActions" class="floor-report-actions" style="display: none;">
+                    <button class="action-btn" onclick="copyFloorReport()">📋 Copiar Reporte</button>
+                    <button class="action-btn" onclick="printFloorReport()">🖨️ Imprimir</button>
+                    <button class="action-btn" onclick="exportFloorReportCSV()">📥 Exportar CSV</button>
                 </div>
             </div>
 
@@ -5147,6 +5407,398 @@
             });
             
             container.innerHTML = html;
+            
+            // Actualizar contadores de pisos
+            updateFloorIssueCounts();
+        }
+
+        // ============================================
+        // REPORTES POR PISO
+        // ============================================
+        
+        let currentFloorReport = null;
+        
+        function updateFloorIssueCounts() {
+            for (let floor = 1; floor <= 5; floor++) {
+                const floorData = getFloorReportData(floor);
+                const issueCount = floorData.roomsWithIssues.length;
+                const countElement = document.getElementById(`floor-${floor}-issues`);
+                if (countElement) {
+                    countElement.textContent = `${issueCount} incidencia${issueCount !== 1 ? 's' : ''}`;
+                    if (issueCount > 0) {
+                        countElement.classList.add('has-issues');
+                    } else {
+                        countElement.classList.remove('has-issues');
+                    }
+                }
+            }
+        }
+        
+        function getFloorReportData(floor) {
+            const floorRooms = ROOMS_BY_FLOOR[floor] || [];
+            const auditedRooms = [];
+            const pendingRooms = [];
+            const roomsWithIssues = [];
+            const roomsOk = [];
+            
+            floorRooms.forEach(roomNum => {
+                const room = roomNum.toString();
+                if (auditData[room]) {
+                    auditedRooms.push(room);
+                    const issues = getRoomIssues(room);
+                    if (issues.length > 0) {
+                        roomsWithIssues.push({ room, issues, data: auditData[room] });
+                    } else {
+                        roomsOk.push(room);
+                    }
+                } else {
+                    pendingRooms.push(room);
+                }
+            });
+            
+            return {
+                floor,
+                total: floorRooms.length,
+                audited: auditedRooms.length,
+                pending: pendingRooms.length,
+                roomsWithIssues,
+                roomsOk,
+                auditedRooms,
+                pendingRooms
+            };
+        }
+        
+        function getRoomIssues(room) {
+            const data = auditData[room];
+            if (!data) return [];
+            
+            const issues = [];
+            
+            // TV Principal
+            if (data.screen?.['screen-power'] === 'fail') {
+                issues.push({ icon: '📺', category: 'TV Principal', text: 'No enciende' });
+            }
+            if (data.screen?.['screen-remote'] === 'fail') {
+                issues.push({ icon: '📺', category: 'TV Principal', text: 'Control remoto no funciona' });
+            }
+            if (data.screen?.['screen-image'] === 'fail') {
+                issues.push({ icon: '📺', category: 'TV Principal', text: 'Problemas de imagen' });
+            }
+            if (data.screen?.['tv1-hd'] === 'no') {
+                issues.push({ icon: '📺', category: 'TV Principal', text: 'No soporta HD' });
+            }
+            
+            // TV Secundaria
+            if (data.screen2?.['screen2-power'] === 'fail') {
+                issues.push({ icon: '📺', category: 'TV Secundaria', text: 'No enciende' });
+            }
+            if (data.screen2?.['screen2-remote'] === 'fail') {
+                issues.push({ icon: '📺', category: 'TV Secundaria', text: 'Control remoto no funciona' });
+            }
+            if (data.screen2?.['screen2-image'] === 'fail') {
+                issues.push({ icon: '📺', category: 'TV Secundaria', text: 'Problemas de imagen' });
+            }
+            if (data.screen2?.supportsHD === 'no') {
+                issues.push({ icon: '📺', category: 'TV Secundaria', text: 'No soporta HD' });
+            }
+            
+            // Canales
+            if (data.channels?.startup === 'fail') {
+                issues.push({ icon: '📡', category: 'Canales', text: 'Canal de inicio con falla' });
+            }
+            if (data.failedChannels && data.failedChannels.length > 0) {
+                issues.push({ icon: '📡', category: 'Canales', text: `${data.failedChannels.length} canal(es) con falla` });
+            }
+            
+            // Teléfono
+            if (data.phone?.['phone-desk'] === 'fail') {
+                issues.push({ icon: '📞', category: 'Teléfono', text: 'Escritorio - no suena' });
+            }
+            if (data.phone?.['phone-nightstand'] === 'fail') {
+                issues.push({ icon: '📞', category: 'Teléfono', text: 'Buró - no marca' });
+            }
+            if (data.phone?.['phone-nightstand'] === 'na') {
+                issues.push({ icon: '📞', category: 'Teléfono', text: 'Teléfono de buró faltante' });
+            }
+            if (data.phone?.['phone-battery'] === 'fail') {
+                issues.push({ icon: '📞', category: 'Teléfono', text: 'Display apagado' });
+            }
+            if (data.phone?.['phone-panasonic'] === 'si') {
+                issues.push({ icon: '📞', category: 'Teléfono', text: 'Modelo Panasonic (no estándar)' });
+            }
+            
+            // Red/WiFi
+            if (data.network?.['network-wall'] === 'fail') {
+                issues.push({ icon: '🌐', category: 'Red', text: 'Nodo de pared con falla' });
+            }
+            if (data.network?.['network-connection'] === 'fail') {
+                issues.push({ icon: '🌐', category: 'Red', text: 'Sin conexión de red' });
+            }
+            if (data.network?.['network-speed'] === 'fail') {
+                issues.push({ icon: '🌐', category: 'Red', text: 'Velocidad deficiente' });
+            }
+            if (data.network?.['wifi-coverage'] === 'baja') {
+                issues.push({ icon: '📶', category: 'WiFi', text: 'Cobertura BAJA - Necesita router' });
+            }
+            if (data.network?.['wifi-coverage'] === 'media') {
+                issues.push({ icon: '📶', category: 'WiFi', text: 'Cobertura MEDIA' });
+            }
+            
+            return issues;
+        }
+        
+        function getRoomType(room) {
+            const roomNum = parseInt(room);
+            if (roomNum === PRESIDENTIAL_ROOM) return { type: 'Presidencial', class: 'presidencial' };
+            if (SUITE_ROOMS.includes(roomNum)) return { type: 'Suite', class: 'suite' };
+            if (DOUBLE_ROOMS.includes(roomNum)) return { type: 'Doble', class: '' };
+            return { type: 'Sencilla', class: '' };
+        }
+        
+        function generateFloorReport(floor) {
+            currentFloorReport = floor;
+            
+            // Marcar botón activo
+            document.querySelectorAll('.floor-select-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.floor-select-btn').classList.add('active');
+            
+            const floorData = getFloorReportData(floor);
+            const resultContainer = document.getElementById('floorReportResult');
+            const actionsContainer = document.getElementById('floorReportActions');
+            
+            let html = `
+                <div class="floor-report-header">
+                    <h4>🏢 Piso ${floor} - Reporte Detallado</h4>
+                    <div class="floor-stats-badges">
+                        <span class="floor-stat-badge audited">✅ ${floorData.audited} auditadas</span>
+                        <span class="floor-stat-badge issues">⚠️ ${floorData.roomsWithIssues.length} con fallas</span>
+                        <span class="floor-stat-badge pending">⏳ ${floorData.pending} pendientes</span>
+                    </div>
+                </div>
+            `;
+            
+            if (floorData.roomsWithIssues.length === 0 && floorData.audited > 0) {
+                html += `
+                    <div class="floor-no-issues">
+                        <div class="icon">✅</div>
+                        <h3>¡Excelente!</h3>
+                        <p>No hay incidencias en las ${floorData.audited} habitaciones auditadas del Piso ${floor}</p>
+                    </div>
+                `;
+            } else if (floorData.audited === 0) {
+                html += `
+                    <div class="floor-no-issues" style="color: var(--accent-warning);">
+                        <div class="icon">⏳</div>
+                        <h3>Sin auditorías</h3>
+                        <p>Aún no hay habitaciones auditadas en el Piso ${floor}</p>
+                    </div>
+                `;
+            } else {
+                // Mostrar habitaciones con incidencias primero
+                floorData.roomsWithIssues.sort((a, b) => parseInt(a.room) - parseInt(b.room)).forEach(item => {
+                    const roomType = getRoomType(item.room);
+                    html += `
+                        <div class="floor-room-section">
+                            <div class="floor-room-header">
+                                <span class="floor-room-number">Habitación ${item.room}</span>
+                                <span class="floor-room-type ${roomType.class}">${roomType.type}</span>
+                            </div>
+                            <div class="floor-room-issues">
+                                ${item.issues.map(issue => `
+                                    <div class="floor-issue-item">
+                                        <span class="floor-issue-icon">${issue.icon}</span>
+                                        <span class="floor-issue-text"><strong>${issue.category}:</strong> ${issue.text}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Mostrar habitaciones OK (colapsadas)
+                if (floorData.roomsOk.length > 0) {
+                    html += `
+                        <div class="floor-room-section" style="background: rgba(16, 185, 129, 0.05);">
+                            <div class="floor-room-header">
+                                <span class="floor-room-number" style="color: var(--accent-primary);">✅ Habitaciones sin incidencias (${floorData.roomsOk.length})</span>
+                            </div>
+                            <div class="floor-room-ok">
+                                ${floorData.roomsOk.sort((a, b) => parseInt(a) - parseInt(b)).join(', ')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            resultContainer.innerHTML = html;
+            actionsContainer.style.display = floorData.audited > 0 ? 'flex' : 'none';
+        }
+        
+        function copyFloorReport() {
+            if (!currentFloorReport) return;
+            
+            const floorData = getFloorReportData(currentFloorReport);
+            
+            let text = `REPORTE DE PISO ${currentFloorReport}\n`;
+            text += `Hotel Sheraton Chihuahua Soberano\n`;
+            text += `Fecha: ${new Date().toLocaleDateString('es-MX')}\n`;
+            text += `${'='.repeat(50)}\n\n`;
+            
+            text += `RESUMEN:\n`;
+            text += `• Total habitaciones: ${floorData.total}\n`;
+            text += `• Auditadas: ${floorData.audited}\n`;
+            text += `• Con incidencias: ${floorData.roomsWithIssues.length}\n`;
+            text += `• Sin incidencias: ${floorData.roomsOk.length}\n`;
+            text += `• Pendientes: ${floorData.pending}\n\n`;
+            
+            if (floorData.roomsWithIssues.length > 0) {
+                text += `DETALLE DE INCIDENCIAS:\n`;
+                text += `${'-'.repeat(50)}\n`;
+                
+                floorData.roomsWithIssues.forEach(item => {
+                    const roomType = getRoomType(item.room);
+                    text += `\nHabitación ${item.room} (${roomType.type}):\n`;
+                    item.issues.forEach(issue => {
+                        text += `  • ${issue.category}: ${issue.text}\n`;
+                    });
+                });
+            }
+            
+            if (floorData.roomsOk.length > 0) {
+                text += `\nHABITACIONES SIN INCIDENCIAS:\n`;
+                text += floorData.roomsOk.join(', ') + '\n';
+            }
+            
+            text += `\n${'='.repeat(50)}\n`;
+            text += `Sistema de Auditoría de Sistemas\n`;
+            text += `Generado: ${new Date().toLocaleString('es-MX')}\n`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Reporte copiado al portapapeles', 'success');
+            }).catch(() => {
+                showToast('Error al copiar', 'error');
+            });
+        }
+        
+        function printFloorReport() {
+            if (!currentFloorReport) return;
+            
+            const floorData = getFloorReportData(currentFloorReport);
+            
+            let printContent = `
+                <html>
+                <head>
+                    <title>Reporte Piso ${currentFloorReport} - Hotel Sheraton</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+                        h1 { color: #1a365d; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; }
+                        .header-info { background: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0; }
+                        .stats { display: flex; gap: 20px; flex-wrap: wrap; margin: 20px 0; }
+                        .stat { background: #f5f5f5; padding: 10px 20px; border-radius: 5px; text-align: center; }
+                        .stat.issues { background: #fef2f2; border-left: 4px solid #ef4444; }
+                        .stat.ok { background: #f0fdf4; border-left: 4px solid #22c55e; }
+                        .room-section { margin: 15px 0; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; }
+                        .room-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+                        .room-number { font-size: 1.1rem; font-weight: bold; color: #1e40af; }
+                        .room-type { background: #e5e7eb; padding: 2px 10px; border-radius: 10px; font-size: 0.8rem; }
+                        .issue { padding: 8px 12px; background: #fef2f2; border-left: 3px solid #ef4444; margin: 5px 0; border-radius: 4px; }
+                        .ok-rooms { background: #f0fdf4; padding: 15px; border-radius: 8px; margin-top: 20px; }
+                        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <h1>🏢 Reporte Piso ${currentFloorReport}</h1>
+                    <div class="header-info">
+                        <strong>Hotel Sheraton Chihuahua Soberano</strong><br>
+                        Fecha: ${new Date().toLocaleDateString('es-MX')}
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat">📊 Total: <strong>${floorData.total}</strong></div>
+                        <div class="stat ok">✅ Auditadas: <strong>${floorData.audited}</strong></div>
+                        <div class="stat issues">⚠️ Con fallas: <strong>${floorData.roomsWithIssues.length}</strong></div>
+                        <div class="stat">⏳ Pendientes: <strong>${floorData.pending}</strong></div>
+                    </div>
+            `;
+            
+            if (floorData.roomsWithIssues.length > 0) {
+                printContent += `<h2>Detalle de Incidencias</h2>`;
+                floorData.roomsWithIssues.forEach(item => {
+                    const roomType = getRoomType(item.room);
+                    printContent += `
+                        <div class="room-section">
+                            <div class="room-header">
+                                <span class="room-number">Habitación ${item.room}</span>
+                                <span class="room-type">${roomType.type}</span>
+                            </div>
+                            ${item.issues.map(issue => `
+                                <div class="issue">${issue.icon} <strong>${issue.category}:</strong> ${issue.text}</div>
+                            `).join('')}
+                        </div>
+                    `;
+                });
+            }
+            
+            if (floorData.roomsOk.length > 0) {
+                printContent += `
+                    <div class="ok-rooms">
+                        <strong>✅ Habitaciones sin incidencias (${floorData.roomsOk.length}):</strong><br>
+                        ${floorData.roomsOk.join(', ')}
+                    </div>
+                `;
+            }
+            
+            printContent += `
+                    <div class="footer">
+                        Sistema de Auditoría de Sistemas<br>
+                        Generado: ${new Date().toLocaleString('es-MX')}
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        function exportFloorReportCSV() {
+            if (!currentFloorReport) return;
+            
+            const floorData = getFloorReportData(currentFloorReport);
+            
+            let csv = 'Piso,Habitacion,Tipo,Estado,Categoria_Falla,Detalle_Falla\n';
+            
+            // Habitaciones con incidencias
+            floorData.roomsWithIssues.forEach(item => {
+                const roomType = getRoomType(item.room);
+                item.issues.forEach(issue => {
+                    csv += `${currentFloorReport},${item.room},"${roomType.type}","Con Falla","${issue.category}","${issue.text}"\n`;
+                });
+            });
+            
+            // Habitaciones OK
+            floorData.roomsOk.forEach(room => {
+                const roomType = getRoomType(room);
+                csv += `${currentFloorReport},${room},"${roomType.type}","OK","",""\n`;
+            });
+            
+            // Habitaciones pendientes
+            floorData.pendingRooms.forEach(room => {
+                const roomType = getRoomType(room);
+                csv += `${currentFloorReport},${room},"${roomType.type}","Pendiente","",""\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reporte_piso_${currentFloorReport}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('Archivo CSV descargado', 'success');
         }
 
         function exportToCSV() {
