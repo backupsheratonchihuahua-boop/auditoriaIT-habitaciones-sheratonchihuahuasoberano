@@ -1,10 +1,8 @@
-const CACHE_NAME = 'auditoria-sistemas-v1';
+const CACHE_NAME = 'auditoria-sistemas-v5';
 const urlsToCache = [
   './',
-  './auditoria-sistemas-nube.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  './index.html',
+  './manifest.json'
 ];
 
 // Instalación del Service Worker
