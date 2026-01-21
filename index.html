@@ -5435,7 +5435,7 @@
         }
         
         function getFloorReportData(floor) {
-            const floorRooms = HOTEL_FLOOR[floor] || [];
+            const floorRooms = ROOMS_BY_FLOOR[floor] || [];
             const auditedRooms = [];
             const pendingRooms = [];
             const roomsWithIssues = [];
