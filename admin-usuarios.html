@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#10b981">
+    <title>Portal de Administración - Hotel Sheraton Chihuahua Soberano</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2235;
+            --bg-input: #0d1424;
+            --accent-primary: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --accent-info: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-gold: #eab308;
+            --accent-cyan: #06b6d4;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2d3a50;
+            --border-focus: #10b981;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .title-group h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-group p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Config Panel */
+        .config-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .config-panel.warning {
+            border-color: var(--accent-warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .config-panel h3 {
+            color: var(--accent-warning);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-panel input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .config-panel input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        /* Tabs */
+        .main-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-card);
+            padding: 6px;
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .main-tab {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .main-tab:hover {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        .main-tab.active {
+            background: linear-gradient(135deg, var(--accent-primary), #059669);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: var(--accent-primary);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #059669);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-danger), #dc2626);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--accent-warning), #d97706);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, var(--accent-info), #2563eb);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Users Table */
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .users-table th {
+            background: var(--bg-input);
+            color: var(--accent-primary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .users-table tr:hover td {
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .users-table td {
+            font-size: 0.9rem;
+        }
+
+        /* Role Badges */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .role-badge.admin {
+            background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+            color: white;
+        }
+
+        .role-badge.advanced {
+            background: linear-gradient(135deg, var(--accent-info), #2563eb);
+            color: white;
+        }
+
+        .role-badge.basic {
+            background: linear-gradient(135deg, var(--accent-primary), #059669);
+            color: white;
+        }
+
+        .role-badge.agente {
+            background: linear-gradient(135deg, var(--accent-cyan), #0891b2);
+            color: white;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-primary);
+        }
+
+        .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-danger);
+        }
+
+        /* Roles Info */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .role-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            transition: all 0.2s;
+        }
+
+        .role-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .role-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .role-card ul {
+            list-style: none;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .role-card li {
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .role-card li::before {
+            content: '•';
+            color: var(--accent-primary);
+        }
+
+        .role-card.admin { border-left: 3px solid var(--accent-purple); }
+        .role-card.advanced { border-left: 3px solid var(--accent-info); }
+        .role-card.basic { border-left: 3px solid var(--accent-primary); }
+        .role-card.agente { border-left: 3px solid var(--accent-cyan); }
+
+        /* Hash Generator */
+        .hash-result {
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-top: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            display: none;
+        }
+
+        .hash-result.show {
+            display: block;
+            border-color: var(--accent-primary);
+        }
+
+        /* Info Box */
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--accent-info);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h4 {
+            color: var(--accent-info);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-box p, .info-box li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .info-box li {
+            margin-bottom: 4px;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--accent-warning);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .warning-box h4 {
+            color: var(--accent-warning);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .warning-box p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Steps */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .step {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--accent-primary);
+            padding: 12px 16px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .step-number {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: var(--accent-primary); }
+        .toast.error { background: var(--accent-danger); }
+        .toast.warning { background: var(--accent-warning); }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .loading::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            margin-left: 12px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .empty-state span {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        /* Actions */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: var(--accent-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--accent-danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 12px; }
+            .header { padding: 16px; }
+            .header-top { flex-direction: column; align-items: flex-start; }
+            .title-group h1 { font-size: 1.2rem; }
+            .main-tab { min-width: 100px; padding: 10px 12px; font-size: 0.8rem; }
+            .users-table { font-size: 0.8rem; }
+            .users-table th, .users-table td { padding: 8px; }
+            .action-btns { flex-direction: column; }
+            .btn-sm { width: 100%; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-section">
+                    <div class="logo-icon">👤</div>
+                    <div class="title-group">
+                        <h1>Portal de Administración</h1>
+                        <p>Hotel Sheraton Chihuahua Soberano - Gestión de Usuarios</p>
+                    </div>
+                </div>
+                <div class="admin-badge">
+                    🔐 Área Restringida - Solo Administradores
+                </div>
+            </div>
+        </div>
+
+        <!-- Config Panel -->
+        <div id="configPanel" class="config-panel warning">
+            <h3>⚙️ Configuración de API</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 12px;">Ingresa la URL de tu Google Apps Script para conectar con la base de datos:</p>
+            <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/...">
+            <button class="btn btn-primary" onclick="saveApiUrl()">💾 Guardar y Conectar</button>
+        </div>
+
+        <!-- Main Tabs -->
+        <div class="main-tabs">
+            <button class="main-tab active" onclick="switchTab('usuarios')">👥 Usuarios</button>
+            <button class="main-tab" onclick="switchTab('crear')">➕ Crear Usuario</button>
+            <button class="main-tab" onclick="switchTab('roles')">🎭 Roles y Permisos</button>
+            <button class="main-tab" onclick="switchTab('hash')">🔐 Generador Hash</button>
+            <button class="main-tab" onclick="switchTab('instrucciones')">📖 Instrucciones</button>
+        </div>
+
+        <!-- Tab: Usuarios -->
+        <div id="tab-usuarios" class="tab-content active">
+            <div class="card">
+                <h2>👥 Usuarios Registrados</h2>
+                <div class="btn-group" style="margin-top: 0; margin-bottom: 16px;">
+                    <button class="btn btn-secondary" onclick="loadUsers()">🔄 Actualizar Lista</button>
+                </div>
+                <div id="usersContainer">
+                    <div class="loading">Cargando usuarios...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Crear Usuario -->
+        <div id="tab-crear" class="tab-content">
+            <div class="card">
+                <h2>➕ Crear Nuevo Usuario</h2>
+                
+                <div class="warning-box">
+                    <h4>⚠️ Proceso de Seguridad</h4>
+                    <p>Al crear un usuario, la contraseña se guardará en texto plano temporalmente. Después deberás:</p>
+                    <ol style="margin-left: 20px; margin-top: 8px; color: var(--text-secondary); font-size: 0.9rem;">
+                        <li>Ir a la pestaña "Generador Hash" y generar el hash de la contraseña</li>
+                        <li>Abrir Google Sheets y reemplazar la contraseña por el hash</li>
+                        <li>Esto garantiza que solo tú conoces las contraseñas originales</li>
+                    </ol>
+                </div>
+
+                <form id="createUserForm" onsubmit="createUser(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Usuario (login)</label>
+                            <input type="text" id="newUsername" required placeholder="ej: front1" pattern="[a-z0-9]+" title="Solo letras minúsculas y números">
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña Temporal</label>
+                            <input type="text" id="newPassword" required placeholder="Contraseña inicial">
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre para Mostrar</label>
+                            <input type="text" id="newDisplayName" required placeholder="ej: Recepción 1">
+                        </div>
+                        <div class="form-group">
+                            <label>Rol / Nivel</label>
+                            <select id="newLevel" required>
+                                <option value="">Seleccionar rol...</option>
+                                <option value="agente">🔹 Agente (Solo reportar)</option>
+                                <option value="basic">🟢 Auditor Básico</option>
+                                <option value="advanced">🔵 Auditor Avanzado</option>
+                                <option value="admin">🟣 Administrador</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">✅ Crear Usuario</button>
+                        <button type="reset" class="btn btn-secondary">🗑️ Limpiar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Usuarios Predefinidos -->
+            <div class="card">
+                <h2>⚡ Crear Usuarios Predefinidos</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 16px;">Crea rápidamente los usuarios típicos del hotel:</p>
+                
+                <div class="btn-group" style="flex-wrap: wrap;">
+                    <button class="btn btn-info btn-sm" onclick="createPredefinedUser('front1', 'Recepción 1', 'agente')">+ Front 1</button>
+                    <button class="btn btn-info btn-sm" onclick="createPredefinedUser('front2', 'Recepción 2', 'agente')">+ Front 2</button>
+                    <button class="btn btn-info btn-sm" onclick="createPredefinedUser('front3', 'Recepción 3', 'agente')">+ Front 3</button>
+                    <button class="btn btn-info btn-sm" onclick="createPredefinedUser('front4', 'Recepción 4', 'agente')">+ Front 4</button>
+                    <button class="btn btn-warning btn-sm" onclick="createPredefinedUser('mantenimiento', 'Mantenimiento', 'agente')">+ Mantenimiento</button>
+                    <button class="btn btn-primary btn-sm" onclick="createPredefinedUser('amasillas', 'Ama de Llaves', 'agente')">+ Ama de Llaves</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Roles y Permisos -->
+        <div id="tab-roles" class="tab-content">
+            <div class="card">
+                <h2>🎭 Sistema de Roles y Permisos</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Cada rol tiene permisos específicos en el sistema de auditoría:</p>
+                
+                <div class="roles-grid">
+                    <!-- Agente -->
+                    <div class="role-card agente">
+                        <h4>
+                            <span class="role-badge agente">🔹 Agente</span>
+                        </h4>
+                        <ul>
+                            <li>✅ Ver habitaciones</li>
+                            <li>✅ Reportar eventos/daños</li>
+                            <li>✅ Agregar notas</li>
+                            <li>❌ No puede editar auditorías existentes</li>
+                            <li>❌ No puede eliminar registros</li>
+                            <li>❌ No puede exportar datos</li>
+                            <li>❌ No puede limpiar base de datos</li>
+                        </ul>
+                        <p style="margin-top: 12px; font-size: 0.8rem; color: var(--accent-cyan);">
+                            <strong>Ideal para:</strong> Front Desk, Mantenimiento, Ama de Llaves
+                        </p>
+                    </div>
+
+                    <!-- Basic -->
+                    <div class="role-card basic">
+                        <h4>
+                            <span class="role-badge basic">🟢 Auditor Básico</span>
+                        </h4>
+                        <ul>
+                            <li>✅ Todas las funciones de Agente</li>
+                            <li>✅ Realizar auditorías completas</li>
+                            <li>✅ Ver reportes</li>
+                            <li>✅ Exportar datos básicos</li>
+                            <li>❌ No puede eliminar registros</li>
+                            <li>❌ No puede limpiar base de datos</li>
+                        </ul>
+                        <p style="margin-top: 12px; font-size: 0.8rem; color: var(--accent-primary);">
+                            <strong>Ideal para:</strong> Personal de IT Junior
+                        </p>
+                    </div>
+
+                    <!-- Advanced -->
+                    <div class="role-card advanced">
+                        <h4>
+                            <span class="role-badge advanced">🔵 Auditor Avanzado</span>
+                        </h4>
+                        <ul>
+                            <li>✅ Todas las funciones de Básico</li>
+                            <li>✅ Editar cualquier auditoría</li>
+                            <li>✅ Generar reportes avanzados</li>
+                            <li>✅ Exportar todos los datos</li>
+                            <li>❌ No puede eliminar registros</li>
+                            <li>❌ No puede limpiar base de datos</li>
+                        </ul>
+                        <p style="margin-top: 12px; font-size: 0.8rem; color: var(--accent-info);">
+                            <strong>Ideal para:</strong> Supervisores de IT
+                        </p>
+                    </div>
+
+                    <!-- Admin -->
+                    <div class="role-card admin">
+                        <h4>
+                            <span class="role-badge admin">🟣 Administrador</span>
+                        </h4>
+                        <ul>
+                            <li>✅ Todas las funciones del sistema</li>
+                            <li>✅ Eliminar registros individuales</li>
+                            <li>✅ Limpiar base de datos completa</li>
+                            <li>✅ Gestionar configuración</li>
+                            <li>✅ Acceso al portal de administración</li>
+                        </ul>
+                        <p style="margin-top: 12px; font-size: 0.8rem; color: var(--accent-purple);">
+                            <strong>Ideal para:</strong> Gerente de Sistemas (Tú)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Generador Hash -->
+        <div id="tab-hash" class="tab-content">
+            <div class="card">
+                <h2>🔐 Generador de Hash SHA-256</h2>
+                
+                <div class="info-box">
+                    <h4>ℹ️ ¿Para qué sirve esto?</h4>
+                    <p>Después de crear un usuario con contraseña temporal, usa esta herramienta para:</p>
+                    <ul>
+                        <li>Generar el hash seguro de la contraseña</li>
+                        <li>Copiar el hash y pegarlo en Google Sheets</li>
+                        <li>Reemplazar la contraseña en texto plano por el hash</li>
+                    </ul>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Contraseña a convertir</label>
+                        <input type="text" id="hashInput" placeholder="Escribe la contraseña aquí">
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="generateHash()">🔐 Generar Hash</button>
+                    <button class="btn btn-secondary" onclick="copyHash()">📋 Copiar Hash</button>
+                </div>
+                <div id="hashResult" class="hash-result"></div>
+            </div>
+
+            <!-- Generador Múltiple -->
+            <div class="card">
+                <h2>👥 Generar Múltiples Hashes</h2>
+                <div id="multiHashContainer">
+                    <div class="form-grid multi-hash-row" style="margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label>Usuario</label>
+                            <input type="text" class="multi-user" placeholder="ej: front1">
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña</label>
+                            <input type="text" class="multi-pass" placeholder="contraseña">
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary btn-sm" onclick="addHashRow()">+ Agregar Fila</button>
+                    <button class="btn btn-primary" onclick="generateMultipleHashes()">🔐 Generar Todos</button>
+                    <button class="btn btn-info" onclick="copyAllHashes()">📋 Copiar para Sheets</button>
+                </div>
+                <div id="multiHashResult" class="hash-result"></div>
+            </div>
+        </div>
+
+        <!-- Tab: Instrucciones -->
+        <div id="tab-instrucciones" class="tab-content">
+            <div class="card">
+                <h2>📖 Instrucciones de Uso</h2>
+                
+                <div class="info-box">
+                    <h4>🎯 Flujo de Trabajo Recomendado</h4>
+                    <p>Sigue estos pasos para agregar usuarios de forma segura:</p>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <strong>Crear el usuario</strong> - Ve a "Crear Usuario" e ingresa los datos con una contraseña temporal simple (ej: "temp123")
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <strong>Generar el hash</strong> - Ve a "Generador Hash" y convierte la contraseña temporal a hash SHA-256
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <strong>Actualizar en Sheets</strong> - Abre tu Google Sheets, busca el usuario recién creado y reemplaza la contraseña por el hash
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <strong>Guardar contraseña original</strong> - Guarda la contraseña original en un lugar seguro (solo tú la debes saber)
+                    </div>
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <strong>Informar al usuario</strong> - Dale al empleado su usuario y contraseña para que pueda acceder
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📝 Código Actualizado para Apps Script</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                    Copia este código adicional y agrégalo a tu Google Apps Script existente para habilitar las funciones de gestión de usuarios:
+                </p>
+                <button class="btn btn-primary" onclick="copyAppsScript()">📋 Copiar Código Apps Script</button>
+                <div id="appsScriptPreview" class="hash-result show" style="margin-top: 16px; max-height: 300px; overflow-y: auto;">
+                    <pre style="white-space: pre-wrap; font-size: 0.75rem;">// Ver archivo separado con las funciones de gestión de usuarios</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Usuario -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Editar Usuario</h3>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editUserForm" onsubmit="updateUser(event)">
+                <input type="hidden" id="editUsername">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Nombre para Mostrar</label>
+                        <input type="text" id="editDisplayName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Rol / Nivel</label>
+                        <select id="editLevel" required>
+                            <option value="agente">🔹 Agente</option>
+                            <option value="basic">🟢 Auditor Básico</option>
+                            <option value="advanced">🔵 Auditor Avanzado</option>
+                            <option value="admin">🟣 Administrador</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="editActive" required>
+                            <option value="si">✅ Activo</option>
+                            <option value="no">❌ Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN
+        // ============================================
+        let API_URL = localStorage.getItem('adminApiUrl') || '';
+        let usersData = [];
+        let generatedHashes = [];
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            if (API_URL) {
+                document.getElementById('configPanel').style.display = 'none';
+                document.getElementById('apiUrlInput').value = API_URL;
+                loadUsers();
+            }
+        });
+
+        function saveApiUrl() {
+            const url = document.getElementById('apiUrlInput').value.trim();
+            if (url) {
+                API_URL = url;
+                localStorage.setItem('adminApiUrl', url);
+                document.getElementById('configPanel').style.display = 'none';
+                loadUsers();
+                showToast('API configurada correctamente', 'success');
+            } else {
+                showToast('Ingresa una URL válida', 'error');
+            }
+        }
+
+        // ============================================
+        // NAVEGACIÓN
+        // ============================================
+        function switchTab(tabName) {
+            // Actualizar tabs
+            document.querySelectorAll('.main-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Mostrar contenido
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // ============================================
+        // CARGAR USUARIOS
+        // ============================================
+        async function loadUsers() {
+            const container = document.getElementById('usersContainer');
+            container.innerHTML = '<div class="loading">Cargando usuarios...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}?action=getUsers`);
+                const result = await response.json();
+
+                if (result.success && result.users) {
+                    usersData = result.users;
+                    renderUsersTable(result.users);
+                } else {
+                    container.innerHTML = `<div class="empty-state"><span>⚠️</span><p>${result.error || 'Error al cargar usuarios'}</p></div>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = `<div class="empty-state"><span>❌</span><p>Error de conexión. Verifica la URL de la API.</p></div>`;
+            }
+        }
+
+        function renderUsersTable(users) {
+            const container = document.getElementById('usersContainer');
+            
+            if (users.length === 0) {
+                container.innerHTML = `<div class="empty-state"><span>👥</span><p>No hay usuarios registrados</p></div>`;
+                return;
+            }
+
+            const roleNames = {
+                'admin': '🟣 Admin',
+                'advanced': '🔵 Avanzado',
+                'basic': '🟢 Básico',
+                'agente': '🔹 Agente'
+            };
+
+            let html = `
+                <div style="overflow-x: auto;">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Nombre</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            users.forEach(user => {
+                const isActive = user.active.toLowerCase() === 'si' || user.active.toLowerCase() === 'sí';
+                html += `
+                    <tr>
+                        <td><strong>${user.username}</strong></td>
+                        <td>${user.displayName || '-'}</td>
+                        <td><span class="role-badge ${user.level}">${roleNames[user.level] || user.level}</span></td>
+                        <td><span class="status-badge ${isActive ? 'active' : 'inactive'}">${isActive ? '✅ Activo' : '❌ Inactivo'}</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn btn-info btn-sm" onclick="openEditModal('${user.username}')">✏️</button>
+                                <button class="btn btn-${isActive ? 'warning' : 'primary'} btn-sm" onclick="toggleUserStatus('${user.username}', ${!isActive})">${isActive ? '⏸️' : '▶️'}</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // CREAR USUARIO
+        // ============================================
+        async function createUser(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('newUsername').value.trim().toLowerCase();
+            const password = document.getElementById('newPassword').value;
+            const displayName = document.getElementById('newDisplayName').value.trim();
+            const level = document.getElementById('newLevel').value;
+
+            if (!username || !password || !displayName || !level) {
+                showToast('Completa todos los campos', 'error');
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'createUser',
+                    username: username,
+                    password: password,
+                    displayName: displayName,
+                    level: level
+                });
+
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`Usuario "${username}" creado. ¡Recuerda cambiar la contraseña por el hash!`, 'success');
+                    document.getElementById('createUserForm').reset();
+                    loadUsers();
+                } else {
+                    showToast(result.error || 'Error al crear usuario', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error de conexión', 'error');
+            }
+        }
+
+        async function createPredefinedUser(username, displayName, level) {
+            const password = prompt(`Contraseña temporal para ${displayName}:`, 'temp123');
+            if (!password) return;
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'createUser',
+                    username: username,
+                    password: password,
+                    displayName: displayName,
+                    level: level
+                });
+
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`Usuario "${username}" creado con contraseña "${password}"`, 'success');
+                    loadUsers();
+                } else {
+                    showToast(result.error || 'Error al crear usuario', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+
+        // ============================================
+        // EDITAR USUARIO
+        // ============================================
+        function openEditModal(username) {
+            const user = usersData.find(u => u.username === username);
+            if (!user) return;
+
+            document.getElementById('editUsername').value = user.username;
+            document.getElementById('editDisplayName').value = user.displayName || '';
+            document.getElementById('editLevel').value = user.level || 'basic';
+            document.getElementById('editActive').value = (user.active.toLowerCase() === 'si' || user.active.toLowerCase() === 'sí') ? 'si' : 'no';
+
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        async function updateUser(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('editUsername').value;
+            const displayName = document.getElementById('editDisplayName').value;
+            const level = document.getElementById('editLevel').value;
+            const active = document.getElementById('editActive').value;
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateUser',
+                    username: username,
+                    displayName: displayName,
+                    level: level,
+                    active: active
+                });
+
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Usuario actualizado', 'success');
+                    closeEditModal();
+                    loadUsers();
+                } else {
+                    showToast(result.error || 'Error al actualizar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+
+        async function toggleUserStatus(username, activate) {
+            const action = activate ? 'activar' : 'desactivar';
+            if (!confirm(`¿Deseas ${action} al usuario "${username}"?`)) return;
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateUser',
+                    username: username,
+                    active: activate ? 'si' : 'no'
+                });
+
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`Usuario ${activate ? 'activado' : 'desactivado'}`, 'success');
+                    loadUsers();
+                } else {
+                    showToast(result.error || 'Error', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+
+        // ============================================
+        // GENERADOR DE HASH
+        // ============================================
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function generateHash() {
+            const password = document.getElementById('hashInput').value;
+            if (!password) {
+                showToast('Ingresa una contraseña', 'warning');
+                return;
+            }
+
+            const hash = await sha256(password);
+            const resultDiv = document.getElementById('hashResult');
+            resultDiv.innerHTML = `<strong>Contraseña:</strong> ${password}<br><br><strong>Hash SHA-256:</strong><br>${hash}`;
+            resultDiv.classList.add('show');
+        }
+
+        function copyHash() {
+            const resultDiv = document.getElementById('hashResult');
+            if (!resultDiv.classList.contains('show')) {
+                showToast('Primero genera un hash', 'warning');
+                return;
+            }
+
+            const hash = resultDiv.innerText.split('Hash SHA-256:')[1]?.trim();
+            if (hash) {
+                navigator.clipboard.writeText(hash);
+                showToast('Hash copiado al portapapeles', 'success');
+            }
+        }
+
+        function addHashRow() {
+            const container = document.getElementById('multiHashContainer');
+            const row = document.createElement('div');
+            row.className = 'form-grid multi-hash-row';
+            row.style.marginBottom = '12px';
+            row.innerHTML = `
+                <div class="form-group">
+                    <input type="text" class="multi-user" placeholder="Usuario">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="multi-pass" placeholder="Contraseña">
+                </div>
+            `;
+            container.appendChild(row);
+        }
+
+        async function generateMultipleHashes() {
+            const users = document.querySelectorAll('.multi-user');
+            const passwords = document.querySelectorAll('.multi-pass');
+            generatedHashes = [];
+
+            let html = '<table class="users-table"><thead><tr><th>Usuario</th><th>Hash</th></tr></thead><tbody>';
+
+            for (let i = 0; i < users.length; i++) {
+                const user = users[i].value.trim();
+                const pass = passwords[i].value;
+                
+                if (user && pass) {
+                    const hash = await sha256(pass);
+                    generatedHashes.push({ user, hash });
+                    html += `<tr><td>${user}</td><td style="font-size: 0.7rem; word-break: break-all;">${hash}</td></tr>`;
+                }
+            }
+
+            html += '</tbody></table>';
+
+            if (generatedHashes.length > 0) {
+                document.getElementById('multiHashResult').innerHTML = html;
+                document.getElementById('multiHashResult').classList.add('show');
+            } else {
+                showToast('Ingresa al menos un usuario y contraseña', 'warning');
+            }
+        }
+
+        function copyAllHashes() {
+            if (generatedHashes.length === 0) {
+                showToast('Primero genera los hashes', 'warning');
+                return;
+            }
+
+            const text = generatedHashes.map(h => `${h.user}\t${h.hash}`).join('\n');
+            navigator.clipboard.writeText(text);
+            showToast('Datos copiados. Pégalos en Google Sheets (Ctrl+V)', 'success');
+        }
+
+        // ============================================
+        // CÓDIGO APPS SCRIPT
+        // ============================================
+        const APPS_SCRIPT_CODE = `
+// ============================================
+// FUNCIONES DE GESTIÓN DE USUARIOS
+// Agregar este código a tu Apps Script existente
+// ============================================
+
+// Obtener lista de usuarios
+function getUsers() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Usuarios');
+  
+  if (!sheet) {
+    return { success: false, error: 'Hoja de usuarios no encontrada' };
+  }
+  
+  const data = sheet.getDataRange().getValues();
+  const users = [];
+  
+  for (let i = 1; i < data.length; i++) {
+    users.push({
+      username: data[i][0],
+      level: data[i][2] || 'basic',
+      displayName: data[i][3] || '',
+      active: data[i][4] || 'si'
+    });
+  }
+  
+  return { success: true, users: users };
+}
+
+// Crear nuevo usuario (con contraseña en texto plano - luego cambiar por hash manualmente)
+function createUser(username, password, displayName, level) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Usuarios');
+  
+  if (!sheet) {
+    initializeSheets();
+    sheet = ss.getSheetByName('Usuarios');
+  }
+  
+  // Verificar si el usuario ya existe
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).toLowerCase() === username.toLowerCase()) {
+      return { success: false, error: 'El usuario ya existe' };
+    }
+  }
+  
+  // Agregar nuevo usuario (contraseña en texto plano - TEMPORAL)
+  sheet.appendRow([username, password, level || 'agente', displayName, 'si']);
+  
+  return { success: true, message: 'Usuario creado. IMPORTANTE: Cambia la contraseña por el hash en Google Sheets.' };
+}
+
+// Actualizar usuario
+function updateUser(username, displayName, level, active) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Usuarios');
+  
+  if (!sheet) {
+    return { success: false, error: 'Hoja no encontrada' };
+  }
+  
+  const data = sheet.getDataRange().getValues();
+  
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).toLowerCase() === username.toLowerCase()) {
+      if (displayName !== undefined) sheet.getRange(i + 1, 4).setValue(displayName);
+      if (level !== undefined) sheet.getRange(i + 1, 3).setValue(level);
+      if (active !== undefined) sheet.getRange(i + 1, 5).setValue(active);
+      return { success: true, message: 'Usuario actualizado' };
+    }
+  }
+  
+  return { success: false, error: 'Usuario no encontrado' };
+}
+
+// Agregar estas acciones al switch en doGet:
+// case 'getUsers':
+//   result = getUsers();
+//   break;
+// case 'createUser':
+//   result = createUser(e.parameter.username, e.parameter.password, e.parameter.displayName, e.parameter.level);
+//   break;
+// case 'updateUser':
+//   result = updateUser(e.parameter.username, e.parameter.displayName, e.parameter.level, e.parameter.active);
+//   break;
+`;
+
+        function copyAppsScript() {
+            navigator.clipboard.writeText(APPS_SCRIPT_CODE);
+            showToast('Código copiado. Pégalo en Google Apps Script.', 'success');
+        }
+
+        // ============================================
+        // UTILIDADES
+        // ============================================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+    </script>
+</body>
+</html>
