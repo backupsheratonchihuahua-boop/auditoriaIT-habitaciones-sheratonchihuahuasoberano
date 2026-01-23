@@ -175,6 +175,8 @@
         }
         .user-badge.admin .user-icon { background: var(--accent-purple); }
         .user-badge.advanced .user-icon { background: var(--accent-info); }
+        .user-badge.agente .user-icon { background: #06b6d4; }
+        .user-badge.agente { border-color: #06b6d4; }
         .user-badge .user-info { display: flex; flex-direction: column; }
         .user-badge .user-name { font-weight: 600; font-size: 0.9rem; }
         .user-badge .user-role { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
@@ -195,6 +197,18 @@
         
         /* Hide elements based on permission */
         .permission-hidden { display: none !important; }
+        
+        /* Animación para aviso de agente */
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
@@ -3022,7 +3036,7 @@
             </section>
 
             <div class="action-bar">
-                <button class="btn btn-primary" onclick="exportToCSV()">📥 Exportar CSV</button>
+                <button class="btn btn-primary" onclick="exportToCSV()" data-permission="export">📥 Exportar CSV</button>
                 <button class="btn btn-info" onclick="switchTab('reports')">📊 Ver Reportes</button>
                 <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
                 <button class="btn btn-danger" onclick="clearAllData()" data-permission="clearAll">🗑️ Limpiar Todo</button>
@@ -3284,7 +3298,7 @@
                 <div id="failureReportActions" class="failure-report-actions" style="display: none;">
                     <button class="action-btn" onclick="copyFailureReport()">📋 Copiar Reporte</button>
                     <button class="action-btn" onclick="printFailureReport()">🖨️ Imprimir</button>
-                    <button class="action-btn" onclick="exportFailureReportCSV()">📥 Exportar CSV</button>
+                    <button class="action-btn" onclick="exportFailureReportCSV()" data-permission="export">📥 Exportar CSV</button>
                 </div>
             </div>
 
@@ -3324,11 +3338,57 @@
         // SISTEMA DE AUTENTICACIÓN
         // ============================================
         
-        // Niveles de usuario
+        // Niveles de usuario (ACTUALIZADO CON ROL AGENTE)
         const USER_LEVELS = {
-            'admin': { name: 'Super Admin', canDelete: true, canClearAll: true, canEditAny: true },
-            'advanced': { name: 'Auditor Avanzado', canDelete: false, canClearAll: false, canEditAny: true },
-            'basic': { name: 'Auditor', canDelete: false, canClearAll: false, canEditAny: false }
+            'admin': { 
+                name: 'Super Admin', 
+                canView: true,
+                canReport: true,
+                canAudit: true,
+                canEdit: true,
+                canEditOwn: true,
+                canDelete: true, 
+                canClearAll: true, 
+                canEditAny: true,
+                canExport: true
+            },
+            'advanced': { 
+                name: 'Auditor Avanzado', 
+                canView: true,
+                canReport: true,
+                canAudit: true,
+                canEdit: true,
+                canEditOwn: true,
+                canDelete: false, 
+                canClearAll: false, 
+                canEditAny: true,
+                canExport: true
+            },
+            'basic': { 
+                name: 'Auditor', 
+                canView: true,
+                canReport: true,
+                canAudit: true,
+                canEdit: false,
+                canEditOwn: true,
+                canDelete: false, 
+                canClearAll: false, 
+                canEditAny: false,
+                canExport: true
+            },
+            // NUEVO ROL: AGENTE - Solo puede reportar eventos/daños
+            'agente': { 
+                name: 'Agente', 
+                canView: true,
+                canReport: true,       // Puede reportar eventos/daños
+                canAudit: false,       // NO puede hacer auditorías completas
+                canEdit: false,
+                canEditOwn: false,
+                canDelete: false, 
+                canClearAll: false, 
+                canEditAny: false,
+                canExport: false       // NO puede exportar
+            }
         };
         
         // Sesión actual
@@ -3403,13 +3463,15 @@
             name.textContent = currentUser.displayName || currentUser.username;
             role.textContent = USER_LEVELS[currentUser.level]?.name || 'Usuario';
             
-            // Clase según nivel
-            badge.classList.remove('admin', 'advanced');
+            // Clase según nivel (ACTUALIZADO CON AGENTE)
+            badge.classList.remove('admin', 'advanced', 'basic', 'agente');
             if (currentUser.level === 'admin') badge.classList.add('admin');
             else if (currentUser.level === 'advanced') badge.classList.add('advanced');
+            else if (currentUser.level === 'agente') badge.classList.add('agente');
+            else badge.classList.add('basic');
         }
         
-        // Aplicar permisos según nivel
+        // Aplicar permisos según nivel (ACTUALIZADO CON ROL AGENTE)
         function applyPermissions() {
             if (!currentUser) return;
             
@@ -3419,6 +3481,8 @@
             const deleteElements = document.querySelectorAll('[data-permission="delete"]');
             const clearAllElements = document.querySelectorAll('[data-permission="clearAll"]');
             const editElements = document.querySelectorAll('[data-permission="editAny"]');
+            const exportElements = document.querySelectorAll('[data-permission="export"]');
+            const auditElements = document.querySelectorAll('[data-permission="audit"]');
             
             deleteElements.forEach(el => {
                 if (!perms.canDelete) el.classList.add('permission-hidden');
@@ -3429,6 +3493,74 @@
                 if (!perms.canClearAll) el.classList.add('permission-hidden');
                 else el.classList.remove('permission-hidden');
             });
+            
+            editElements.forEach(el => {
+                if (!perms.canEditAny) el.classList.add('permission-hidden');
+                else el.classList.remove('permission-hidden');
+            });
+            
+            exportElements.forEach(el => {
+                if (!perms.canExport) el.classList.add('permission-hidden');
+                else el.classList.remove('permission-hidden');
+            });
+            
+            auditElements.forEach(el => {
+                if (!perms.canAudit) el.classList.add('permission-hidden');
+                else el.classList.remove('permission-hidden');
+            });
+            
+            // Mostrar aviso si es agente
+            if (currentUser.level === 'agente') {
+                showAgentModeNotice();
+            }
+        }
+        
+        // Mostrar aviso de modo agente
+        function showAgentModeNotice() {
+            if (sessionStorage.getItem('agentNoticeShown')) return;
+            
+            const notice = document.createElement('div');
+            notice.id = 'agentNotice';
+            notice.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top: 80px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: linear-gradient(135deg, #06b6d4, #0891b2);
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4);
+                    z-index: 9999;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    animation: slideDown 0.3s ease;
+                ">
+                    <span style="font-size: 1.5rem;">🔹</span>
+                    <div>
+                        <strong>Modo Agente</strong><br>
+                        <span style="font-size: 0.85rem; opacity: 0.9;">Solo puedes reportar eventos y agregar notas</span>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        background: rgba(255,255,255,0.2);
+                        border: none;
+                        color: white;
+                        padding: 4px 12px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        margin-left: 12px;
+                    ">OK</button>
+                </div>
+            `;
+            document.body.appendChild(notice);
+            sessionStorage.setItem('agentNoticeShown', 'true');
+            
+            setTimeout(() => {
+                const el = document.getElementById('agentNotice');
+                if (el) el.remove();
+            }, 5000);
         }
         
         // Manejar login
@@ -4261,6 +4393,13 @@
         }
 
         async function saveRoom() {
+            // Verificar permisos de auditoría (los agentes no pueden hacer auditorías completas)
+            const perms = USER_LEVELS[currentUser?.level] || USER_LEVELS['basic'];
+            if (!perms.canAudit) {
+                showToast('No tienes permiso para guardar auditorías. Solo puedes reportar incidencias.', 'warning');
+                return;
+            }
+            
             const roomNum = document.getElementById('roomNumber').value;
             if (!roomNum || !ALL_ROOMS.includes(parseInt(roomNum))) {
                 showToast('Número de habitación inválido', 'error');
