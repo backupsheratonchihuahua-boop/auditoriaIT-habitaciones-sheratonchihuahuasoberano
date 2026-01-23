@@ -41,6 +41,203 @@
             --radius-lg: 16px;
         }
 
+        /* Banner de Instalación PWA */
+        .install-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #1a2235 0%, #0f172a 100%);
+            border-top: 2px solid var(--accent-primary);
+            padding: 16px 20px;
+            z-index: 99999;
+            display: none;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease;
+        }
+        
+        .install-banner.show {
+            display: block;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .install-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .install-banner-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-primary), #059669);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .install-banner-text {
+            flex: 1;
+        }
+        
+        .install-banner-text h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+        
+        .install-banner-text p {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
+        .install-banner-buttons {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .install-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .install-btn.primary {
+            background: linear-gradient(135deg, var(--accent-primary), #059669);
+            color: white;
+        }
+        
+        .install-btn.primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .install-btn.secondary {
+            background: transparent;
+            color: var(--text-muted);
+            padding: 10px 12px;
+        }
+        
+        .install-btn.secondary:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Modal de instrucciones iOS */
+        .ios-install-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .ios-install-modal.show {
+            display: flex;
+        }
+        
+        .ios-install-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 340px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .ios-install-content h3 {
+            color: var(--accent-primary);
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+        }
+        
+        .ios-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-input);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        
+        .ios-step-number {
+            background: var(--accent-primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        
+        .ios-step-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .ios-step-text strong {
+            color: var(--text-primary);
+        }
+        
+        .ios-close-btn {
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        @media (max-width: 480px) {
+            .install-banner-content {
+                flex-wrap: wrap;
+            }
+            .install-banner-buttons {
+                width: 100%;
+                justify-content: stretch;
+            }
+            .install-btn.primary {
+                flex: 1;
+            }
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -2399,6 +2596,41 @@
     </style>
 </head>
 <body>
+    <!-- Banner de Instalación PWA -->
+    <div class="install-banner" id="installBanner">
+        <div class="install-banner-content">
+            <div class="install-banner-icon">📱</div>
+            <div class="install-banner-text">
+                <h4>Instalar Auditoría IT</h4>
+                <p>Agrega la app a tu pantalla de inicio</p>
+            </div>
+            <div class="install-banner-buttons">
+                <button class="install-btn primary" id="installBtn" onclick="installApp()">Instalar</button>
+                <button class="install-btn secondary" onclick="dismissInstallBanner()">✕</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Instrucciones para iOS -->
+    <div class="ios-install-modal" id="iosInstallModal">
+        <div class="ios-install-content">
+            <h3>📱 Instalar en iPhone/iPad</h3>
+            <div class="ios-step">
+                <div class="ios-step-number">1</div>
+                <div class="ios-step-text">Toca el botón <strong>Compartir</strong> ⬆️ (abajo)</div>
+            </div>
+            <div class="ios-step">
+                <div class="ios-step-number">2</div>
+                <div class="ios-step-text">Desliza y busca <strong>"Añadir a inicio"</strong></div>
+            </div>
+            <div class="ios-step">
+                <div class="ios-step-number">3</div>
+                <div class="ios-step-text">Toca <strong>"Añadir"</strong> arriba a la derecha</div>
+            </div>
+            <button class="ios-close-btn" onclick="closeIosModal()">Entendido</button>
+        </div>
+    </div>
+
     <!-- Login Screen -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-container">
@@ -6372,6 +6604,95 @@
         });
         document.getElementById('editUserModal')?.addEventListener('click', function(e) {
             if (e.target === this) closeEditUserModal();
+        });
+        
+        // ============================================
+        // INSTALACIÓN PWA - BANNER AUTOMÁTICO
+        // ============================================
+        
+        let deferredPrompt = null;
+        let isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        let isAndroid = /Android/.test(navigator.userAgent);
+        let isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        
+        // Detectar si ya se instaló o se rechazó
+        function shouldShowInstallBanner() {
+            // No mostrar si ya está instalada
+            if (isStandalone) return false;
+            // No mostrar si el usuario ya la rechazó (por 7 días)
+            const dismissed = localStorage.getItem('installBannerDismissed');
+            if (dismissed) {
+                const dismissedDate = new Date(parseInt(dismissed));
+                const daysSinceDismissed = (Date.now() - dismissedDate) / (1000 * 60 * 60 * 24);
+                if (daysSinceDismissed < 7) return false;
+            }
+            return true;
+        }
+        
+        // Capturar el evento de instalación (Chrome/Android)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            if (shouldShowInstallBanner()) {
+                setTimeout(() => {
+                    document.getElementById('installBanner').classList.add('show');
+                }, 2000); // Mostrar después de 2 segundos
+            }
+        });
+        
+        // Mostrar banner para iOS
+        if (isIos && !isStandalone && shouldShowInstallBanner()) {
+            setTimeout(() => {
+                document.getElementById('installBanner').classList.add('show');
+                // Cambiar el botón para iOS
+                document.getElementById('installBtn').textContent = 'Ver cómo';
+            }, 2000);
+        }
+        
+        // Función para instalar la app
+        function installApp() {
+            if (isIos) {
+                // En iOS mostrar instrucciones
+                document.getElementById('installBanner').classList.remove('show');
+                document.getElementById('iosInstallModal').classList.add('show');
+                return;
+            }
+            
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuario aceptó instalar');
+                        showToast('¡App instalada! Búscala en tu pantalla de inicio', 'success');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installBanner').classList.remove('show');
+                });
+            } else {
+                // Si no hay prompt disponible, mostrar instrucciones genéricas
+                showToast('Usa el menú del navegador → "Añadir a pantalla de inicio"', 'info');
+                document.getElementById('installBanner').classList.remove('show');
+            }
+        }
+        
+        // Cerrar banner
+        function dismissInstallBanner() {
+            document.getElementById('installBanner').classList.remove('show');
+            localStorage.setItem('installBannerDismissed', Date.now().toString());
+        }
+        
+        // Cerrar modal iOS
+        function closeIosModal() {
+            document.getElementById('iosInstallModal').classList.remove('show');
+            localStorage.setItem('installBannerDismissed', Date.now().toString());
+        }
+        
+        // Detectar si se instaló después
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA instalada');
+            document.getElementById('installBanner').classList.remove('show');
+            deferredPrompt = null;
         });
         
         // ============================================
