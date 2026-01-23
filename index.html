@@ -55,6 +55,224 @@
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
         }
         
+        /* Panel de Reporte Rápido para Agentes */
+        .agent-report-panel {
+            display: none;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 2px solid #06b6d4;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .agent-report-panel.show {
+            display: block;
+        }
+        
+        .agent-report-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .agent-report-header h2 {
+            color: #06b6d4;
+            font-size: 1.3rem;
+            margin: 0;
+        }
+        
+        .agent-report-header .badge {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+        
+        .agent-report-form {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .agent-report-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        @media (max-width: 600px) {
+            .agent-report-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .fault-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        
+        .fault-type-option {
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .fault-type-option:hover {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.1);
+        }
+        
+        .fault-type-option.selected {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.2);
+        }
+        
+        .fault-type-option .icon {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .fault-type-option .label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .fault-type-option.selected .label {
+            color: #06b6d4;
+            font-weight: 600;
+        }
+        
+        .agent-submit-btn {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .agent-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+        }
+        
+        .agent-submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Sección de Incidencias Reportadas */
+        .incidents-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .incidents-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .incidents-header h3 {
+            color: var(--accent-warning);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .incidents-badge {
+            background: var(--accent-danger);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .incidents-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        .incidents-table th {
+            background: var(--bg-input);
+            padding: 12px;
+            text-align: left;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        
+        .incidents-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .incidents-table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .incident-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .incident-status.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-warning);
+        }
+        
+        .incident-status.resolved {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-primary);
+        }
+        
+        .incident-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 4px;
+        }
+        
+        .incident-actions .resolve-btn {
+            background: var(--accent-primary);
+            color: white;
+        }
+        
+        .incident-actions .delete-btn {
+            background: var(--accent-danger);
+            color: white;
+        }
+        
         .install-banner-content {
             display: flex;
             align-items: center;
@@ -2959,8 +3177,76 @@
                 </div>
             </header>
 
-            <!-- Summary Cards -->
-            <div class="summary-grid">
+            <!-- Panel de Reporte Rápido para Agentes -->
+            <div class="agent-report-panel" id="agentReportPanel">
+                <div class="agent-report-header">
+                    <span style="font-size: 2rem;">📢</span>
+                    <h2>Reportar Incidencia</h2>
+                    <span class="badge">Modo Agente</span>
+                </div>
+                <div class="agent-report-form">
+                    <div class="agent-report-row">
+                        <div class="input-group">
+                            <label>Habitación</label>
+                            <input type="number" id="agentRoomNumber" placeholder="Ej: 505" min="101" max="530">
+                        </div>
+                        <div class="input-group">
+                            <label>Reportado por</label>
+                            <input type="text" id="agentReporter" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Tipo de Falla</label>
+                        <div class="fault-type-grid" id="faultTypeGrid">
+                            <div class="fault-type-option" data-fault="telefono" onclick="selectFaultType(this)">
+                                <span class="icon">📞</span>
+                                <span class="label">Teléfono</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="tv" onclick="selectFaultType(this)">
+                                <span class="icon">📺</span>
+                                <span class="label">TV</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="internet" onclick="selectFaultType(this)">
+                                <span class="icon">📶</span>
+                                <span class="label">Internet/WiFi</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="router" onclick="selectFaultType(this)">
+                                <span class="icon">📡</span>
+                                <span class="label">Router</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="ac" onclick="selectFaultType(this)">
+                                <span class="icon">❄️</span>
+                                <span class="label">A/C</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="otro" onclick="selectFaultType(this)">
+                                <span class="icon">⚠️</span>
+                                <span class="label">Otro</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Descripción del problema (opcional)</label>
+                        <textarea id="agentDescription" rows="2" placeholder="Ej: El huésped reporta que no tiene tono en el teléfono"></textarea>
+                    </div>
+                    
+                    <button class="agent-submit-btn" onclick="submitAgentReport()" id="agentSubmitBtn">
+                        📢 Enviar Reporte
+                    </button>
+                </div>
+                
+                <!-- Últimos reportes del agente -->
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                    <h4 style="color: var(--text-secondary); margin-bottom: 12px; font-size: 0.9rem;">📋 Mis últimos reportes de hoy</h4>
+                    <div id="agentRecentReports">
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">No has enviado reportes hoy</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards (oculto para agentes) -->
+            <div class="summary-grid" data-permission="audit">
                 <div class="summary-card success">
                     <div class="summary-value" id="roomsAudited">0</div>
                     <div class="summary-label">Auditadas</div>
@@ -3328,6 +3614,24 @@
                         <h4>Infraestructura de Red</h4>
                         <p>Routers: <span class="highlight" id="exec-routers">0</span> / 42</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- Sección de Incidencias Reportadas (Solo Admin) -->
+            <div class="incidents-section" id="incidentsSection" data-permission="admin">
+                <div class="incidents-header">
+                    <h3>🔔 Incidencias Reportadas <span class="incidents-badge" id="pendingIncidentsCount">0</span></h3>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="incidentFilter" onchange="filterIncidents()" style="padding: 8px; border-radius: 6px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);">
+                            <option value="all">Todas</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="resolved">Atendidas</option>
+                        </select>
+                        <button class="btn" onclick="loadIncidents()">🔄 Actualizar</button>
+                    </div>
+                </div>
+                <div id="incidentsTableContainer">
+                    <p style="color: var(--text-muted); text-align: center; padding: 20px;">Cargando incidencias...</p>
                 </div>
             </div>
 
@@ -3928,6 +4232,43 @@
                 if (currentUser.level !== 'admin') el.classList.add('permission-hidden');
                 else el.classList.remove('permission-hidden');
             });
+            
+            // Panel de agentes - mostrar solo para rol agente
+            const agentPanel = document.getElementById('agentReportPanel');
+            if (agentPanel) {
+                if (currentUser.level === 'agente') {
+                    agentPanel.classList.add('show');
+                    // Establecer nombre del reportador
+                    const reporterField = document.getElementById('agentReporter');
+                    if (reporterField) {
+                        reporterField.value = currentUser.displayName || currentUser.username;
+                    }
+                    // Cargar reportes recientes del agente
+                    loadAgentRecentReports();
+                } else {
+                    agentPanel.classList.remove('show');
+                }
+            }
+            
+            // Ocultar navegación de habitaciones y formulario completo para agentes
+            const roomNav = document.querySelector('.room-nav');
+            const roomForm = document.querySelector('.room-form');
+            const floorView = document.querySelector('.floor-view');
+            
+            if (currentUser.level === 'agente') {
+                if (roomNav) roomNav.classList.add('permission-hidden');
+                if (roomForm) roomForm.classList.add('permission-hidden');
+                if (floorView) floorView.classList.add('permission-hidden');
+            } else {
+                if (roomNav) roomNav.classList.remove('permission-hidden');
+                if (roomForm) roomForm.classList.remove('permission-hidden');
+                if (floorView) floorView.classList.remove('permission-hidden');
+            }
+            
+            // Cargar incidencias para admin
+            if (currentUser.level === 'admin') {
+                loadIncidents();
+            }
             
             // Mostrar aviso si es agente
             if (currentUser.level === 'agente') {
@@ -6360,6 +6701,292 @@
                 closeMultiSelect();
             }
         });
+        
+        // ============================================
+        // SISTEMA DE REPORTES DE AGENTES
+        // ============================================
+        
+        let selectedFaultType = null;
+        let incidentsData = [];
+        
+        // Seleccionar tipo de falla
+        function selectFaultType(element) {
+            document.querySelectorAll('.fault-type-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedFaultType = element.dataset.fault;
+        }
+        
+        // Enviar reporte de agente
+        async function submitAgentReport() {
+            const roomNumber = document.getElementById('agentRoomNumber').value;
+            const description = document.getElementById('agentDescription').value.trim();
+            const reporter = document.getElementById('agentReporter').value;
+            
+            // Validaciones
+            if (!roomNumber) {
+                showToast('Ingresa el número de habitación', 'warning');
+                return;
+            }
+            
+            if (!ALL_ROOMS.includes(parseInt(roomNumber))) {
+                showToast('Número de habitación inválido', 'error');
+                return;
+            }
+            
+            if (!selectedFaultType) {
+                showToast('Selecciona el tipo de falla', 'warning');
+                return;
+            }
+            
+            const btn = document.getElementById('agentSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Enviando...';
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'reportIncident',
+                    room: roomNumber,
+                    faultType: selectedFaultType,
+                    description: description || 'Sin descripción adicional',
+                    reporter: reporter,
+                    timestamp: new Date().toISOString()
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`✅ Incidencia en habitación ${roomNumber} reportada`, 'success');
+                    
+                    // Limpiar formulario
+                    document.getElementById('agentRoomNumber').value = '';
+                    document.getElementById('agentDescription').value = '';
+                    document.querySelectorAll('.fault-type-option').forEach(opt => opt.classList.remove('selected'));
+                    selectedFaultType = null;
+                    
+                    // Actualizar lista de reportes del agente
+                    loadAgentRecentReports();
+                } else {
+                    showToast(result.error || 'Error al enviar reporte', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error de conexión', 'error');
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '📢 Enviar Reporte';
+        }
+        
+        // Cargar reportes recientes del agente
+        async function loadAgentRecentReports() {
+            const container = document.getElementById('agentRecentReports');
+            if (!container) return;
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getIncidents&reporter=${currentUser?.username || ''}`);
+                const result = await response.json();
+                
+                if (result.success && result.incidents && result.incidents.length > 0) {
+                    const today = new Date().toDateString();
+                    const todayReports = result.incidents.filter(inc => {
+                        const incDate = new Date(inc.timestamp).toDateString();
+                        return incDate === today;
+                    });
+                    
+                    if (todayReports.length === 0) {
+                        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No has enviado reportes hoy</p>';
+                        return;
+                    }
+                    
+                    const faultLabels = {
+                        'telefono': '📞 Teléfono',
+                        'tv': '📺 TV',
+                        'internet': '📶 Internet',
+                        'router': '📡 Router',
+                        'ac': '❄️ A/C',
+                        'otro': '⚠️ Otro'
+                    };
+                    
+                    let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+                    todayReports.slice(0, 5).forEach(inc => {
+                        const time = new Date(inc.timestamp).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                        const statusColor = inc.status === 'pendiente' ? '#f59e0b' : '#10b981';
+                        const statusText = inc.status === 'pendiente' ? '⏳ Pendiente' : '✅ Atendido';
+                        html += `
+                            <div style="background: var(--bg-input); padding: 10px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="color: var(--text-primary);">Hab. ${inc.room}</strong>
+                                    <span style="color: var(--text-muted); margin-left: 8px;">${faultLabels[inc.faultType] || inc.faultType}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <span style="font-size: 0.75rem; color: ${statusColor};">${statusText}</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">${time}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No has enviado reportes hoy</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        // ============================================
+        // SISTEMA DE INCIDENCIAS (Admin)
+        // ============================================
+        
+        // Cargar todas las incidencias
+        async function loadIncidents() {
+            const container = document.getElementById('incidentsTableContainer');
+            if (!container) return;
+            
+            container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">⏳ Cargando incidencias...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const result = await response.json();
+                
+                if (result.success && result.incidents) {
+                    incidentsData = result.incidents;
+                    renderIncidentsTable(incidentsData);
+                    updatePendingCount();
+                } else {
+                    container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No hay incidencias reportadas</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = '<p style="color: var(--accent-danger); text-align: center; padding: 20px;">Error al cargar incidencias</p>';
+            }
+        }
+        
+        // Renderizar tabla de incidencias
+        function renderIncidentsTable(incidents) {
+            const container = document.getElementById('incidentsTableContainer');
+            if (!container) return;
+            
+            if (incidents.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No hay incidencias</p>';
+                return;
+            }
+            
+            const faultLabels = {
+                'telefono': '📞 Teléfono',
+                'tv': '📺 TV',
+                'internet': '📶 Internet',
+                'router': '📡 Router',
+                'ac': '❄️ A/C',
+                'otro': '⚠️ Otro'
+            };
+            
+            let html = `
+                <div style="overflow-x: auto;">
+                    <table class="incidents-table">
+                        <thead>
+                            <tr>
+                                <th>Hab.</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Reportó</th>
+                                <th>Fecha/Hora</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            incidents.forEach((inc, index) => {
+                const date = new Date(inc.timestamp);
+                const dateStr = date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
+                const timeStr = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                const isPending = inc.status === 'pendiente';
+                
+                html += `
+                    <tr>
+                        <td><strong>${inc.room}</strong></td>
+                        <td>${faultLabels[inc.faultType] || inc.faultType}</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${inc.description}">${inc.description || '-'}</td>
+                        <td>${inc.reporter}</td>
+                        <td style="white-space: nowrap;">${dateStr} ${timeStr}</td>
+                        <td><span class="incident-status ${isPending ? 'pending' : 'resolved'}">${isPending ? '⏳ Pendiente' : '✅ Atendido'}</span></td>
+                        <td class="incident-actions">
+                            ${isPending ? `<button class="resolve-btn" onclick="resolveIncident(${inc.id})">✅ Atender</button>` : ''}
+                            <button class="delete-btn" onclick="deleteIncident(${inc.id})">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+        
+        // Filtrar incidencias
+        function filterIncidents() {
+            const filter = document.getElementById('incidentFilter').value;
+            let filtered = incidentsData;
+            
+            if (filter === 'pending') {
+                filtered = incidentsData.filter(inc => inc.status === 'pendiente');
+            } else if (filter === 'resolved') {
+                filtered = incidentsData.filter(inc => inc.status === 'atendido');
+            }
+            
+            renderIncidentsTable(filtered);
+        }
+        
+        // Actualizar contador de pendientes
+        function updatePendingCount() {
+            const pendingCount = incidentsData.filter(inc => inc.status === 'pendiente').length;
+            const badge = document.getElementById('pendingIncidentsCount');
+            if (badge) {
+                badge.textContent = pendingCount;
+                badge.style.display = pendingCount > 0 ? 'inline' : 'none';
+            }
+        }
+        
+        // Marcar incidencia como atendida
+        async function resolveIncident(id) {
+            if (!confirm('¿Marcar esta incidencia como atendida?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}?action=updateIncident&id=${id}&status=atendido`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Incidencia marcada como atendida', 'success');
+                    loadIncidents();
+                } else {
+                    showToast(result.error || 'Error al actualizar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+        
+        // Eliminar incidencia
+        async function deleteIncident(id) {
+            if (!confirm('¿Eliminar esta incidencia? Esta acción no se puede deshacer.')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}?action=deleteIncident&id=${id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Incidencia eliminada', 'success');
+                    loadIncidents();
+                } else {
+                    showToast(result.error || 'Error al eliminar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
         
         // ============================================
         // GESTIÓN DE USUARIOS (Solo Admin)
