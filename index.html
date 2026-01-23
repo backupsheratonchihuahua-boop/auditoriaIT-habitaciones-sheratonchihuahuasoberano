@@ -2677,6 +2677,7 @@
         <div class="main-tabs no-print">
             <button class="main-tab active" onclick="switchTab('audit')">📋 <span>Auditoría</span></button>
             <button class="main-tab" onclick="switchTab('reports')">📊 <span>Reportes</span></button>
+            <button class="main-tab" onclick="switchTab('users')" data-permission="admin" id="usersTabBtn">👥 <span>Usuarios</span></button>
         </div>
 
         <!-- TAB 1: AUDITORÍA -->
@@ -3312,6 +3313,182 @@
                 </div>
             </div>
         </div>
+
+        <!-- TAB 3: GESTIÓN DE USUARIOS (Solo Admin) -->
+        <div id="users-tab" class="tab-content">
+            <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 20px;">
+                <h2 style="color: var(--accent-purple); margin-bottom: 20px; font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                    👥 Gestión de Usuarios
+                    <span style="background: linear-gradient(135deg, var(--accent-purple), #7c3aed); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; color: white;">Solo Admin</span>
+                </h2>
+                
+                <!-- Info de Roles -->
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent-info); border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+                    <h4 style="color: var(--accent-info); margin-bottom: 8px;">🎭 Roles Disponibles</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem; color: var(--text-secondary);">
+                        <div><strong style="color: #06b6d4;">🔹 Agente:</strong> Solo reportar eventos</div>
+                        <div><strong style="color: var(--accent-primary);">🟢 Básico:</strong> Auditorías + Exportar</div>
+                        <div><strong style="color: var(--accent-info);">🔵 Avanzado:</strong> + Editar cualquiera</div>
+                        <div><strong style="color: var(--accent-purple);">🟣 Admin:</strong> Control total</div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="loadUsersList()">🔄 Actualizar Lista</button>
+                    <button class="btn" style="background: var(--accent-purple);" onclick="showCreateUserModal()">➕ Crear Usuario</button>
+                    <button class="btn btn-secondary" onclick="showHashGenerator()">🔐 Generador Hash</button>
+                </div>
+
+                <!-- Lista de usuarios -->
+                <div id="usersListContainer" style="overflow-x: auto;">
+                    <p style="color: var(--text-muted); text-align: center; padding: 30px;">
+                        Haz clic en "Actualizar Lista" para cargar los usuarios
+                    </p>
+                </div>
+            </div>
+
+            <!-- Instrucciones -->
+            <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px;">
+                <h3 style="color: var(--accent-warning); margin-bottom: 16px;">📝 Proceso para Crear Usuarios</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent-primary); padding: 12px 16px; border-radius: 0 8px 8px 0;">
+                        <strong style="background: var(--accent-primary); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-right: 8px;">1</strong>
+                        Clic en "Crear Usuario" e ingresa los datos con una contraseña temporal (ej: temp123)
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent-primary); padding: 12px 16px; border-radius: 0 8px 8px 0;">
+                        <strong style="background: var(--accent-primary); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-right: 8px;">2</strong>
+                        Usa el "Generador Hash" para convertir la contraseña a hash SHA-256
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent-primary); padding: 12px 16px; border-radius: 0 8px 8px 0;">
+                        <strong style="background: var(--accent-primary); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-right: 8px;">3</strong>
+                        Abre Google Sheets → hoja "Usuarios" → reemplaza la contraseña por el hash
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent-primary); padding: 12px 16px; border-radius: 0 8px 8px 0;">
+                        <strong style="background: var(--accent-primary); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-right: 8px;">4</strong>
+                        Dale al empleado su usuario y contraseña original para que pueda acceder
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Crear Usuario -->
+        <div id="createUserModal" class="modal-overlay" style="display: none;">
+            <div class="modal-box" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>➕ Crear Nuevo Usuario</h3>
+                    <button class="modal-close" onclick="closeCreateUserModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--accent-warning); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                        <p style="color: var(--accent-warning); font-size: 0.85rem;">
+                            ⚠️ La contraseña se guardará en texto plano. Después debes cambiarla por el hash en Google Sheets.
+                        </p>
+                    </div>
+                    <form id="createUserForm" onsubmit="createNewUser(event)">
+                        <div style="display: grid; gap: 16px;">
+                            <div class="input-group">
+                                <label>Usuario (login)</label>
+                                <input type="text" id="newUsername" required placeholder="ej: front1" pattern="[a-z0-9]+" style="text-transform: lowercase;">
+                            </div>
+                            <div class="input-group">
+                                <label>Contraseña Temporal</label>
+                                <input type="text" id="newPassword" required placeholder="ej: temp123">
+                            </div>
+                            <div class="input-group">
+                                <label>Nombre para Mostrar</label>
+                                <input type="text" id="newDisplayName" required placeholder="ej: Recepción 1">
+                            </div>
+                            <div class="input-group">
+                                <label>Rol</label>
+                                <select id="newUserLevel" required>
+                                    <option value="agente">🔹 Agente (Solo reportar)</option>
+                                    <option value="basic">🟢 Auditor Básico</option>
+                                    <option value="advanced">🔵 Auditor Avanzado</option>
+                                    <option value="admin">🟣 Administrador</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">✅ Crear Usuario</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeCreateUserModal()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Generador Hash -->
+        <div id="hashModal" class="modal-overlay" style="display: none;">
+            <div class="modal-box" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3>🔐 Generador de Hash SHA-256</h3>
+                    <button class="modal-close" onclick="closeHashModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group" style="margin-bottom: 16px;">
+                        <label>Contraseña a convertir</label>
+                        <input type="text" id="hashPasswordInput" placeholder="Escribe la contraseña aquí">
+                    </div>
+                    <button class="btn btn-primary" onclick="generateHashFromInput()" style="width: 100%;">🔐 Generar Hash</button>
+                    <div id="hashResultBox" style="display: none; margin-top: 16px; background: var(--bg-input); border: 2px solid var(--accent-primary); border-radius: 8px; padding: 16px;">
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">Hash SHA-256:</p>
+                        <p id="hashResultText" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; word-break: break-all; color: var(--accent-primary);"></p>
+                        <button class="btn btn-secondary" onclick="copyHashResult()" style="margin-top: 12px; width: 100%;">📋 Copiar Hash</button>
+                    </div>
+                    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">
+                            💡 <strong>Tip:</strong> Copia este hash y pégalo en la columna "PasswordHash" de tu Google Sheets para reemplazar la contraseña temporal.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Editar Usuario -->
+        <div id="editUserModal" class="modal-overlay" style="display: none;">
+            <div class="modal-box" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>✏️ Editar Usuario</h3>
+                    <button class="modal-close" onclick="closeEditUserModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm" onsubmit="updateExistingUser(event)">
+                        <input type="hidden" id="editUsername">
+                        <div style="display: grid; gap: 16px;">
+                            <div class="input-group">
+                                <label>Usuario</label>
+                                <input type="text" id="editUsernameDisplay" disabled style="opacity: 0.7;">
+                            </div>
+                            <div class="input-group">
+                                <label>Nombre para Mostrar</label>
+                                <input type="text" id="editDisplayName" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Rol</label>
+                                <select id="editUserLevel" required>
+                                    <option value="agente">🔹 Agente</option>
+                                    <option value="basic">🟢 Auditor Básico</option>
+                                    <option value="advanced">🔵 Auditor Avanzado</option>
+                                    <option value="admin">🟣 Administrador</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Estado</label>
+                                <select id="editUserActive" required>
+                                    <option value="si">✅ Activo</option>
+                                    <option value="no">❌ Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Guardar Cambios</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeEditUserModal()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -3506,6 +3683,13 @@
             
             auditElements.forEach(el => {
                 if (!perms.canAudit) el.classList.add('permission-hidden');
+                else el.classList.remove('permission-hidden');
+            });
+            
+            // Pestaña de Usuarios - solo visible para admin
+            const adminElements = document.querySelectorAll('[data-permission="admin"]');
+            adminElements.forEach(el => {
+                if (currentUser.level !== 'admin') el.classList.add('permission-hidden');
                 else el.classList.remove('permission-hidden');
             });
             
@@ -5939,6 +6123,255 @@
             if (e.target === this) {
                 closeMultiSelect();
             }
+        });
+        
+        // ============================================
+        // GESTIÓN DE USUARIOS (Solo Admin)
+        // ============================================
+        
+        let usersDataList = [];
+        
+        // Cargar lista de usuarios
+        async function loadUsersList() {
+            const container = document.getElementById('usersListContainer');
+            container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 30px;">⏳ Cargando usuarios...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getUsers`);
+                const result = await response.json();
+                
+                if (result.success && result.users) {
+                    usersDataList = result.users;
+                    renderUsersList(result.users);
+                } else {
+                    container.innerHTML = `<p style="color: var(--accent-danger); text-align: center; padding: 30px;">❌ ${result.error || 'Error al cargar usuarios'}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = '<p style="color: var(--accent-danger); text-align: center; padding: 30px;">❌ Error de conexión</p>';
+            }
+        }
+        
+        // Renderizar tabla de usuarios
+        function renderUsersList(users) {
+            const container = document.getElementById('usersListContainer');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 30px;">👥 No hay usuarios registrados</p>';
+                return;
+            }
+            
+            const roleLabels = {
+                'admin': '<span style="background: linear-gradient(135deg, var(--accent-purple), #7c3aed); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem;">🟣 Admin</span>',
+                'advanced': '<span style="background: linear-gradient(135deg, var(--accent-info), #2563eb); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem;">🔵 Avanzado</span>',
+                'basic': '<span style="background: linear-gradient(135deg, var(--accent-primary), #059669); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem;">🟢 Básico</span>',
+                'agente': '<span style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem;">🔹 Agente</span>'
+            };
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--bg-input);">
+                            <th style="padding: 12px; text-align: left; color: var(--accent-primary); font-size: 0.8rem; text-transform: uppercase;">Usuario</th>
+                            <th style="padding: 12px; text-align: left; color: var(--accent-primary); font-size: 0.8rem; text-transform: uppercase;">Nombre</th>
+                            <th style="padding: 12px; text-align: left; color: var(--accent-primary); font-size: 0.8rem; text-transform: uppercase;">Rol</th>
+                            <th style="padding: 12px; text-align: left; color: var(--accent-primary); font-size: 0.8rem; text-transform: uppercase;">Estado</th>
+                            <th style="padding: 12px; text-align: center; color: var(--accent-primary); font-size: 0.8rem; text-transform: uppercase;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            users.forEach(user => {
+                const isActive = user.active?.toLowerCase() === 'si' || user.active?.toLowerCase() === 'sí';
+                const statusBadge = isActive 
+                    ? '<span style="background: rgba(16, 185, 129, 0.2); color: var(--accent-primary); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem;">✅ Activo</span>'
+                    : '<span style="background: rgba(239, 68, 68, 0.2); color: var(--accent-danger); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem;">❌ Inactivo</span>';
+                
+                html += `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px;"><strong>${user.username}</strong></td>
+                        <td style="padding: 12px;">${user.displayName || '-'}</td>
+                        <td style="padding: 12px;">${roleLabels[user.level] || user.level}</td>
+                        <td style="padding: 12px;">${statusBadge}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <button class="btn btn-sm" style="padding: 6px 12px; font-size: 0.8rem; background: var(--accent-info);" onclick="openEditUserModal('${user.username}')">✏️</button>
+                            <button class="btn btn-sm" style="padding: 6px 12px; font-size: 0.8rem; background: ${isActive ? 'var(--accent-warning)' : 'var(--accent-primary)'};" onclick="toggleUserActive('${user.username}', ${!isActive})">${isActive ? '⏸️' : '▶️'}</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        // Modal: Crear Usuario
+        function showCreateUserModal() {
+            document.getElementById('createUserModal').style.display = 'flex';
+            document.getElementById('createUserForm').reset();
+        }
+        
+        function closeCreateUserModal() {
+            document.getElementById('createUserModal').style.display = 'none';
+        }
+        
+        async function createNewUser(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('newUsername').value.trim().toLowerCase();
+            const password = document.getElementById('newPassword').value;
+            const displayName = document.getElementById('newDisplayName').value.trim();
+            const level = document.getElementById('newUserLevel').value;
+            
+            if (!username || !password || !displayName) {
+                showToast('Completa todos los campos', 'error');
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'createUser',
+                    username: username,
+                    password: password,
+                    displayName: displayName,
+                    level: level
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`Usuario "${username}" creado. ¡Recuerda cambiar la contraseña por el hash!`, 'success');
+                    closeCreateUserModal();
+                    loadUsersList();
+                } else {
+                    showToast(result.error || 'Error al crear usuario', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error de conexión', 'error');
+            }
+        }
+        
+        // Modal: Generador Hash
+        function showHashGenerator() {
+            document.getElementById('hashModal').style.display = 'flex';
+            document.getElementById('hashPasswordInput').value = '';
+            document.getElementById('hashResultBox').style.display = 'none';
+        }
+        
+        function closeHashModal() {
+            document.getElementById('hashModal').style.display = 'none';
+        }
+        
+        async function generateHashFromInput() {
+            const password = document.getElementById('hashPasswordInput').value;
+            if (!password) {
+                showToast('Ingresa una contraseña', 'warning');
+                return;
+            }
+            
+            // Generar hash SHA-256
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            document.getElementById('hashResultText').textContent = hash;
+            document.getElementById('hashResultBox').style.display = 'block';
+        }
+        
+        function copyHashResult() {
+            const hash = document.getElementById('hashResultText').textContent;
+            navigator.clipboard.writeText(hash);
+            showToast('Hash copiado al portapapeles', 'success');
+        }
+        
+        // Modal: Editar Usuario
+        function openEditUserModal(username) {
+            const user = usersDataList.find(u => u.username === username);
+            if (!user) return;
+            
+            document.getElementById('editUsername').value = user.username;
+            document.getElementById('editUsernameDisplay').value = user.username;
+            document.getElementById('editDisplayName').value = user.displayName || '';
+            document.getElementById('editUserLevel').value = user.level || 'basic';
+            document.getElementById('editUserActive').value = (user.active?.toLowerCase() === 'si' || user.active?.toLowerCase() === 'sí') ? 'si' : 'no';
+            
+            document.getElementById('editUserModal').style.display = 'flex';
+        }
+        
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').style.display = 'none';
+        }
+        
+        async function updateExistingUser(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('editUsername').value;
+            const displayName = document.getElementById('editDisplayName').value;
+            const level = document.getElementById('editUserLevel').value;
+            const active = document.getElementById('editUserActive').value;
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateUser',
+                    username: username,
+                    displayName: displayName,
+                    level: level,
+                    active: active
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Usuario actualizado', 'success');
+                    closeEditUserModal();
+                    loadUsersList();
+                } else {
+                    showToast(result.error || 'Error al actualizar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+        
+        async function toggleUserActive(username, activate) {
+            const action = activate ? 'activar' : 'desactivar';
+            if (!confirm(`¿Deseas ${action} al usuario "${username}"?`)) return;
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateUser',
+                    username: username,
+                    active: activate ? 'si' : 'no'
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`Usuario ${activate ? 'activado' : 'desactivado'}`, 'success');
+                    loadUsersList();
+                } else {
+                    showToast(result.error || 'Error', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+        
+        // Cerrar modales al hacer clic fuera
+        document.getElementById('createUserModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeCreateUserModal();
+        });
+        document.getElementById('hashModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeHashModal();
+        });
+        document.getElementById('editUserModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeEditUserModal();
         });
         
         // ============================================
