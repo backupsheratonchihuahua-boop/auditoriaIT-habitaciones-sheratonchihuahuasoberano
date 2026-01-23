@@ -53,22 +53,6 @@
             z-index: 99999;
             display: none;
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
-            animation: slideUp 0.4s ease;
-        }
-        
-        .install-banner.show {
-            display: block;
-        }
-        
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
         }
         
         .install-banner-content {
@@ -156,10 +140,6 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-        }
-        
-        .ios-install-modal.show {
-            display: flex;
         }
         
         .ios-install-content {
@@ -2628,6 +2608,30 @@
                 <div class="ios-step-text">Toca <strong>"Añadir"</strong> arriba a la derecha</div>
             </div>
             <button class="ios-close-btn" onclick="closeIosModal()">Entendido</button>
+        </div>
+    </div>
+    
+    <!-- Modal de Instrucciones para Android -->
+    <div class="ios-install-modal" id="androidInstallModal">
+        <div class="ios-install-content">
+            <h3>📱 Instalar en Android</h3>
+            <div class="ios-step">
+                <div class="ios-step-number">1</div>
+                <div class="ios-step-text">Toca los <strong>3 puntos ⋮</strong> (arriba a la derecha)</div>
+            </div>
+            <div class="ios-step">
+                <div class="ios-step-number">2</div>
+                <div class="ios-step-text">Busca <strong>"Añadir a pantalla de inicio"</strong></div>
+            </div>
+            <div class="ios-step">
+                <div class="ios-step-number">3</div>
+                <div class="ios-step-text">Si no aparece, busca <strong>"Instalar app"</strong></div>
+            </div>
+            <div class="ios-step">
+                <div class="ios-step-number">4</div>
+                <div class="ios-step-text">Toca <strong>"Añadir"</strong> o <strong>"Instalar"</strong></div>
+            </div>
+            <button class="ios-close-btn" onclick="closeAndroidModal()">Entendido</button>
         </div>
     </div>
 
@@ -6611,89 +6615,93 @@
         // ============================================
         
         let deferredPrompt = null;
-        let isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        let isAndroid = /Android/.test(navigator.userAgent);
-        let isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         
-        // Detectar si ya se instaló o se rechazó
-        function shouldShowInstallBanner() {
-            // No mostrar si ya está instalada
-            if (isStandalone) return false;
-            // No mostrar si el usuario ya la rechazó (por 7 días)
-            const dismissed = localStorage.getItem('installBannerDismissed');
-            if (dismissed) {
-                const dismissedDate = new Date(parseInt(dismissed));
-                const daysSinceDismissed = (Date.now() - dismissedDate) / (1000 * 60 * 60 * 24);
-                if (daysSinceDismissed < 7) return false;
-            }
-            return true;
+        // Detectar dispositivo
+        function getDeviceType() {
+            const ua = navigator.userAgent;
+            if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
+            if (/Android/.test(ua)) return 'android';
+            return 'desktop';
         }
         
-        // Capturar el evento de instalación (Chrome/Android)
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            if (shouldShowInstallBanner()) {
-                setTimeout(() => {
-                    document.getElementById('installBanner').classList.add('show');
-                }, 2000); // Mostrar después de 2 segundos
+        // Verificar si está instalada como app
+        function isInstalledPWA() {
+            return window.matchMedia('(display-mode: standalone)').matches || 
+                   window.navigator.standalone === true;
+        }
+        
+        // Mostrar banner SIEMPRE al cargar (si no está instalada)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Solo mostrar si NO está instalada como app
+            if (!isInstalledPWA()) {
+                // Verificar si ya lo rechazó
+                const dismissed = localStorage.getItem('pwa_banner_no');
+                if (!dismissed) {
+                    setTimeout(function() {
+                        var banner = document.getElementById('installBanner');
+                        if (banner) {
+                            banner.style.display = 'block';
+                            var device = getDeviceType();
+                            var btn = document.getElementById('installBtn');
+                            if (btn) {
+                                btn.textContent = (device === 'ios') ? 'Ver cómo' : 'Instalar';
+                            }
+                        }
+                    }, 2000);
+                }
             }
         });
         
-        // Mostrar banner para iOS
-        if (isIos && !isStandalone && shouldShowInstallBanner()) {
-            setTimeout(() => {
-                document.getElementById('installBanner').classList.add('show');
-                // Cambiar el botón para iOS
-                document.getElementById('installBtn').textContent = 'Ver cómo';
-            }, 2000);
-        }
+        // Capturar evento de instalación (Chrome)
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
         
-        // Función para instalar la app
+        // Instalar app
         function installApp() {
-            if (isIos) {
-                // En iOS mostrar instrucciones
-                document.getElementById('installBanner').classList.remove('show');
-                document.getElementById('iosInstallModal').classList.add('show');
-                return;
-            }
+            var device = getDeviceType();
+            var banner = document.getElementById('installBanner');
             
-            if (deferredPrompt) {
+            if (device === 'ios') {
+                if (banner) banner.style.display = 'none';
+                var modal = document.getElementById('iosInstallModal');
+                if (modal) modal.style.display = 'flex';
+            } else if (deferredPrompt) {
                 deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('Usuario aceptó instalar');
-                        showToast('¡App instalada! Búscala en tu pantalla de inicio', 'success');
+                deferredPrompt.userChoice.then(function(result) {
+                    if (result.outcome === 'accepted') {
+                        showToast('¡App instalada!', 'success');
                     }
                     deferredPrompt = null;
-                    document.getElementById('installBanner').classList.remove('show');
                 });
+                if (banner) banner.style.display = 'none';
             } else {
-                // Si no hay prompt disponible, mostrar instrucciones genéricas
-                showToast('Usa el menú del navegador → "Añadir a pantalla de inicio"', 'info');
-                document.getElementById('installBanner').classList.remove('show');
+                if (banner) banner.style.display = 'none';
+                var modal = document.getElementById('androidInstallModal');
+                if (modal) modal.style.display = 'flex';
             }
         }
         
         // Cerrar banner
         function dismissInstallBanner() {
-            document.getElementById('installBanner').classList.remove('show');
-            localStorage.setItem('installBannerDismissed', Date.now().toString());
+            var banner = document.getElementById('installBanner');
+            if (banner) banner.style.display = 'none';
+            localStorage.setItem('pwa_banner_no', '1');
         }
         
-        // Cerrar modal iOS
+        // Cerrar modales
         function closeIosModal() {
-            document.getElementById('iosInstallModal').classList.remove('show');
-            localStorage.setItem('installBannerDismissed', Date.now().toString());
+            var modal = document.getElementById('iosInstallModal');
+            if (modal) modal.style.display = 'none';
+            localStorage.setItem('pwa_banner_no', '1');
         }
         
-        // Detectar si se instaló después
-        window.addEventListener('appinstalled', () => {
-            console.log('PWA instalada');
-            document.getElementById('installBanner').classList.remove('show');
-            deferredPrompt = null;
-        });
+        function closeAndroidModal() {
+            var modal = document.getElementById('androidInstallModal');
+            if (modal) modal.style.display = 'none';
+            localStorage.setItem('pwa_banner_no', '1');
+        }
         
         // ============================================
         // REGISTRO DE SERVICE WORKER (PWA)
