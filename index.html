@@ -4262,11 +4262,21 @@
             document.getElementById('historyContent').innerHTML = '<p style="text-align: center; color: var(--text-muted);">Cargando historial...</p>';
 
             try {
-                const response = await fetch(`${API_URL}?action=getHistory&room=${roomNum}`);
-                const result = await response.json();
+                // Cargar auditorías e incidencias en paralelo
+                const [historyResponse, incidentsResponse] = await Promise.all([
+                    fetch(`${API_URL}?action=getHistory&room=${roomNum}`),
+                    fetch(`${API_URL}?action=getIncidents`)
+                ]);
+                
+                const historyResult = await historyResponse.json();
+                const incidentsResult = await incidentsResponse.json();
+                
+                // Filtrar incidencias de esta habitación
+                const roomIncidents = incidentsResult.success ? 
+                    incidentsResult.incidents.filter(inc => inc.room == roomNum) : [];
 
-                if (result.success) {
-                    renderHistory(result.history, roomNum);
+                if (historyResult.success) {
+                    renderHistory(historyResult.history, roomNum, roomIncidents);
                 } else {
                     document.getElementById('historyContent').innerHTML = '<p style="text-align: center; color: var(--accent-danger);">Error al cargar historial</p>';
                 }
@@ -4276,21 +4286,26 @@
             }
         }
 
-        function renderHistory(history, roomNum) {
+        function renderHistory(history, roomNum, incidents = []) {
             const container = document.getElementById('historyContent');
             
-            if (history.length === 0) {
+            if (history.length === 0 && incidents.length === 0) {
                 container.innerHTML = `<p style="text-align: center; color: var(--text-muted);">No hay historial para la habitación ${roomNum}</p>`;
                 return;
             }
 
-            // Calcular estadísticas
+            // Calcular estadísticas de auditorías
             const totalAudits = history.length;
             const auditsWithIssues = history.filter(h => h.issueCount > 0).length;
             const totalIssues = history.reduce((sum, h) => sum + (h.issueCount || 0), 0);
             const issueRate = totalAudits > 0 ? Math.round((auditsWithIssues / totalAudits) * 100) : 0;
+            
+            // Estadísticas de incidencias reportadas
+            const totalIncidents = incidents.length;
+            const pendingIncidents = incidents.filter(i => i.status === 'pendiente').length;
+            const resolvedIncidents = incidents.filter(i => i.status === 'atendido').length;
 
-            // Detectar fallas recurrentes
+            // Detectar fallas recurrentes (auditorías)
             const failureCategories = {};
             history.forEach(h => {
                 if (h.screen?.['screen-power'] === 'fail') failureCategories['TV Principal - Encendido'] = (failureCategories['TV Principal - Encendido'] || 0) + 1;
@@ -4311,10 +4326,27 @@
                 if (h.network?.['network-connection'] === 'fail') failureCategories['Conexión de red'] = (failureCategories['Conexión de red'] || 0) + 1;
                 if (h.network?.['network-speed'] === 'fail') failureCategories['Velocidad de red'] = (failureCategories['Velocidad de red'] || 0) + 1;
             });
+            
+            // Agregar incidencias reportadas a las categorías
+            const incidentCategories = {};
+            incidents.forEach(inc => {
+                const faultLabels = {
+                    'telefono': '📞 Teléfono',
+                    'tv': '📺 TV',
+                    'internet': '📶 Internet',
+                    'router': '📡 Router',
+                    'ac': '❄️ A/C',
+                    'otro': '⚠️ Otro'
+                };
+                const label = faultLabels[inc.faultType] || inc.faultType;
+                incidentCategories[label] = (incidentCategories[label] || 0) + 1;
+            });
 
             // Ordenar fallas por frecuencia
             const sortedFailures = Object.entries(failureCategories).sort((a, b) => b[1] - a[1]);
             const recurrentIssues = sortedFailures.filter(([_, count]) => count >= 2);
+            
+            const sortedIncidentTypes = Object.entries(incidentCategories).sort((a, b) => b[1] - a[1]);
 
             let html = `
                 <div class="history-summary">
@@ -4326,73 +4358,137 @@
                         </div>
                         <div class="history-stat">
                             <div class="history-stat-value ${auditsWithIssues > 0 ? 'red' : 'green'}">${auditsWithIssues}</div>
-                            <div class="history-stat-label">Con Incidencias</div>
+                            <div class="history-stat-label">Con Fallas</div>
                         </div>
                         <div class="history-stat">
-                            <div class="history-stat-value ${totalIssues > 0 ? 'yellow' : 'green'}">${totalIssues}</div>
-                            <div class="history-stat-label">Total Fallas</div>
+                            <div class="history-stat-value" style="color: #06b6d4;">${totalIncidents}</div>
+                            <div class="history-stat-label">Reportes</div>
                         </div>
                         <div class="history-stat">
-                            <div class="history-stat-value ${issueRate > 30 ? 'red' : issueRate > 10 ? 'yellow' : 'green'}">${issueRate}%</div>
-                            <div class="history-stat-label">Tasa de Fallas</div>
+                            <div class="history-stat-value ${pendingIncidents > 0 ? 'yellow' : 'green'}">${pendingIncidents}</div>
+                            <div class="history-stat-label">Pendientes</div>
                         </div>
                     </div>
                     ${recurrentIssues.length > 0 ? `
                         <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                            <h4 style="color: var(--accent-danger); margin-bottom: 8px;">⚠️ Fallas Recurrentes Detectadas:</h4>
+                            <h4 style="color: var(--accent-danger); margin-bottom: 8px;">⚠️ Fallas Recurrentes (Auditorías):</h4>
                             <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary);">
                                 ${recurrentIssues.map(([name, count]) => `<li><strong>${name}</strong>: ${count} veces</li>`).join('')}
                             </ul>
                         </div>
                     ` : ''}
+                    ${sortedIncidentTypes.length > 0 ? `
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                            <h4 style="color: #06b6d4; margin-bottom: 8px;">📢 Tipos de Reportes por Agentes:</h4>
+                            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary);">
+                                ${sortedIncidentTypes.map(([name, count]) => `<li><strong>${name}</strong>: ${count} reportes</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
                 </div>
             `;
+            
+            // Combinar auditorías e incidencias en un timeline único
+            const timeline = [];
+            
+            // Agregar auditorías al timeline
+            history.forEach(audit => {
+                timeline.push({
+                    type: 'audit',
+                    date: new Date(audit.timestamp || audit.fecha),
+                    data: audit
+                });
+            });
+            
+            // Agregar incidencias al timeline
+            incidents.forEach(incident => {
+                timeline.push({
+                    type: 'incident',
+                    date: new Date(incident.timestamp),
+                    data: incident
+                });
+            });
+            
+            // Ordenar por fecha (más recientes primero)
+            timeline.sort((a, b) => b.date - a.date);
 
-            // Renderizar cada auditoría
-            history.forEach((audit, index) => {
-                const hasIssues = audit.issueCount > 0;
-                const issues = [];
-                
-                // Recopilar detalles de fallas
-                if (audit.screen?.['screen-power'] === 'fail') issues.push('TV Principal no enciende');
-                if (audit.screen?.['screen-remote'] === 'fail') issues.push('Control remoto falla');
-                if (audit.screen?.['screen-image'] === 'fail') issues.push('Calidad de imagen deficiente');
-                if (audit.screen2?.['screen2-power'] === 'fail') issues.push('TV Secundaria no enciende');
-                if (audit.screen2?.['screen2-remote'] === 'fail') issues.push('Control remoto 2 falla');
-                if (audit.screen2?.['screen2-image'] === 'fail') issues.push('Calidad de imagen TV2 deficiente');
-                if (audit.channels?.startup === 'fail') issues.push('No inicia en canal 62');
-                const failedChs = audit.failedChannels || audit.channels?.failed || [];
-                if (failedChs.length > 0) issues.push(`Canales fallando: ${failedChs.join(', ')}`);
-                if (audit.phone?.['phone-desk'] === 'fail') issues.push('Teléfono de escritorio falla');
-                if (audit.phone?.['phone-nightstand'] === 'fail') issues.push('Teléfono de buró falla');
-                if (audit.phone?.['phone-battery'] === 'fail') issues.push('Batería de auriculares falla');
-                if (audit.phone?.['phone-condition'] === 'fail') issues.push('Condición física del teléfono');
-                if (audit.network?.['network-wall'] === 'fail') issues.push('Nodo de pared falla');
-                if (audit.network?.['network-connection'] === 'fail') issues.push('Sin conexión de red');
-                if (audit.network?.['network-speed'] === 'fail') issues.push('Velocidad de red baja');
+            // Renderizar timeline
+            timeline.forEach((item) => {
+                if (item.type === 'audit') {
+                    const audit = item.data;
+                    const hasIssues = audit.issueCount > 0;
+                    const issues = [];
+                    
+                    // Recopilar detalles de fallas
+                    if (audit.screen?.['screen-power'] === 'fail') issues.push('TV Principal no enciende');
+                    if (audit.screen?.['screen-remote'] === 'fail') issues.push('Control remoto falla');
+                    if (audit.screen?.['screen-image'] === 'fail') issues.push('Calidad de imagen deficiente');
+                    if (audit.screen2?.['screen2-power'] === 'fail') issues.push('TV Secundaria no enciende');
+                    if (audit.screen2?.['screen2-remote'] === 'fail') issues.push('Control remoto 2 falla');
+                    if (audit.screen2?.['screen2-image'] === 'fail') issues.push('Calidad de imagen TV2 deficiente');
+                    if (audit.channels?.startup === 'fail') issues.push('No inicia en canal 62');
+                    const failedChs = audit.failedChannels || audit.channels?.failed || [];
+                    if (failedChs.length > 0) issues.push(`Canales fallando: ${failedChs.join(', ')}`);
+                    if (audit.phone?.['phone-desk'] === 'fail') issues.push('Teléfono de escritorio falla');
+                    if (audit.phone?.['phone-nightstand'] === 'fail') issues.push('Teléfono de buró falla');
+                    if (audit.phone?.['phone-battery'] === 'fail') issues.push('Batería de auriculares falla');
+                    if (audit.phone?.['phone-condition'] === 'fail') issues.push('Condición física del teléfono');
+                    if (audit.network?.['network-wall'] === 'fail') issues.push('Nodo de pared falla');
+                    if (audit.network?.['network-connection'] === 'fail') issues.push('Sin conexión de red');
+                    if (audit.network?.['network-speed'] === 'fail') issues.push('Velocidad de red baja');
 
-                html += `
-                    <div class="history-item ${hasIssues ? 'has-issues' : 'no-issues'}">
-                        <div class="history-header">
-                            <div>
-                                <div class="history-date">${audit.fecha || 'Sin fecha'}</div>
-                                <div class="history-auditor">Auditó: <strong>${audit.auditor || 'Sin nombre'}</strong> | Turno: ${audit.shift || '-'}</div>
+                    html += `
+                        <div class="history-item ${hasIssues ? 'has-issues' : 'no-issues'}">
+                            <div class="history-header">
+                                <div>
+                                    <div class="history-date">🔍 AUDITORÍA - ${audit.fecha || 'Sin fecha'}</div>
+                                    <div class="history-auditor">Auditó: <strong>${audit.auditor || 'Sin nombre'}</strong> | Turno: ${audit.shift || '-'}</div>
+                                </div>
+                                <div class="history-issues ${hasIssues ? 'danger' : 'success'}">
+                                    ${hasIssues ? `⚠️ ${audit.issueCount} incidencias` : '✓ Sin incidencias'}
+                                </div>
                             </div>
-                            <div class="history-issues ${hasIssues ? 'danger' : 'success'}">
-                                ${hasIssues ? `⚠️ ${audit.issueCount} incidencias` : '✓ Sin incidencias'}
-                            </div>
+                            ${issues.length > 0 ? `
+                                <div class="history-details">
+                                    <strong>Fallas detectadas:</strong>
+                                    <ul>
+                                        ${issues.map(issue => `<li>${issue}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            ${audit.notes ? `<div class="history-notes">📝 "${audit.notes}"</div>` : ''}
                         </div>
-                        ${issues.length > 0 ? `
-                            <div class="history-details">
-                                <strong>Fallas detectadas:</strong>
-                                <ul>
-                                    ${issues.map(issue => `<li>${issue}</li>`).join('')}
-                                </ul>
+                    `;
+                } else {
+                    // Renderizar incidencia
+                    const incident = item.data;
+                    const faultLabels = {
+                        'telefono': '📞 Teléfono',
+                        'tv': '📺 TV',
+                        'internet': '📶 Internet',
+                        'router': '📡 Router',
+                        'ac': '❄️ A/C',
+                        'otro': '⚠️ Otro'
+                    };
+                    const dateStr = new Date(incident.timestamp).toLocaleDateString('es-MX');
+                    const timeStr = new Date(incident.timestamp).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                    const isPending = incident.status === 'pendiente';
+                    
+                    html += `
+                        <div class="history-item" style="border-left: 4px solid ${isPending ? '#f59e0b' : '#10b981'}; background: ${isPending ? 'rgba(245, 158, 11, 0.05)' : 'rgba(16, 185, 129, 0.05)'};">
+                            <div class="history-header">
+                                <div>
+                                    <div class="history-date" style="color: #06b6d4;">📢 REPORTE - ${dateStr} ${timeStr}</div>
+                                    <div class="history-auditor">Reportó: <strong>${incident.reporter || 'Sin nombre'}</strong> | Tipo: ${faultLabels[incident.faultType] || incident.faultType}</div>
+                                </div>
+                                <div class="history-issues" style="background: ${isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)'}; color: ${isPending ? '#f59e0b' : '#10b981'};">
+                                    ${isPending ? '⏳ Pendiente' : '✅ Atendido'}
+                                </div>
                             </div>
-                        ` : ''}
-                        ${audit.notes ? `<div class="history-notes">📝 "${audit.notes}"</div>` : ''}
-                    </div>
-                `;
+                            ${incident.description ? `<div class="history-notes">💬 "${incident.description}"</div>` : ''}
+                        </div>
+                    `;
+                }
             });
 
             container.innerHTML = html;
