@@ -3914,8 +3914,8 @@
                     <div class="input-group" style="margin-bottom: 16px;">
                         <label>Estado</label>
                         <select id="editUserActive">
-                            <option value="true">✅ Activo</option>
-                            <option value="false">❌ Inactivo</option>
+                            <option value="si">✅ Activo</option>
+                            <option value="no">❌ Inactivo</option>
                         </select>
                     </div>
                 </div>
@@ -6505,7 +6505,9 @@
             `;
             
             users.forEach(user => {
-                const isActive = user.active === true || user.active === 'true' || user.active === 'TRUE';
+                // Soportar tanto "si/no" como "true/false"
+                const activeVal = String(user.active).toLowerCase();
+                const isActive = activeVal === 'si' || activeVal === 'true' || activeVal === '1';
                 html += `
                     <tr>
                         <td><strong>${user.username}</strong></td>
@@ -6513,7 +6515,7 @@
                         <td><span class="level-badge ${user.level}">${levelLabels[user.level] || user.level}</span></td>
                         <td><span style="color: ${isActive ? 'var(--accent-primary)' : 'var(--accent-danger)'};">${isActive ? '✅ Activo' : '❌ Inactivo'}</span></td>
                         <td>
-                            <button class="btn" onclick="showEditUserModal('${user.username}', '${user.displayName || ''}', '${user.level}', ${isActive})" style="padding: 4px 8px; font-size: 0.75rem;">✏️ Editar</button>
+                            <button class="btn" onclick="showEditUserModal('${user.username}', '${user.displayName || ''}', '${user.level}', '${user.active}')" style="padding: 4px 8px; font-size: 0.75rem;">✏️ Editar</button>
                         </td>
                     </tr>
                 `;
@@ -6536,7 +6538,7 @@
             document.getElementById('createUserModal').style.display = 'none';
         }
         
-        // Crear nuevo usuario
+        // Crear nuevo usuario - usando parámetros de URL
         async function createNewUser() {
             const username = document.getElementById('newUsername').value.trim();
             const password = document.getElementById('newPassword').value;
@@ -6549,23 +6551,28 @@
             }
             
             try {
-                const response = await fetch(`${API_URL}?action=createUser`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password,
-                        displayName: displayName,
-                        level: level
-                    })
+                const params = new URLSearchParams({
+                    action: 'createUser',
+                    username: username,
+                    password: password,
+                    displayName: displayName,
+                    level: level
                 });
                 
+                const response = await fetch(`${API_URL}?${params.toString()}`);
                 const result = await response.json();
                 
                 if (result.success) {
                     showToast('Usuario creado exitosamente', 'success');
                     closeCreateUserModal();
                     loadUsersList();
+                    
+                    // Mostrar advertencia sobre el hash
+                    if (result.warning) {
+                        setTimeout(() => {
+                            alert('⚠️ IMPORTANTE:\n\n' + result.warning);
+                        }, 500);
+                    }
                 } else {
                     showToast(result.error || 'Error al crear usuario', 'error');
                 }
@@ -6581,32 +6588,35 @@
             document.getElementById('editUsername').value = username;
             document.getElementById('editDisplayName').value = displayName;
             document.getElementById('editUserLevel').value = level;
-            document.getElementById('editUserActive').value = active.toString();
+            
+            // Convertir a formato consistente para el select
+            const activeVal = String(active).toLowerCase();
+            const isActive = activeVal === 'si' || activeVal === 'true' || activeVal === '1';
+            document.getElementById('editUserActive').value = isActive ? 'si' : 'no';
         }
         
         function closeEditUserModal() {
             document.getElementById('editUserModal').style.display = 'none';
         }
         
-        // Actualizar usuario
+        // Actualizar usuario - usando parámetros de URL (compatible con Apps Script)
         async function updateExistingUser() {
             const username = document.getElementById('editUsername').value;
             const displayName = document.getElementById('editDisplayName').value.trim();
             const level = document.getElementById('editUserLevel').value;
-            const active = document.getElementById('editUserActive').value === 'true';
+            const active = document.getElementById('editUserActive').value; // "si" o "no"
             
             try {
-                const response = await fetch(`${API_URL}?action=updateUser`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: username,
-                        displayName: displayName,
-                        level: level,
-                        active: active
-                    })
+                // Usar parámetros de URL en lugar de JSON body
+                const params = new URLSearchParams({
+                    action: 'updateUser',
+                    username: username,
+                    displayName: displayName,
+                    level: level,
+                    active: active
                 });
                 
+                const response = await fetch(`${API_URL}?${params.toString()}`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -6744,13 +6754,15 @@
             if (!confirm('¿Marcar esta incidencia como atendida?')) return;
             
             try {
-                const response = await fetch(`${API_URL}?action=resolveIncident`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id, resolvedBy: currentUser.displayName || currentUser.username })
+                const params = new URLSearchParams({
+                    action: 'updateIncident',
+                    id: id,
+                    status: 'atendido'
                 });
                 
+                const response = await fetch(`${API_URL}?${params.toString()}`);
                 const result = await response.json();
+                
                 if (result.success) {
                     showToast('Incidencia marcada como atendida', 'success');
                     loadIncidents();
@@ -6766,13 +6778,14 @@
             if (!confirm('¿Eliminar esta incidencia?')) return;
             
             try {
-                const response = await fetch(`${API_URL}?action=deleteIncident`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id })
+                const params = new URLSearchParams({
+                    action: 'deleteIncident',
+                    id: id
                 });
                 
+                const response = await fetch(`${API_URL}?${params.toString()}`);
                 const result = await response.json();
+                
                 if (result.success) {
                     showToast('Incidencia eliminada', 'success');
                     loadIncidents();
@@ -6816,17 +6829,16 @@
             btn.textContent = '⏳ Enviando...';
             
             try {
-                const response = await fetch(`${API_URL}?action=reportIncident`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        room: room,
-                        faultType: faultType,
-                        description: description,
-                        reporter: reporter
-                    })
+                const params = new URLSearchParams({
+                    action: 'reportIncident',
+                    room: room,
+                    faultType: faultType,
+                    description: description || 'Sin descripción',
+                    reporter: reporter,
+                    timestamp: new Date().toISOString()
                 });
                 
+                const response = await fetch(`${API_URL}?${params.toString()}`);
                 const result = await response.json();
                 
                 if (result.success) {
