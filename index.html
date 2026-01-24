@@ -3127,14 +3127,20 @@
             <p style="margin-top: 12px; font-size: 0.8rem; opacity: 0.8;">📖 Consulta la guía de instalación para obtener esta URL</p>
         </div>
 
-        <!-- Main Tabs -->
-        <div class="main-tabs no-print">
+        <!-- Main Tabs (Para Auditores) -->
+        <div class="main-tabs no-print" id="auditorTabs">
             <button class="main-tab active" onclick="switchTab('audit')">📋 <span>Auditoría</span></button>
             <button class="main-tab" onclick="switchTab('reports')">📊 <span>Reportes</span></button>
             <button class="main-tab" onclick="switchTab('users')" data-permission="admin" id="usersTabBtn">👥 <span>Usuarios</span></button>
         </div>
+        
+        <!-- Main Tabs (Para Agentes - Solo visible para rol agente) -->
+        <div class="main-tabs no-print" id="agentTabs" style="display: none;">
+            <button class="main-tab active" onclick="switchAgentTab('agent-report')">📢 <span>Reportar</span></button>
+            <button class="main-tab" onclick="switchAgentTab('agent-view')">👁️ <span>Ver Habitaciones</span></button>
+        </div>
 
-        <!-- TAB 1: AUDITORÍA -->
+        <!-- TAB 1: AUDITORÍA (Solo para auditores, NO agentes) -->
         <div id="audit-tab" class="tab-content active">
             <header class="header">
                 <div class="header-top">
@@ -3177,76 +3183,8 @@
                 </div>
             </header>
 
-            <!-- Panel de Reporte Rápido para Agentes -->
-            <div class="agent-report-panel" id="agentReportPanel">
-                <div class="agent-report-header">
-                    <span style="font-size: 2rem;">📢</span>
-                    <h2>Reportar Incidencia</h2>
-                    <span class="badge">Modo Agente</span>
-                </div>
-                <div class="agent-report-form">
-                    <div class="agent-report-row">
-                        <div class="input-group">
-                            <label>Habitación</label>
-                            <input type="number" id="agentRoomNumber" placeholder="Ej: 505" min="101" max="530">
-                        </div>
-                        <div class="input-group">
-                            <label>Reportado por</label>
-                            <input type="text" id="agentReporter" readonly>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>Tipo de Falla</label>
-                        <div class="fault-type-grid" id="faultTypeGrid">
-                            <div class="fault-type-option" data-fault="telefono" onclick="selectFaultType(this)">
-                                <span class="icon">📞</span>
-                                <span class="label">Teléfono</span>
-                            </div>
-                            <div class="fault-type-option" data-fault="tv" onclick="selectFaultType(this)">
-                                <span class="icon">📺</span>
-                                <span class="label">TV</span>
-                            </div>
-                            <div class="fault-type-option" data-fault="internet" onclick="selectFaultType(this)">
-                                <span class="icon">📶</span>
-                                <span class="label">Internet/WiFi</span>
-                            </div>
-                            <div class="fault-type-option" data-fault="router" onclick="selectFaultType(this)">
-                                <span class="icon">📡</span>
-                                <span class="label">Router</span>
-                            </div>
-                            <div class="fault-type-option" data-fault="ac" onclick="selectFaultType(this)">
-                                <span class="icon">❄️</span>
-                                <span class="label">A/C</span>
-                            </div>
-                            <div class="fault-type-option" data-fault="otro" onclick="selectFaultType(this)">
-                                <span class="icon">⚠️</span>
-                                <span class="label">Otro</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>Descripción del problema (opcional)</label>
-                        <textarea id="agentDescription" rows="2" placeholder="Ej: El huésped reporta que no tiene tono en el teléfono"></textarea>
-                    </div>
-                    
-                    <button class="agent-submit-btn" onclick="submitAgentReport()" id="agentSubmitBtn">
-                        📢 Enviar Reporte
-                    </button>
-                </div>
-                
-                <!-- Últimos reportes del agente -->
-                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-                    <h4 style="color: var(--text-secondary); margin-bottom: 12px; font-size: 0.9rem;">📋 Mis últimos reportes de hoy</h4>
-                    <div id="agentRecentReports">
-                        <p style="color: var(--text-muted); font-size: 0.85rem;">No has enviado reportes hoy</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Summary Cards (oculto para agentes) -->
-            <div class="summary-grid" data-permission="audit">
+            <!-- Summary Cards -->
+            <div class="summary-grid">
                 <div class="summary-card success">
                     <div class="summary-value" id="roomsAudited">0</div>
                     <div class="summary-label">Auditadas</div>
@@ -3585,6 +3523,141 @@
             </div>
         </div>
 
+        <!-- TAB AGENTE: REPORTAR INCIDENCIA (Solo visible para agentes) -->
+        <div id="agent-report-tab" class="tab-content" style="display: none;">
+            <header class="header">
+                <div class="header-top">
+                    <div class="logo-section">
+                        <div class="logo-icon"><img class="header-logo-img" src="" alt=""></div>
+                        <div class="title-group">
+                            <h1>Sistema de Reportes</h1>
+                            <p>Hotel Sheraton Chihuahua Soberano</p>
+                        </div>
+                        <div class="cloud-badge" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">📢 Modo Agente</div>
+                    </div>
+                    <div class="date-display" id="agentCurrentDate"></div>
+                </div>
+            </header>
+
+            <div class="agent-report-panel show">
+                <div class="agent-report-header">
+                    <span style="font-size: 2rem;">📢</span>
+                    <h2>Reportar Incidencia</h2>
+                    <span class="badge">Reporte Rápido</span>
+                </div>
+                <div class="agent-report-form">
+                    <div class="agent-report-row">
+                        <div class="input-group">
+                            <label>Habitación</label>
+                            <input type="number" id="agentRoomNumber" placeholder="Ej: 505" min="101" max="530">
+                        </div>
+                        <div class="input-group">
+                            <label>Reportado por</label>
+                            <input type="text" id="agentReporter" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Tipo de Falla</label>
+                        <div class="fault-type-grid" id="faultTypeGrid">
+                            <div class="fault-type-option" data-fault="telefono" onclick="selectFaultType(this)">
+                                <span class="icon">📞</span>
+                                <span class="label">Teléfono</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="tv" onclick="selectFaultType(this)">
+                                <span class="icon">📺</span>
+                                <span class="label">TV</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="internet" onclick="selectFaultType(this)">
+                                <span class="icon">📶</span>
+                                <span class="label">Internet/WiFi</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="router" onclick="selectFaultType(this)">
+                                <span class="icon">📡</span>
+                                <span class="label">Router</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="ac" onclick="selectFaultType(this)">
+                                <span class="icon">❄️</span>
+                                <span class="label">A/C</span>
+                            </div>
+                            <div class="fault-type-option" data-fault="otro" onclick="selectFaultType(this)">
+                                <span class="icon">⚠️</span>
+                                <span class="label">Otro</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Descripción del problema (opcional)</label>
+                        <textarea id="agentDescription" rows="2" placeholder="Ej: El huésped reporta que no tiene tono en el teléfono"></textarea>
+                    </div>
+                    
+                    <button class="agent-submit-btn" onclick="submitAgentReport()" id="agentSubmitBtn">
+                        📢 Enviar Reporte
+                    </button>
+                </div>
+                
+                <!-- Últimos reportes del agente -->
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                    <h4 style="color: var(--text-secondary); margin-bottom: 12px; font-size: 0.9rem;">📋 Mis últimos reportes de hoy</h4>
+                    <div id="agentRecentReports">
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">No has enviado reportes hoy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB AGENTE: VER HABITACIONES (Solo lectura para agentes) -->
+        <div id="agent-view-tab" class="tab-content" style="display: none;">
+            <header class="header">
+                <div class="header-top">
+                    <div class="logo-section">
+                        <div class="logo-icon"><img class="header-logo-img" src="" alt=""></div>
+                        <div class="title-group">
+                            <h1>Estado de Habitaciones</h1>
+                            <p>Hotel Sheraton Chihuahua Soberano</p>
+                        </div>
+                        <div class="cloud-badge" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">👁️ Solo Vista</div>
+                    </div>
+                    <div class="date-display" id="agentViewDate"></div>
+                </div>
+            </header>
+
+            <!-- Resumen para Agentes -->
+            <div class="summary-grid">
+                <div class="summary-card success">
+                    <div class="summary-value" id="agentRoomsAudited">0</div>
+                    <div class="summary-label">Auditadas</div>
+                </div>
+                <div class="summary-card purple">
+                    <div class="summary-value" id="agentRoomsPending">204</div>
+                    <div class="summary-label">Pendientes</div>
+                </div>
+                <div class="summary-card danger">
+                    <div class="summary-value" id="agentIssuesFound">0</div>
+                    <div class="summary-label">Con Problemas</div>
+                </div>
+            </div>
+
+            <!-- Vista de pisos para agentes -->
+            <div class="agent-floor-view">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="color: var(--text-primary); margin: 0;">🏨 Selecciona un piso para ver el estado</h3>
+                    <button class="btn" onclick="refreshAgentView()">🔄 Actualizar</button>
+                </div>
+                <div class="floor-tabs" id="agentFloorTabs"></div>
+                <div class="room-grid" id="agentRoomGrid" style="pointer-events: auto;"></div>
+                
+                <!-- Info de habitación seleccionada (solo lectura) -->
+                <div id="agentRoomInfo" style="display: none; margin-top: 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px;">
+                    <h4 style="color: var(--text-secondary); margin-bottom: 16px;">📋 Información de Habitación <span id="agentSelectedRoom"></span></h4>
+                    <div id="agentRoomDetails">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- TAB 2: REPORTES -->
         <div id="reports-tab" class="tab-content">
             <div class="dashboard-header">
@@ -3617,8 +3690,8 @@
                 </div>
             </div>
 
-            <!-- Sección de Incidencias Reportadas (Solo Admin) -->
-            <div class="incidents-section" id="incidentsSection" data-permission="admin">
+            <!-- Sección de Incidencias Reportadas (Visible para auditores) -->
+            <div class="incidents-section" id="incidentsSection" data-permission="audit">
                 <div class="incidents-header">
                     <h3>🔔 Incidencias Reportadas <span class="incidents-badge" id="pendingIncidentsCount">0</span></h3>
                     <div style="display: flex; gap: 8px;">
@@ -4193,8 +4266,66 @@
             if (!currentUser) return;
             
             const perms = USER_LEVELS[currentUser.level] || USER_LEVELS['basic'];
+            const isAgent = currentUser.level === 'agente';
             
-            // Elementos que requieren permisos especiales
+            // ============================================
+            // MANEJO DE TABS SEGÚN ROL
+            // ============================================
+            const auditorTabs = document.getElementById('auditorTabs');
+            const agentTabs = document.getElementById('agentTabs');
+            const auditTab = document.getElementById('audit-tab');
+            const reportsTab = document.getElementById('reports-tab');
+            const agentReportTab = document.getElementById('agent-report-tab');
+            const agentViewTab = document.getElementById('agent-view-tab');
+            
+            if (isAgent) {
+                // Mostrar interfaz de AGENTE
+                if (auditorTabs) auditorTabs.style.display = 'none';
+                if (agentTabs) agentTabs.style.display = 'flex';
+                if (auditTab) auditTab.style.display = 'none';
+                if (reportsTab) reportsTab.style.display = 'none';
+                if (agentReportTab) {
+                    agentReportTab.style.display = 'block';
+                    agentReportTab.classList.add('active');
+                }
+                if (agentViewTab) agentViewTab.style.display = 'none';
+                
+                // Establecer nombre del reportador
+                const reporterField = document.getElementById('agentReporter');
+                if (reporterField) {
+                    reporterField.value = currentUser.displayName || currentUser.username;
+                }
+                
+                // Actualizar fecha en tabs de agente
+                const agentDate = document.getElementById('agentCurrentDate');
+                const agentViewDate = document.getElementById('agentViewDate');
+                const dateStr = new Date().toLocaleDateString('es-MX', { 
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                });
+                if (agentDate) agentDate.textContent = dateStr;
+                if (agentViewDate) agentViewDate.textContent = dateStr;
+                
+                // Cargar reportes recientes del agente
+                loadAgentRecentReports();
+                
+                // Inicializar vista de habitaciones para agente
+                initAgentFloorView();
+                
+            } else {
+                // Mostrar interfaz de AUDITOR
+                if (auditorTabs) auditorTabs.style.display = 'flex';
+                if (agentTabs) agentTabs.style.display = 'none';
+                if (auditTab) {
+                    auditTab.style.display = 'block';
+                    auditTab.classList.add('active');
+                }
+                if (agentReportTab) agentReportTab.style.display = 'none';
+                if (agentViewTab) agentViewTab.style.display = 'none';
+            }
+            
+            // ============================================
+            // PERMISOS GRANULARES
+            // ============================================
             const deleteElements = document.querySelectorAll('[data-permission="delete"]');
             const clearAllElements = document.querySelectorAll('[data-permission="clearAll"]');
             const editElements = document.querySelectorAll('[data-permission="editAny"]');
@@ -4233,46 +4364,168 @@
                 else el.classList.remove('permission-hidden');
             });
             
-            // Panel de agentes - mostrar solo para rol agente
-            const agentPanel = document.getElementById('agentReportPanel');
-            if (agentPanel) {
-                if (currentUser.level === 'agente') {
-                    agentPanel.classList.add('show');
-                    // Establecer nombre del reportador
-                    const reporterField = document.getElementById('agentReporter');
-                    if (reporterField) {
-                        reporterField.value = currentUser.displayName || currentUser.username;
-                    }
-                    // Cargar reportes recientes del agente
-                    loadAgentRecentReports();
-                } else {
-                    agentPanel.classList.remove('show');
-                }
-            }
-            
-            // Ocultar navegación de habitaciones y formulario completo para agentes
-            const roomNav = document.querySelector('.room-nav');
-            const roomForm = document.querySelector('.room-form');
-            const floorView = document.querySelector('.floor-view');
-            
-            if (currentUser.level === 'agente') {
-                if (roomNav) roomNav.classList.add('permission-hidden');
-                if (roomForm) roomForm.classList.add('permission-hidden');
-                if (floorView) floorView.classList.add('permission-hidden');
-            } else {
-                if (roomNav) roomNav.classList.remove('permission-hidden');
-                if (roomForm) roomForm.classList.remove('permission-hidden');
-                if (floorView) floorView.classList.remove('permission-hidden');
-            }
-            
-            // Cargar incidencias para admin
-            if (currentUser.level === 'admin') {
+            // Cargar incidencias para roles que pueden auditar
+            if (perms.canAudit) {
                 loadIncidents();
             }
             
             // Mostrar aviso si es agente
-            if (currentUser.level === 'agente') {
+            if (isAgent) {
                 showAgentModeNotice();
+            }
+        }
+        
+        // ============================================
+        // FUNCIONES PARA TABS DE AGENTE
+        // ============================================
+        function switchAgentTab(tabName) {
+            // Ocultar todos los tabs de agente
+            document.getElementById('agent-report-tab').style.display = 'none';
+            document.getElementById('agent-report-tab').classList.remove('active');
+            document.getElementById('agent-view-tab').style.display = 'none';
+            document.getElementById('agent-view-tab').classList.remove('active');
+            
+            // Mostrar el tab seleccionado
+            const selectedTab = document.getElementById(tabName + '-tab');
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+                selectedTab.classList.add('active');
+            }
+            
+            // Actualizar botones de tabs
+            document.querySelectorAll('#agentTabs .main-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.main-tab').classList.add('active');
+            
+            // Si es la vista de habitaciones, actualizar datos
+            if (tabName === 'agent-view') {
+                refreshAgentView();
+            }
+        }
+        
+        // Inicializar vista de pisos para agente
+        function initAgentFloorView() {
+            const floorTabsContainer = document.getElementById('agentFloorTabs');
+            if (!floorTabsContainer) return;
+            
+            floorTabsContainer.innerHTML = '';
+            for (let floor = 1; floor <= 5; floor++) {
+                const btn = document.createElement('button');
+                btn.className = 'floor-tab' + (floor === 1 ? ' active' : '');
+                btn.textContent = `Piso ${floor}`;
+                btn.onclick = () => loadAgentFloor(floor);
+                floorTabsContainer.appendChild(btn);
+            }
+            
+            loadAgentFloor(1);
+        }
+        
+        // Cargar piso para vista de agente
+        function loadAgentFloor(floor) {
+            // Actualizar tabs activos
+            document.querySelectorAll('#agentFloorTabs .floor-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('#agentFloorTabs .floor-tab')[floor - 1]?.classList.add('active');
+            
+            const grid = document.getElementById('agentRoomGrid');
+            if (!grid) return;
+            
+            const floorRooms = ALL_ROOMS.filter(r => Math.floor(r / 100) === floor);
+            
+            grid.innerHTML = floorRooms.map(room => {
+                const data = roomsData[room];
+                const isAudited = data && data.auditor;
+                const hasIssues = data && data.totalIssues > 0;
+                const roomType = getRoomType(room);
+                
+                let statusClass = roomType;
+                if (hasIssues) statusClass = 'issues';
+                else if (isAudited) statusClass = 'audited';
+                
+                return `<button class="room-btn ${statusClass}" onclick="showAgentRoomInfo(${room})">${room}</button>`;
+            }).join('');
+        }
+        
+        // Mostrar info de habitación para agente (solo lectura)
+        function showAgentRoomInfo(room) {
+            const infoPanel = document.getElementById('agentRoomInfo');
+            const roomLabel = document.getElementById('agentSelectedRoom');
+            const detailsDiv = document.getElementById('agentRoomDetails');
+            
+            if (!infoPanel || !detailsDiv) return;
+            
+            infoPanel.style.display = 'block';
+            roomLabel.textContent = room;
+            
+            const data = roomsData[room];
+            
+            if (!data || !data.auditor) {
+                detailsDiv.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--text-muted);">
+                        <span style="font-size: 2rem;">📋</span>
+                        <p>Esta habitación aún no ha sido auditada.</p>
+                        <p style="margin-top: 10px;">Si detectas algún problema, puedes reportarlo desde la pestaña "📢 Reportar".</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const hasIssues = data.totalIssues > 0;
+            const statusColor = hasIssues ? 'var(--accent-danger)' : 'var(--accent-primary)';
+            const statusText = hasIssues ? `⚠️ ${data.totalIssues} incidencia(s)` : '✅ Sin incidencias';
+            
+            detailsDiv.innerHTML = `
+                <div style="display: grid; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--bg-input); border-radius: 8px;">
+                        <span style="color: var(--text-muted);">Estado:</span>
+                        <span style="color: ${statusColor}; font-weight: 600;">${statusText}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--bg-input); border-radius: 8px;">
+                        <span style="color: var(--text-muted);">Auditada por:</span>
+                        <span style="color: var(--text-primary);">${data.auditor}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--bg-input); border-radius: 8px;">
+                        <span style="color: var(--text-muted);">Fecha:</span>
+                        <span style="color: var(--text-primary);">${data.fecha || 'No disponible'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--bg-input); border-radius: 8px;">
+                        <span style="color: var(--text-muted);">Turno:</span>
+                        <span style="color: var(--text-primary);">${data.turno || 'No especificado'}</span>
+                    </div>
+                    ${data.notas ? `
+                    <div style="padding: 12px; background: var(--bg-input); border-radius: 8px;">
+                        <span style="color: var(--text-muted); display: block; margin-bottom: 8px;">Notas:</span>
+                        <span style="color: var(--text-primary);">${data.notas}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                <div style="margin-top: 16px; text-align: center;">
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">¿Detectaste un nuevo problema? Repórtalo desde la pestaña "📢 Reportar"</p>
+                </div>
+            `;
+        }
+        
+        // Refrescar vista de agente
+        function refreshAgentView() {
+            // Actualizar contadores
+            const audited = Object.values(roomsData).filter(r => r && r.auditor).length;
+            const issues = Object.values(roomsData).filter(r => r && r.totalIssues > 0).length;
+            
+            const auditedEl = document.getElementById('agentRoomsAudited');
+            const pendingEl = document.getElementById('agentRoomsPending');
+            const issuesEl = document.getElementById('agentIssuesFound');
+            
+            if (auditedEl) auditedEl.textContent = audited;
+            if (pendingEl) pendingEl.textContent = 204 - audited;
+            if (issuesEl) issuesEl.textContent = issues;
+            
+            // Recargar piso actual
+            const activeFloorTab = document.querySelector('#agentFloorTabs .floor-tab.active');
+            if (activeFloorTab) {
+                const floorNum = parseInt(activeFloorTab.textContent.replace('Piso ', ''));
+                loadAgentFloor(floorNum);
             }
         }
         
@@ -6883,6 +7136,9 @@
                 'otro': '⚠️ Otro'
             };
             
+            const isAdmin = currentUser && currentUser.level === 'admin';
+            const canAudit = currentUser && USER_LEVELS[currentUser.level]?.canAudit;
+            
             let html = `
                 <div style="overflow-x: auto;">
                     <table class="incidents-table">
@@ -6894,7 +7150,7 @@
                                 <th>Reportó</th>
                                 <th>Fecha/Hora</th>
                                 <th>Estado</th>
-                                <th>Acciones</th>
+                                ${canAudit ? '<th>Acciones</th>' : ''}
                             </tr>
                         </thead>
                         <tbody>
@@ -6914,10 +7170,12 @@
                         <td>${inc.reporter}</td>
                         <td style="white-space: nowrap;">${dateStr} ${timeStr}</td>
                         <td><span class="incident-status ${isPending ? 'pending' : 'resolved'}">${isPending ? '⏳ Pendiente' : '✅ Atendido'}</span></td>
+                        ${canAudit ? `
                         <td class="incident-actions">
                             ${isPending ? `<button class="resolve-btn" onclick="resolveIncident(${inc.id})">✅ Atender</button>` : ''}
-                            <button class="delete-btn" onclick="deleteIncident(${inc.id})">🗑️</button>
+                            ${isAdmin ? `<button class="delete-btn" onclick="deleteIncident(${inc.id})">🗑️</button>` : ''}
                         </td>
+                        ` : ''}
                     </tr>
                 `;
             });
