@@ -69,6 +69,15 @@
             display: block;
         }
         
+        /* Vista de habitaciones para agentes */
+        .agent-floor-view {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
         .agent-report-header {
             display: flex;
             align-items: center;
@@ -4435,9 +4444,9 @@
             const floorRooms = ALL_ROOMS.filter(r => Math.floor(r / 100) === floor);
             
             grid.innerHTML = floorRooms.map(room => {
-                const data = roomsData[room];
+                const data = auditData[room];
                 const isAudited = data && data.auditor;
-                const hasIssues = data && data.totalIssues > 0;
+                const hasIssues = data && data.issueCount > 0;
                 const roomType = getRoomType(room);
                 
                 let statusClass = roomType;
@@ -4459,7 +4468,7 @@
             infoPanel.style.display = 'block';
             roomLabel.textContent = room;
             
-            const data = roomsData[room];
+            const data = auditData[room];
             
             if (!data || !data.auditor) {
                 detailsDiv.innerHTML = `
@@ -4472,9 +4481,9 @@
                 return;
             }
             
-            const hasIssues = data.totalIssues > 0;
+            const hasIssues = data.issueCount > 0;
             const statusColor = hasIssues ? 'var(--accent-danger)' : 'var(--accent-primary)';
-            const statusText = hasIssues ? `⚠️ ${data.totalIssues} incidencia(s)` : '✅ Sin incidencias';
+            const statusText = hasIssues ? `⚠️ ${data.issueCount} incidencia(s)` : '✅ Sin incidencias';
             
             detailsDiv.innerHTML = `
                 <div style="display: grid; gap: 12px;">
@@ -4492,12 +4501,12 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--bg-input); border-radius: 8px;">
                         <span style="color: var(--text-muted);">Turno:</span>
-                        <span style="color: var(--text-primary);">${data.turno || 'No especificado'}</span>
+                        <span style="color: var(--text-primary);">${data.shift || 'No especificado'}</span>
                     </div>
-                    ${data.notas ? `
+                    ${data.notes ? `
                     <div style="padding: 12px; background: var(--bg-input); border-radius: 8px;">
                         <span style="color: var(--text-muted); display: block; margin-bottom: 8px;">Notas:</span>
-                        <span style="color: var(--text-primary);">${data.notas}</span>
+                        <span style="color: var(--text-primary);">${data.notes}</span>
                     </div>
                     ` : ''}
                 </div>
@@ -4510,8 +4519,8 @@
         // Refrescar vista de agente
         function refreshAgentView() {
             // Actualizar contadores
-            const audited = Object.values(roomsData).filter(r => r && r.auditor).length;
-            const issues = Object.values(roomsData).filter(r => r && r.totalIssues > 0).length;
+            const audited = Object.values(auditData).filter(r => r && r.auditor).length;
+            const issues = Object.values(auditData).filter(r => r && r.issueCount > 0).length;
             
             const auditedEl = document.getElementById('agentRoomsAudited');
             const pendingEl = document.getElementById('agentRoomsPending');
@@ -4521,11 +4530,21 @@
             if (pendingEl) pendingEl.textContent = 204 - audited;
             if (issuesEl) issuesEl.textContent = issues;
             
+            // Verificar si los tabs de piso existen, si no, inicializar
+            const floorTabsContainer = document.getElementById('agentFloorTabs');
+            if (floorTabsContainer && floorTabsContainer.children.length === 0) {
+                initAgentFloorView();
+                return;
+            }
+            
             // Recargar piso actual
             const activeFloorTab = document.querySelector('#agentFloorTabs .floor-tab.active');
             if (activeFloorTab) {
                 const floorNum = parseInt(activeFloorTab.textContent.replace('Piso ', ''));
                 loadAgentFloor(floorNum);
+            } else {
+                // Si no hay tab activo, cargar piso 1
+                loadAgentFloor(1);
             }
         }
         
