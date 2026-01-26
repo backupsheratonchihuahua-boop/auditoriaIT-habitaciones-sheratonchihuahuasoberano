@@ -636,6 +636,77 @@
 
         .main-tab:hover { background: var(--bg-input); color: var(--text-primary); }
         .main-tab.active { background: linear-gradient(135deg, var(--accent-primary), #059669); color: white; }
+        
+        /* Badge de notificación */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            animation: pulse-badge 2s infinite;
+        }
+        .main-tab {
+            position: relative;
+        }
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Toast de bienvenida con notificaciones */
+        .welcome-notification {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 1px solid #06b6d4;
+            border-radius: 12px;
+            padding: 16px 20px;
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 320px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            animation: slideInRight 0.4s ease;
+        }
+        .welcome-notification h4 {
+            margin: 0 0 8px 0;
+            color: #06b6d4;
+            font-size: 1rem;
+        }
+        .welcome-notification p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .welcome-notification .badge-count {
+            display: inline-block;
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+        .welcome-notification .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -2642,6 +2713,7 @@
         .toast.success { border-left: 3px solid var(--accent-primary); }
         .toast.error { border-left: 3px solid var(--accent-danger); }
         .toast.warning { border-left: 3px solid var(--accent-warning); }
+        .toast.info { border-left: 3px solid #06b6d4; }
 
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
@@ -2967,7 +3039,7 @@
         <!-- Main Tabs -->
         <div class="main-tabs no-print">
             <button class="main-tab active" onclick="switchTab('audit')">📋 <span>Auditoría</span></button>
-            <button class="main-tab" onclick="switchTab('reports')">📊 <span>Reportes</span></button>
+            <button class="main-tab" onclick="switchTab('reports')">📊 <span>Reportes</span><span class="notification-badge" id="reportsBadge" style="display: none;">0</span></button>
             <button class="main-tab" onclick="switchTab('users')" data-permission="admin" id="usersTabBtn">👥 <span>Usuarios</span></button>
         </div>
 
@@ -4039,6 +4111,8 @@
                 document.getElementById('loadingOverlay').classList.add('hidden');
             } else {
                 await syncData();
+                // Cargar contador de incidencias pendientes
+                await loadPendingIncidentsCount(true); // true = mostrar notificación de bienvenida
             }
             
             if (ALL_ROOMS.length > 0) loadRoom(ALL_ROOMS[0]);
@@ -4046,6 +4120,9 @@
             // Iniciar auto-sync (evitar múltiples intervalos)
             if (syncIntervalId) clearInterval(syncIntervalId);
             syncIntervalId = setInterval(syncData, 30000);
+            
+            // Auto-actualizar contador de incidencias cada 60 segundos
+            setInterval(() => loadPendingIncidentsCount(false), 60000);
         }
         
         // Actualizar badge de usuario
@@ -4619,7 +4696,8 @@
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'}</span> ${message}`;
+            const icons = { 'success': '✅', 'error': '❌', 'warning': '⚠️', 'info': '🔔' };
+            toast.innerHTML = `<span>${icons[type] || '📢'}</span> ${message}`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
@@ -4633,7 +4711,11 @@
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
             document.getElementById(`${tabName}-tab`).classList.add('active');
-            if (tabName === 'reports') refreshCharts();
+            if (tabName === 'reports') {
+                refreshCharts();
+                loadIncidents(); // Cargar incidencias al entrar a reportes
+            }
+            if (tabName === 'users') loadUsersList();
         }
 
         function getRoomType(roomNum) {
@@ -6772,6 +6854,91 @@
         // ============================================
         
         let allIncidents = [];
+        let lastPendingCount = 0;
+        
+        // Cargar contador de incidencias pendientes y actualizar badge
+        async function loadPendingIncidentsCount(showWelcome = false) {
+            try {
+                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const result = await response.json();
+                
+                if (result.success && result.incidents) {
+                    const pendingIncidents = result.incidents.filter(i => i.status === 'pendiente');
+                    const pendingCount = pendingIncidents.length;
+                    
+                    // Actualizar badge en pestaña Reportes
+                    const badge = document.getElementById('reportsBadge');
+                    if (badge) {
+                        if (pendingCount > 0) {
+                            badge.textContent = pendingCount > 99 ? '99+' : pendingCount;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                    
+                    // Mostrar notificación de bienvenida si es el login inicial
+                    if (showWelcome && pendingCount > 0) {
+                        showWelcomeNotification(pendingCount, pendingIncidents.slice(0, 3));
+                    }
+                    
+                    // Detectar nuevas incidencias (para notificación en tiempo real)
+                    if (!showWelcome && pendingCount > lastPendingCount) {
+                        const newCount = pendingCount - lastPendingCount;
+                        showToast(`🔔 ${newCount} nueva(s) incidencia(s) reportada(s)`, 'info');
+                    }
+                    
+                    lastPendingCount = pendingCount;
+                }
+            } catch (error) {
+                console.error('Error cargando incidencias:', error);
+            }
+        }
+        
+        // Mostrar notificación de bienvenida con resumen de incidencias
+        function showWelcomeNotification(count, recentIncidents) {
+            // Remover notificación anterior si existe
+            const existing = document.querySelector('.welcome-notification');
+            if (existing) existing.remove();
+            
+            const faultLabels = {
+                'telefono': '📞', 'tv': '📺', 'internet': '📶',
+                'router': '📡', 'ac': '❄️', 'otro': '⚠️'
+            };
+            
+            const recentList = recentIncidents.map(inc => {
+                const icon = faultLabels[inc.faultType] || '📋';
+                return `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    ${icon} <strong>Hab ${inc.room}</strong> - ${inc.reporter}
+                </div>`;
+            }).join('');
+            
+            const notification = document.createElement('div');
+            notification.className = 'welcome-notification';
+            notification.innerHTML = `
+                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                <h4>🔔 Incidencias Pendientes <span class="badge-count">${count}</span></h4>
+                <p style="margin-bottom: 10px;">Hay reportes que requieren atención:</p>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                    ${recentList}
+                    ${count > 3 ? `<div style="padding-top: 6px; color: #06b6d4;">... y ${count - 3} más</div>` : ''}
+                </div>
+                <button onclick="switchTab('reports'); this.parentElement.remove();" 
+                        style="margin-top: 12px; width: 100%; padding: 8px; background: #06b6d4; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    Ver Reportes
+                </button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-ocultar después de 10 segundos
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideInRight 0.3s ease reverse';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 10000);
+        }
         
         async function loadIncidents() {
             try {
@@ -6869,6 +7036,7 @@
                 if (result.success) {
                     showToast('Incidencia marcada como atendida', 'success');
                     loadIncidents();
+                    loadPendingIncidentsCount(false); // Actualizar badge
                 } else {
                     showToast('Error al actualizar', 'error');
                 }
@@ -6892,6 +7060,7 @@
                 if (result.success) {
                     showToast('Incidencia eliminada', 'success');
                     loadIncidents();
+                    loadPendingIncidentsCount(false); // Actualizar badge
                 } else {
                     showToast('Error al eliminar', 'error');
                 }
@@ -6950,6 +7119,7 @@
                     document.getElementById('agentFaultType').value = '';
                     document.getElementById('agentDescription').value = '';
                     loadAgentRecentReports();
+                    loadPendingIncidentsCount(false); // Actualizar badge
                 } else {
                     showToast(result.error || 'Error al enviar reporte', 'error');
                 }
