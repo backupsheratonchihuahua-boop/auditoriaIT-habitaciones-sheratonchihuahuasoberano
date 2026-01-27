@@ -6697,6 +6697,7 @@
                 // Soportar tanto "si/no" como "true/false"
                 const activeVal = String(user.active).toLowerCase();
                 const isActive = activeVal === 'si' || activeVal === 'true' || activeVal === '1';
+                const isMainAdmin = user.username.toLowerCase() === 'edelchavez';
                 html += `
                     <tr>
                         <td><strong>${user.username}</strong></td>
@@ -6705,6 +6706,7 @@
                         <td><span style="color: ${isActive ? 'var(--accent-primary)' : 'var(--accent-danger)'};">${isActive ? '✅ Activo' : '❌ Inactivo'}</span></td>
                         <td>
                             <button class="btn" onclick="showEditUserModal('${user.username}', '${user.displayName || ''}', '${user.level}', '${user.active}')" style="padding: 4px 8px; font-size: 0.75rem;">✏️ Editar</button>
+                            ${!isMainAdmin ? `<button class="btn" onclick="deleteUserPermanent('${user.username}', '${user.displayName || user.username}')" style="padding: 4px 8px; font-size: 0.75rem; background: var(--accent-danger); margin-left: 4px;">🗑️</button>` : ''}
                         </td>
                     </tr>
                 `;
@@ -6712,6 +6714,44 @@
             
             html += '</tbody></table>';
             container.innerHTML = html;
+        }
+        
+        // Eliminar usuario permanentemente
+        async function deleteUserPermanent(username, displayName) {
+            if (username.toLowerCase() === 'edelchavez') {
+                showToast('No se puede eliminar al administrador principal', 'error');
+                return;
+            }
+            
+            const confirmMsg = `¿Estás seguro de eliminar al usuario "${displayName}"?\n\nEsta acción es PERMANENTE y no se puede deshacer.`;
+            if (!confirm(confirmMsg)) return;
+            
+            // Segunda confirmación
+            const confirmMsg2 = `Escribe "ELIMINAR" para confirmar:`;
+            const userInput = prompt(confirmMsg2);
+            if (userInput !== 'ELIMINAR') {
+                showToast('Eliminación cancelada', 'warning');
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'deleteUserPermanent',
+                    username: username
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`Usuario "${displayName}" eliminado permanentemente`, 'success');
+                    loadUsersList();
+                } else {
+                    showToast(result.error || 'Error al eliminar usuario', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
         }
         
         // Modal crear usuario
