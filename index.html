@@ -368,6 +368,98 @@
             margin-bottom: 20px;
         }
         .agent-report-panel.show { display: block; }
+        
+        /* Panel de Mantenimiento */
+        .maintenance-panel {
+            display: none;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #f59e0b;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .maintenance-panel.show { display: block; }
+        
+        /* Cards de incidencias para mantenimiento */
+        .maint-incident-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+        .maint-incident-card:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.1);
+        }
+        .maint-incident-card.pending { border-left: 4px solid #f59e0b; }
+        .maint-incident-card.in-progress { border-left: 4px solid #3b82f6; }
+        .maint-incident-card.resolved { border-left: 4px solid #10b981; }
+        .maint-incident-card.escalated { border-left: 4px solid #ef4444; }
+        
+        .maint-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .maint-card-room {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+        .maint-card-status {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .maint-card-status.pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .maint-card-status.in-progress { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .maint-card-status.resolved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .maint-card-status.escalated { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        
+        .maint-card-body {
+            display: grid;
+            gap: 6px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .maint-card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .maint-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .maint-btn-review {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+        }
+        .maint-btn-review:hover { background: rgba(59, 130, 246, 0.3); }
+        .maint-btn-resolve {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+        .maint-btn-resolve:hover { background: rgba(16, 185, 129, 0.3); }
+        .maint-btn-escalate {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+        .maint-btn-escalate:hover { background: rgba(239, 68, 68, 0.3); }
+        
         .agent-form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -3248,6 +3340,51 @@
                 </div>
             </div>
 
+            <!-- Panel de Mantenimiento -->
+            <div class="maintenance-panel" id="maintenancePanel" style="display: none;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                    <span style="font-size: 2rem;">🔧</span>
+                    <div>
+                        <h3 style="margin: 0; color: #f59e0b;">Panel de Mantenimiento</h3>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Gestiona las incidencias asignadas a tu equipo</p>
+                    </div>
+                </div>
+                
+                <!-- Estadísticas rápidas -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+                    <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #f59e0b;" id="maintPendingCount">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">⏳ Pendientes</div>
+                    </div>
+                    <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #3b82f6;" id="maintInProgressCount">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">👁️ En Revisión</div>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #10b981;" id="maintResolvedCount">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">✅ Resueltos Hoy</div>
+                    </div>
+                </div>
+                
+                <!-- Filtros -->
+                <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button class="filter-btn active" onclick="filterMaintenanceIncidents('all')" data-filter="all">Todas</button>
+                    <button class="filter-btn" onclick="filterMaintenanceIncidents('pendiente')" data-filter="pendiente">⏳ Pendientes</button>
+                    <button class="filter-btn" onclick="filterMaintenanceIncidents('en_revision')" data-filter="en_revision">👁️ En Revisión</button>
+                    <button class="filter-btn" onclick="filterMaintenanceIncidents('resuelto_mant')" data-filter="resuelto_mant">✅ Resueltos</button>
+                    <button class="filter-btn" onclick="filterMaintenanceIncidents('escalado')" data-filter="escalado">🔺 Escalados</button>
+                </div>
+                
+                <!-- Lista de incidencias -->
+                <div id="maintenanceIncidentsList" style="max-height: 500px; overflow-y: auto;">
+                    <p style="color: var(--text-muted); text-align: center; padding: 30px;">Cargando incidencias...</p>
+                </div>
+                
+                <button onclick="loadMaintenanceIncidents()" class="btn" style="width: 100%; margin-top: 15px; background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #f59e0b;">
+                    🔄 Actualizar Lista
+                </button>
+            </div>
+
             <!-- Room Navigation -->
             <div class="room-nav">
                 <div class="room-nav-top">
@@ -3832,6 +3969,7 @@
                     <div class="filter-buttons">
                         <button class="filter-btn active" onclick="filterIncidents('all')">Todas</button>
                         <button class="filter-btn" onclick="filterIncidents('pendiente')">⏳ Pendientes</button>
+                        <button class="filter-btn" onclick="filterIncidents('escalado')" id="escaladosFilterBtn">🔺 Escalados</button>
                         <button class="filter-btn" onclick="filterIncidents('atendido')">✅ Atendidas</button>
                     </div>
                 </div>
@@ -3941,6 +4079,7 @@
                         <label>Nivel</label>
                         <select id="newUserLevel">
                             <option value="agente">📢 Agente (solo reportar)</option>
+                            <option value="mantenimiento">🔧 Mantenimiento (gestionar incidencias)</option>
                             <option value="basic">👤 Básico (auditor)</option>
                             <option value="advanced">⭐ Avanzado</option>
                             <option value="admin">🔑 Admin</option>
@@ -3999,6 +4138,7 @@
                         <label>Nivel</label>
                         <select id="editUserLevel">
                             <option value="agente">📢 Agente</option>
+                            <option value="mantenimiento">🔧 Mantenimiento</option>
                             <option value="basic">👤 Básico</option>
                             <option value="advanced">⭐ Avanzado</option>
                             <option value="admin">🔑 Admin</option>
@@ -4053,7 +4193,8 @@
                 canEditAny: true,
                 canAudit: true,
                 canExport: true,
-                canReport: true
+                canReport: true,
+                canManageIncidents: true
             },
             'advanced': { 
                 name: 'Auditor Avanzado', 
@@ -4062,7 +4203,8 @@
                 canEditAny: true,
                 canAudit: true,
                 canExport: true,
-                canReport: true
+                canReport: true,
+                canManageIncidents: true
             },
             'basic': { 
                 name: 'Auditor', 
@@ -4071,7 +4213,19 @@
                 canEditAny: false,
                 canAudit: true,
                 canExport: true,
-                canReport: true
+                canReport: true,
+                canManageIncidents: true
+            },
+            'mantenimiento': { 
+                name: 'Mantenimiento', 
+                canDelete: false, 
+                canClearAll: false, 
+                canEditAny: false,
+                canAudit: false,
+                canExport: false,
+                canReport: false,
+                canManageIncidents: true,  // Puede gestionar incidencias asignadas
+                onlyOwnIncidents: true      // Solo ve incidencias de mantenimiento
             },
             'agente': { 
                 name: 'Agente', 
@@ -4080,7 +4234,8 @@
                 canEditAny: false,
                 canAudit: false,
                 canExport: false,
-                canReport: true
+                canReport: true,
+                canManageIncidents: false
             }
         };
         
@@ -6693,6 +6848,7 @@
                 'admin': '🔑 Admin',
                 'advanced': '⭐ Avanzado',
                 'basic': '👤 Básico',
+                'mantenimiento': '🔧 Mantenimiento',
                 'agente': '📢 Agente'
             };
             
@@ -7009,6 +7165,7 @@
                 if (result.success) {
                     allIncidents = result.incidents || [];
                     renderIncidentsTable(allIncidents);
+                    updateEscaladosCount();
                     
                     // Actualizar indicador de turno
                     if (result.infoTurno) {
@@ -7084,7 +7241,6 @@
                 const date = new Date(inc.timestamp);
                 const dateStr = date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
                 const timeStr = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-                const isPending = inc.status === 'pendiente';
                 const descPreview = inc.description && inc.description.length > 25 
                     ? inc.description.substring(0, 25) + '...' 
                     : (inc.description || '-');
@@ -7096,22 +7252,33 @@
                     ? '<span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem;">🔧 Mant.</span>'
                     : '<span style="background: #06b6d4; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem;">💻 Sist.</span>';
                 
+                // Badge de estado mejorado
+                const statusBadges = {
+                    'pendiente': { text: '⏳ Pendiente', class: 'pending', color: '#f59e0b' },
+                    'en_revision': { text: '👁️ En Revisión', class: 'in-progress', color: '#3b82f6' },
+                    'resuelto_mant': { text: '✅ Resuelto (M)', class: 'resolved', color: '#10b981' },
+                    'escalado': { text: '🔺 Escalado', class: 'escalated', color: '#ef4444' },
+                    'atendido': { text: '✅ Cerrado', class: 'resolved', color: '#10b981' }
+                };
+                const statusInfo = statusBadges[inc.status] || statusBadges['pendiente'];
+                const canAction = inc.status === 'pendiente' || inc.status === 'escalado';
+                
                 html += `
-                    <tr>
+                    <tr ${inc.status === 'escalado' ? 'style="background: rgba(239, 68, 68, 0.05);"' : ''}>
                         <td><strong>${inc.room}</strong></td>
                         <td>${faultLabels[inc.faultType] || inc.faultType}</td>
                         <td style="max-width: 150px;">
                             <span title="${inc.description || ''}">${descPreview}</span>
-                            ${hasLongDesc ? `<button onclick="showIncidentDetail(${inc.id}, '${inc.room}', '${faultLabels[inc.faultType] || inc.faultType}', '${encodeURIComponent(inc.description)}', '${inc.reporter}', '${dateStr} ${timeStr}', '${inc.status}', '${asignadoA}', '${inc.atendidoPor || ''}')" style="background: none; border: none; color: #06b6d4; cursor: pointer; padding: 2px 6px; font-size: 0.75rem;">👁️</button>` : ''}
+                            ${hasLongDesc || inc.motivoEscalado || inc.notasMant ? `<button onclick="showIncidentDetailFull(${JSON.stringify(inc).replace(/"/g, '&quot;')})" style="background: none; border: none; color: #06b6d4; cursor: pointer; padding: 2px 6px; font-size: 0.75rem;">👁️</button>` : ''}
                         </td>
                         <td>${asignadoBadge}</td>
                         <td>${inc.reporter}</td>
                         <td style="white-space: nowrap;">${dateStr} ${timeStr}</td>
-                        <td><span class="incident-status ${isPending ? 'pending' : 'resolved'}">${isPending ? '⏳ Pendiente' : '✅ Atendido'}</span></td>
+                        <td><span style="padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; background: ${statusInfo.color}22; color: ${statusInfo.color};">${statusInfo.text}</span></td>
                         <td style="font-size: 0.8rem; color: var(--text-secondary);">${inc.atendidoPor || '-'}</td>
                         ${canAudit ? `
                         <td class="incident-actions">
-                            ${isPending ? `<button class="resolve-btn" onclick="showResolveModal(${inc.id}, '${inc.room}')">✅ Atender</button>` : ''}
+                            ${canAction ? `<button class="resolve-btn" onclick="showResolveModal(${inc.id}, '${inc.room}')">✅ Atender</button>` : ''}
                             ${isAdmin ? `<button class="delete-btn" onclick="deleteIncident(${inc.id})">🗑️</button>` : ''}
                         </td>
                         ` : ''}
@@ -7121,6 +7288,99 @@
             
             html += '</tbody></table></div>';
             container.innerHTML = html;
+        }
+        
+        // Mostrar detalle completo de incidencia (con datos completos)
+        function showIncidentDetailFull(inc) {
+            const faultLabels = {
+                'telefono': '📞 Teléfono',
+                'tv': '📺 TV',
+                'internet': '📶 Internet',
+                'router': '📡 Router',
+                'ac': '❄️ A/C',
+                'otro': '⚠️ Otro'
+            };
+            
+            const statusLabels = {
+                'pendiente': '⏳ Pendiente',
+                'en_revision': '👁️ En Revisión',
+                'resuelto_mant': '✅ Resuelto (Mantenimiento)',
+                'escalado': '🔺 Escalado a Sistemas',
+                'atendido': '✅ Cerrado'
+            };
+            
+            const date = new Date(inc.timestamp);
+            const datetime = date.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+            const asignado = inc.asignadoA === 'mantenimiento' ? '🔧 Mantenimiento' : '💻 Sistemas';
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 20px;';
+            modal.innerHTML = `
+                <div style="background: var(--bg-secondary); border-radius: 12px; max-width: 550px; width: 100%; max-height: 85vh; overflow-y: auto;">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: ${inc.status === 'escalado' ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), transparent)' : ''}; border-radius: 12px 12px 0 0;">
+                        <h3 style="margin: 0; color: var(--text-primary);">📋 Detalle de Incidencia #${inc.id}</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div style="display: grid; gap: 12px;">
+                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
+                                <span style="color: var(--text-muted);">Habitación</span>
+                                <strong style="color: var(--text-primary);">${inc.room}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
+                                <span style="color: var(--text-muted);">Tipo de Falla</span>
+                                <strong style="color: var(--text-primary);">${faultLabels[inc.faultType] || inc.faultType}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
+                                <span style="color: var(--text-muted);">Asignado a</span>
+                                <strong style="color: ${inc.asignadoA === 'mantenimiento' ? '#f59e0b' : '#06b6d4'};">${asignado}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
+                                <span style="color: var(--text-muted);">Reportado por</span>
+                                <strong style="color: var(--text-primary);">${inc.reporter}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
+                                <span style="color: var(--text-muted);">Fecha/Hora</span>
+                                <strong style="color: var(--text-primary);">${datetime}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
+                                <span style="color: var(--text-muted);">Estado</span>
+                                <strong style="color: ${inc.status === 'escalado' ? '#ef4444' : '#10b981'};">${statusLabels[inc.status] || inc.status}</strong>
+                            </div>
+                            ${inc.atendidoPor ? `
+                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
+                                <span style="color: var(--text-muted);">Atendido por</span>
+                                <strong style="color: #10b981;">${inc.atendidoPor}</strong>
+                            </div>
+                            ` : ''}
+                            
+                            <div style="padding: 15px; background: var(--bg-input); border-radius: 8px; margin-top: 8px;">
+                                <div style="color: var(--text-muted); margin-bottom: 8px; font-size: 0.85rem;">📝 Descripción:</div>
+                                <p style="color: var(--text-primary); margin: 0; line-height: 1.6; white-space: pre-wrap;">${inc.description || 'Sin descripción'}</p>
+                            </div>
+                            
+                            ${inc.notasMant ? `
+                            <div style="padding: 15px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px;">
+                                <div style="color: #f59e0b; margin-bottom: 8px; font-size: 0.85rem;">🔧 Notas de Mantenimiento:</div>
+                                <p style="color: var(--text-primary); margin: 0; line-height: 1.6;">${inc.notasMant}</p>
+                            </div>
+                            ` : ''}
+                            
+                            ${inc.motivoEscalado ? `
+                            <div style="padding: 15px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px;">
+                                <div style="color: #ef4444; margin-bottom: 8px; font-size: 0.85rem;">🔺 Motivo de Escalación:</div>
+                                <p style="color: var(--text-primary); margin: 0; line-height: 1.6;">${inc.motivoEscalado}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+            document.body.appendChild(modal);
         }
         
         // Mostrar detalle completo de incidencia
@@ -7323,14 +7583,31 @@
         }
         
         function filterIncidents(status) {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#incidentsSection .filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             
             if (status === 'all') {
                 renderIncidentsTable(allIncidents);
+            } else if (status === 'atendido') {
+                // Incluir resuelto_mant y atendido como "atendidas"
+                const filtered = allIncidents.filter(inc => 
+                    inc.status === 'atendido' || inc.status === 'resuelto_mant'
+                );
+                renderIncidentsTable(filtered);
             } else {
                 const filtered = allIncidents.filter(inc => inc.status === status);
                 renderIncidentsTable(filtered);
+            }
+        }
+        
+        // Actualizar contador de escalados
+        function updateEscaladosCount() {
+            const escalados = allIncidents.filter(inc => inc.status === 'escalado').length;
+            const btn = document.getElementById('escaladosFilterBtn');
+            if (btn && escalados > 0) {
+                btn.innerHTML = `🔺 Escalados <span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: 5px;">${escalados}</span>`;
+            } else if (btn) {
+                btn.innerHTML = '🔺 Escalados';
             }
         }
         
@@ -7465,6 +7742,311 @@
         }
         
         // ============================================
+        // FUNCIONES DE PANEL DE MANTENIMIENTO
+        // ============================================
+        
+        let allMaintenanceIncidents = [];
+        
+        async function loadMaintenanceIncidents() {
+            try {
+                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Filtrar solo incidencias asignadas a mantenimiento
+                    allMaintenanceIncidents = (result.incidents || []).filter(inc => 
+                        inc.asignadoA === 'mantenimiento'
+                    );
+                    
+                    updateMaintenanceStats();
+                    renderMaintenanceIncidents(allMaintenanceIncidents);
+                }
+            } catch (error) {
+                console.error('Error cargando incidencias:', error);
+            }
+        }
+        
+        function updateMaintenanceStats() {
+            const today = new Date().toDateString();
+            
+            const pending = allMaintenanceIncidents.filter(i => i.status === 'pendiente').length;
+            const inProgress = allMaintenanceIncidents.filter(i => i.status === 'en_revision').length;
+            const resolvedToday = allMaintenanceIncidents.filter(i => {
+                return (i.status === 'resuelto_mant' || i.status === 'atendido') && 
+                       new Date(i.timestamp).toDateString() === today;
+            }).length;
+            
+            const pendingEl = document.getElementById('maintPendingCount');
+            const inProgressEl = document.getElementById('maintInProgressCount');
+            const resolvedEl = document.getElementById('maintResolvedCount');
+            
+            if (pendingEl) pendingEl.textContent = pending;
+            if (inProgressEl) inProgressEl.textContent = inProgress;
+            if (resolvedEl) resolvedEl.textContent = resolvedToday;
+        }
+        
+        function filterMaintenanceIncidents(filter) {
+            // Actualizar botones activos
+            document.querySelectorAll('.maintenance-panel .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            
+            let filtered = allMaintenanceIncidents;
+            
+            if (filter !== 'all') {
+                filtered = allMaintenanceIncidents.filter(inc => inc.status === filter);
+            }
+            
+            renderMaintenanceIncidents(filtered);
+        }
+        
+        function renderMaintenanceIncidents(incidents) {
+            const container = document.getElementById('maintenanceIncidentsList');
+            if (!container) return;
+            
+            if (incidents.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
+                        <p>No hay incidencias pendientes</p>
+                    </div>`;
+                return;
+            }
+            
+            const faultLabels = {
+                'telefono': '📞 Teléfono',
+                'tv': '📺 TV',
+                'internet': '📶 Internet',
+                'router': '📡 Router',
+                'ac': '❄️ A/C',
+                'otro': '⚠️ Otro'
+            };
+            
+            const statusLabels = {
+                'pendiente': { text: '⏳ Pendiente', class: 'pending' },
+                'en_revision': { text: '👁️ En Revisión', class: 'in-progress' },
+                'resuelto_mant': { text: '✅ Resuelto', class: 'resolved' },
+                'escalado': { text: '🔺 Escalado', class: 'escalated' },
+                'atendido': { text: '✅ Cerrado', class: 'resolved' }
+            };
+            
+            container.innerHTML = incidents.map(inc => {
+                const date = new Date(inc.timestamp);
+                const dateStr = date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
+                const timeStr = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                const status = statusLabels[inc.status] || statusLabels['pendiente'];
+                const isPending = inc.status === 'pendiente';
+                const isInProgress = inc.status === 'en_revision';
+                const canAct = isPending || isInProgress;
+                
+                return `
+                    <div class="maint-incident-card ${status.class}">
+                        <div class="maint-card-header">
+                            <div>
+                                <span class="maint-card-room">🚪 Hab. ${inc.room}</span>
+                                <span style="margin-left: 10px; font-size: 0.9rem;">${faultLabels[inc.faultType] || inc.faultType}</span>
+                            </div>
+                            <span class="maint-card-status ${status.class}">${status.text}</span>
+                        </div>
+                        <div class="maint-card-body">
+                            <div>📝 ${inc.description || 'Sin descripción'}</div>
+                            <div style="display: flex; gap: 20px; color: var(--text-muted); font-size: 0.85rem;">
+                                <span>👤 ${inc.reporter}</span>
+                                <span>🕐 ${dateStr} ${timeStr}</span>
+                            </div>
+                            ${inc.notasMant ? `<div style="background: rgba(245, 158, 11, 0.1); padding: 8px 12px; border-radius: 6px; margin-top: 6px; font-size: 0.85rem;">📋 <strong>Notas:</strong> ${inc.notasMant}</div>` : ''}
+                            ${inc.motivoEscalado ? `<div style="background: rgba(239, 68, 68, 0.1); padding: 8px 12px; border-radius: 6px; margin-top: 6px; font-size: 0.85rem;">🔺 <strong>Motivo escalado:</strong> ${inc.motivoEscalado}</div>` : ''}
+                        </div>
+                        ${canAct ? `
+                        <div class="maint-card-actions">
+                            ${isPending ? `<button class="maint-btn maint-btn-review" onclick="markInReview(${inc.id})">👁️ Revisar</button>` : ''}
+                            ${canAct ? `<button class="maint-btn maint-btn-resolve" onclick="showResolveMaintenanceModal(${inc.id}, '${inc.room}')">✅ Resuelto</button>` : ''}
+                            ${canAct ? `<button class="maint-btn maint-btn-escalate" onclick="showEscalateModal(${inc.id}, '${inc.room}')">🔺 Escalar a Sistemas</button>` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Marcar como "En Revisión"
+        async function markInReview(id) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateIncidentStatus',
+                    id: id,
+                    status: 'en_revision',
+                    updatedBy: currentUser?.displayName || currentUser?.username || 'Mantenimiento'
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Incidencia marcada en revisión', 'success');
+                    loadMaintenanceIncidents();
+                } else {
+                    showToast(result.error || 'Error al actualizar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+        
+        // Modal para resolver incidencia (mantenimiento)
+        function showResolveMaintenanceModal(id, room) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'resolveMaintenanceModal';
+            modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 20px;';
+            modal.innerHTML = `
+                <div style="background: var(--bg-secondary); border-radius: 12px; max-width: 450px; width: 100%;">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), transparent); border-radius: 12px 12px 0 0;">
+                        <h3 style="margin: 0; color: #10b981;">✅ Marcar como Resuelto</h3>
+                        <p style="margin: 8px 0 0; color: var(--text-muted); font-size: 0.9rem;">Habitación ${room}</p>
+                    </div>
+                    <div style="padding: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">¿Qué se hizo para resolver? (opcional)</label>
+                        <textarea id="maintResolveNotes" placeholder="Ej: Se reconectó el cable del teléfono, se reinició el router, etc." style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; min-height: 100px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="document.getElementById('resolveMaintenanceModal').remove()" style="padding: 10px 20px; background: var(--bg-input); border: none; border-radius: 8px; color: var(--text-primary); cursor: pointer;">Cancelar</button>
+                        <button onclick="confirmResolveMaintenance(${id})" style="padding: 10px 20px; background: #10b981; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">✅ Confirmar Resuelto</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+            
+            document.body.appendChild(modal);
+        }
+        
+        async function confirmResolveMaintenance(id) {
+            const notes = document.getElementById('maintResolveNotes')?.value.trim() || '';
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateIncidentStatus',
+                    id: id,
+                    status: 'resuelto_mant',
+                    notasMant: notes,
+                    updatedBy: currentUser?.displayName || currentUser?.username || 'Mantenimiento'
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('resolveMaintenanceModal')?.remove();
+                    showToast('¡Incidencia resuelta! Buen trabajo 👏', 'success');
+                    loadMaintenanceIncidents();
+                } else {
+                    showToast(result.error || 'Error al actualizar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+        
+        // Modal para escalar a sistemas
+        function showEscalateModal(id, room) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'escalateModal';
+            modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 20px;';
+            modal.innerHTML = `
+                <div style="background: var(--bg-secondary); border-radius: 12px; max-width: 450px; width: 100%;">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), transparent); border-radius: 12px 12px 0 0;">
+                        <h3 style="margin: 0; color: #ef4444;">🔺 Escalar a Sistemas</h3>
+                        <p style="margin: 8px 0 0; color: var(--text-muted); font-size: 0.9rem;">Habitación ${room}</p>
+                    </div>
+                    <div style="padding: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">¿Por qué no se pudo resolver? *</label>
+                        <select id="escalateReason" style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; margin-bottom: 15px;">
+                            <option value="">Seleccionar motivo...</option>
+                            <option value="Requiere equipo/herramienta especial">Requiere equipo/herramienta especial</option>
+                            <option value="Problema de software/configuración">Problema de software/configuración</option>
+                            <option value="Requiere reemplazo de equipo">Requiere reemplazo de equipo</option>
+                            <option value="Problema de red/conectividad">Problema de red/conectividad</option>
+                            <option value="Requiere acceso a sistemas">Requiere acceso a sistemas</option>
+                            <option value="No se encontró el problema">No se encontró el problema</option>
+                            <option value="otro">Otro motivo...</option>
+                        </select>
+                        
+                        <div id="escalateOtherContainer" style="display: none;">
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Especifica el motivo:</label>
+                            <input type="text" id="escalateOtherReason" placeholder="Describe el motivo..." style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); margin-bottom: 15px;">
+                        </div>
+                        
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Notas adicionales (opcional)</label>
+                        <textarea id="escalateNotes" placeholder="Describe qué revisaste o intentaste..." style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; min-height: 80px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="document.getElementById('escalateModal').remove()" style="padding: 10px 20px; background: var(--bg-input); border: none; border-radius: 8px; color: var(--text-primary); cursor: pointer;">Cancelar</button>
+                        <button onclick="confirmEscalate(${id})" style="padding: 10px 20px; background: #ef4444; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">🔺 Escalar</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+            
+            document.body.appendChild(modal);
+            
+            // Mostrar campo "otro" si se selecciona
+            document.getElementById('escalateReason').addEventListener('change', function() {
+                document.getElementById('escalateOtherContainer').style.display = 
+                    this.value === 'otro' ? 'block' : 'none';
+            });
+        }
+        
+        async function confirmEscalate(id) {
+            let reason = document.getElementById('escalateReason')?.value;
+            
+            if (!reason) {
+                showToast('Selecciona un motivo para escalar', 'warning');
+                return;
+            }
+            
+            if (reason === 'otro') {
+                reason = document.getElementById('escalateOtherReason')?.value.trim();
+                if (!reason) {
+                    showToast('Especifica el motivo', 'warning');
+                    return;
+                }
+            }
+            
+            const notes = document.getElementById('escalateNotes')?.value.trim() || '';
+            const fullReason = notes ? `${reason}. Notas: ${notes}` : reason;
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'updateIncidentStatus',
+                    id: id,
+                    status: 'escalado',
+                    motivoEscalado: fullReason,
+                    updatedBy: currentUser?.displayName || currentUser?.username || 'Mantenimiento'
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('escalateModal')?.remove();
+                    showToast('Incidencia escalada a Sistemas', 'info');
+                    loadMaintenanceIncidents();
+                } else {
+                    showToast(result.error || 'Error al escalar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+        
+        // ============================================
         // PERMISOS Y CONTROL DE ACCESO
         // ============================================
         
@@ -7524,6 +8106,17 @@
                     loadAgentRecentReports();
                 } else {
                     agentPanel.classList.remove('show');
+                }
+            }
+            
+            // Panel de mantenimiento - mostrar solo para rol mantenimiento
+            const maintPanel = document.getElementById('maintenancePanel');
+            if (maintPanel) {
+                if (currentUser.level === 'mantenimiento') {
+                    maintPanel.classList.add('show');
+                    loadMaintenanceIncidents();
+                } else {
+                    maintPanel.classList.remove('show');
                 }
             }
             
