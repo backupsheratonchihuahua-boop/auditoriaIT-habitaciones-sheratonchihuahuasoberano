@@ -7272,35 +7272,6 @@
                 showToast('Error de conexión', 'error');
             }
         }
-                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
-                                <span style="color: var(--text-muted);">Tipo de Falla</span>
-                                <strong style="color: var(--text-primary);">${type}</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
-                                <span style="color: var(--text-muted);">Reportado por</span>
-                                <strong style="color: var(--text-primary);">${reporter}</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
-                                <span style="color: var(--text-muted);">Fecha/Hora</span>
-                                <strong style="color: var(--text-primary);">${datetime}</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg-input); border-radius: 8px;">
-                                <span style="color: var(--text-muted);">Estado</span>
-                                <span style="padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; background: ${isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)'}; color: ${isPending ? '#f59e0b' : '#10b981'};">${isPending ? '⏳ Pendiente' : '✅ Atendido'}</span>
-                            </div>
-                            <div style="padding: 15px; background: var(--bg-input); border-radius: 8px; margin-top: 8px;">
-                                <div style="color: var(--text-muted); margin-bottom: 8px; font-size: 0.85rem;">📝 Descripción completa:</div>
-                                <p style="color: var(--text-primary); margin: 0; line-height: 1.6; white-space: pre-wrap;">${desc}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.remove();
-            });
-            document.body.appendChild(modal);
-        }
         
         async function resolveIncident(id) {
             if (!confirm('¿Marcar esta incidencia como atendida?')) return;
