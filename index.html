@@ -4080,6 +4080,68 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Configuración de Horarios de Sistemas -->
+            <div class="users-section" style="margin-top: 20px;">
+                <h3>⏰ Configuración de Horarios - Depto. Sistemas</h3>
+                <p style="color: var(--text-muted); margin-bottom: 16px;">Define cuándo el departamento de Sistemas está disponible. Fuera de estos horarios, las incidencias se asignarán automáticamente a Mantenimiento.</p>
+                
+                <div id="horariosConfig" style="display: grid; gap: 20px;">
+                    <!-- Lunes a Viernes -->
+                    <div style="background: var(--bg-secondary); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color);">
+                        <h4 style="margin: 0 0 15px; color: var(--cyan);">📅 Lunes a Viernes</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div>
+                                <label style="font-size: 0.85rem; color: var(--text-muted);">Turno Matutino</label>
+                                <div style="display: flex; gap: 8px; align-items: center; margin-top: 5px;">
+                                    <input type="time" id="semanaInicio1" value="08:30" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                                    <span>a</span>
+                                    <input type="time" id="semanaFin1" value="14:00" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.85rem; color: var(--text-muted);">Turno Vespertino</label>
+                                <div style="display: flex; gap: 8px; align-items: center; margin-top: 5px;">
+                                    <input type="time" id="semanaInicio2" value="15:30" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                                    <span>a</span>
+                                    <input type="time" id="semanaFin2" value="18:30" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sábado -->
+                    <div style="background: var(--bg-secondary); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color);">
+                        <h4 style="margin: 0 0 15px; color: #f59e0b;">📅 Sábado</h4>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="time" id="sabadoInicio" value="09:00" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                            <span>a</span>
+                            <input type="time" id="sabadoFin" value="13:00" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                        </div>
+                    </div>
+                    
+                    <!-- Domingo -->
+                    <div style="background: var(--bg-secondary); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color);">
+                        <h4 style="margin: 0 0 15px; color: #ef4444;">📅 Domingo</h4>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="domingoHabilitado" style="width: 18px; height: 18px;">
+                            <span>Habilitar horario dominical</span>
+                        </label>
+                        <div id="domingoHorarios" style="display: none; margin-top: 12px;">
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="time" id="domingoInicio" value="10:00" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                                <span>a</span>
+                                <input type="time" id="domingoFin" value="14:00" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 12px;">
+                    <button class="btn btn-primary" onclick="saveHorariosConfig()">💾 Guardar Horarios</button>
+                    <button class="btn" onclick="loadHorariosConfig()">🔄 Recargar</button>
+                </div>
+            </div>
         </div>
 
         <!-- Modal Crear Usuario -->
@@ -4919,7 +4981,10 @@
                 refreshCharts();
                 loadIncidents(); // Cargar incidencias al entrar a reportes
             }
-            if (tabName === 'users') loadUsersList();
+            if (tabName === 'users') {
+                loadUsersList();
+                loadHorariosConfig(); // Cargar configuración de horarios
+            }
             if (tabName === 'maintenance') loadMaintenanceIncidents();
         }
 
@@ -6844,6 +6909,258 @@
             return hashHex;
         }
         
+        // ============================================
+        // CONFIGURACIÓN DE HORARIOS (ADMIN)
+        // ============================================
+        
+        // Cargar configuración de horarios al entrar al tab de usuarios
+        async function loadHorariosConfig() {
+            try {
+                const response = await fetch(`${API_URL}?action=getInfoTurno`);
+                const result = await response.json();
+                
+                if (result.success && result.horarios) {
+                    const h = result.horarios;
+                    
+                    // Lunes a Viernes
+                    if (h.semana && h.semana[0]) {
+                        document.getElementById('semanaInicio1').value = h.semana[0].inicio || '08:30';
+                        document.getElementById('semanaFin1').value = h.semana[0].fin || '14:00';
+                    }
+                    if (h.semana && h.semana[1]) {
+                        document.getElementById('semanaInicio2').value = h.semana[1].inicio || '15:30';
+                        document.getElementById('semanaFin2').value = h.semana[1].fin || '18:30';
+                    }
+                    
+                    // Sábado
+                    if (h.sabado && h.sabado[0]) {
+                        document.getElementById('sabadoInicio').value = h.sabado[0].inicio || '09:00';
+                        document.getElementById('sabadoFin').value = h.sabado[0].fin || '13:00';
+                    }
+                    
+                    // Domingo
+                    const domingoCheck = document.getElementById('domingoHabilitado');
+                    const domingoHorarios = document.getElementById('domingoHorarios');
+                    
+                    if (h.domingo && h.domingo.length > 0) {
+                        domingoCheck.checked = true;
+                        domingoHorarios.style.display = 'block';
+                        document.getElementById('domingoInicio').value = h.domingo[0].inicio || '10:00';
+                        document.getElementById('domingoFin').value = h.domingo[0].fin || '14:00';
+                    } else {
+                        domingoCheck.checked = false;
+                        domingoHorarios.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error cargando horarios:', error);
+            }
+        }
+        
+        // Guardar configuración de horarios
+        async function saveHorariosConfig() {
+            const horarios = {
+                semana: [
+                    { 
+                        inicio: document.getElementById('semanaInicio1').value, 
+                        fin: document.getElementById('semanaFin1').value 
+                    },
+                    { 
+                        inicio: document.getElementById('semanaInicio2').value, 
+                        fin: document.getElementById('semanaFin2').value 
+                    }
+                ],
+                sabado: [
+                    { 
+                        inicio: document.getElementById('sabadoInicio').value, 
+                        fin: document.getElementById('sabadoFin').value 
+                    }
+                ],
+                domingo: []
+            };
+            
+            // Agregar domingo si está habilitado
+            if (document.getElementById('domingoHabilitado').checked) {
+                horarios.domingo = [{
+                    inicio: document.getElementById('domingoInicio').value,
+                    fin: document.getElementById('domingoFin').value
+                }];
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'saveHorarios',
+                    horarios: JSON.stringify(horarios)
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('✅ Horarios guardados correctamente', 'success');
+                } else {
+                    showToast(result.error || 'Error al guardar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+        
+        // Toggle domingo horarios
+        document.addEventListener('DOMContentLoaded', () => {
+            const domingoCheck = document.getElementById('domingoHabilitado');
+            if (domingoCheck) {
+                domingoCheck.addEventListener('change', function() {
+                    document.getElementById('domingoHorarios').style.display = 
+                        this.checked ? 'block' : 'none';
+                });
+            }
+        });
+        
+        // ============================================
+        // REASIGNACIÓN DE INCIDENCIAS
+        // ============================================
+        
+        let maintenanceUsersList = [];
+        
+        // Cargar lista de usuarios de mantenimiento
+        async function loadMaintenanceUsersList() {
+            try {
+                const response = await fetch(`${API_URL}?action=getMaintenanceUsers`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    maintenanceUsersList = result.users || [];
+                }
+            } catch (error) {
+                console.error('Error cargando usuarios de mantenimiento:', error);
+            }
+        }
+        
+        // Modal de reasignación
+        async function showReassignModal(incidentId, currentAssigned, room) {
+            // Cargar usuarios y verificar turno
+            await loadMaintenanceUsersList();
+            
+            // Obtener info del turno actual
+            let infoTurno = { enHorario: false };
+            try {
+                const response = await fetch(`${API_URL}?action=getInfoTurno`);
+                const result = await response.json();
+                if (result.success) {
+                    infoTurno = result;
+                }
+            } catch (e) {
+                console.error('Error obteniendo turno:', e);
+            }
+            
+            const isAdmin = currentUser?.level === 'admin';
+            const canAssignToSistemas = isAdmin || infoTurno.enHorario;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'reassignModal';
+            modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 20px;';
+            
+            let usersOptions = '<option value="">-- Seleccionar agente --</option>';
+            maintenanceUsersList.forEach(user => {
+                usersOptions += `<option value="${user.username}" data-name="${user.displayName}">${user.displayName}</option>`;
+            });
+            
+            // Mensaje de restricción si aplica
+            const restriccionMsg = !canAssignToSistemas ? `
+                <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 8px; color: #f59e0b; font-size: 0.85rem;">
+                        <span>⚠️</span>
+                        <span><strong>Fuera de horario de Sistemas</strong></span>
+                    </div>
+                    <p style="margin: 8px 0 0; font-size: 0.8rem; color: var(--text-muted);">
+                        Solo puedes reasignar entre agentes de Mantenimiento.<br>
+                        Sistemas estará disponible: <strong>${infoTurno.proximoHorario || 'próximo día hábil'}</strong>
+                    </p>
+                </div>
+            ` : '';
+            
+            modal.innerHTML = `
+                <div style="background: var(--bg-secondary); border-radius: 12px; max-width: 450px; width: 100%;">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), transparent); border-radius: 12px 12px 0 0;">
+                        <h3 style="margin: 0; color: #3b82f6;">🔄 Reasignar Incidencia</h3>
+                        <p style="margin: 8px 0 0; color: var(--text-muted); font-size: 0.9rem;">Habitación ${room}</p>
+                    </div>
+                    <div style="padding: 20px;">
+                        ${restriccionMsg}
+                        
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Asignar a:</label>
+                        <select id="reassignTo" style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; margin-bottom: 15px;">
+                            ${canAssignToSistemas ? '<option value="sistemas">💻 Departamento de Sistemas</option>' : ''}
+                            <option value="mantenimiento" selected>🔧 Departamento de Mantenimiento</option>
+                        </select>
+                        
+                        <div id="maintUserSelect" style="margin-top: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Agente específico (opcional):</label>
+                            <select id="reassignAgent" style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem;">
+                                ${usersOptions}
+                            </select>
+                            <small style="color: var(--text-muted); margin-top: 5px; display: block;">Si no seleccionas agente, cualquiera del equipo puede atenderlo</small>
+                        </div>
+                    </div>
+                    <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="document.getElementById('reassignModal').remove()" style="padding: 10px 20px; background: var(--bg-input); border: none; border-radius: 8px; color: var(--text-primary); cursor: pointer;">Cancelar</button>
+                        <button onclick="confirmReassign(${incidentId})" style="padding: 10px 20px; background: #3b82f6; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">🔄 Reasignar</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+            
+            document.body.appendChild(modal);
+            
+            // Toggle mostrar/ocultar selector de agente según departamento
+            document.getElementById('reassignTo').addEventListener('change', function() {
+                document.getElementById('maintUserSelect').style.display = 
+                    this.value === 'mantenimiento' ? 'block' : 'none';
+            });
+        }
+        
+        // Confirmar reasignación
+        async function confirmReassign(incidentId) {
+            const asignadoA = document.getElementById('reassignTo').value;
+            const agentSelect = document.getElementById('reassignAgent');
+            const agentOption = agentSelect.options[agentSelect.selectedIndex];
+            const asignadoNombre = asignadoA === 'mantenimiento' ? (agentOption?.dataset?.name || '') : '';
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'reassignIncident',
+                    id: incidentId,
+                    asignadoA: asignadoA,
+                    asignadoNombre: asignadoNombre,
+                    reasignadoPor: currentUser?.displayName || currentUser?.username || 'Sistema'
+                });
+                
+                const response = await fetch(`${API_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('reassignModal')?.remove();
+                    showToast('✅ Incidencia reasignada correctamente', 'success');
+                    
+                    // Recargar según el panel actual
+                    if (currentUser?.level === 'mantenimiento') {
+                        loadMaintenanceIncidents();
+                    } else {
+                        loadIncidents();
+                    }
+                } else {
+                    showToast(result.error || 'Error al reasignar', 'error');
+                }
+            } catch (error) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+        
         // Cargar lista de usuarios
         async function loadUsersList() {
             const container = document.getElementById('usersListContainer');
@@ -7266,6 +7583,9 @@
                         <tbody>
             `;
             
+            // Verificar si puede reasignar (admin o advanced)
+            const canReassign = currentUser && ['advanced', 'admin'].includes(currentUser.level);
+            
             incidents.forEach((inc, index) => {
                 const date = new Date(inc.timestamp);
                 const dateStr = date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
@@ -7277,9 +7597,14 @@
                 
                 // Badge de asignación
                 const asignadoA = inc.asignadoA || 'sistemas';
-                const asignadoBadge = asignadoA === 'mantenimiento' 
+                let asignadoBadge = asignadoA === 'mantenimiento' 
                     ? '<span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem;">🔧 Mant.</span>'
                     : '<span style="background: #06b6d4; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem;">💻 Sist.</span>';
+                
+                // Mostrar nombre del agente asignado si existe
+                if (inc.asignadoNombre) {
+                    asignadoBadge += `<br><span style="font-size: 0.7rem; color: var(--text-muted);">👷 ${inc.asignadoNombre}</span>`;
+                }
                 
                 // Badge de estado mejorado
                 const statusBadges = {
@@ -7308,6 +7633,7 @@
                         ${canAudit ? `
                         <td class="incident-actions">
                             ${canAction ? `<button class="resolve-btn" onclick="showResolveModal(${inc.id}, '${inc.room}')">✅ Atender</button>` : ''}
+                            ${canReassign && canAction ? `<button class="btn" style="padding: 4px 8px; font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid #3b82f6;" onclick="showReassignModal(${inc.id}, '${inc.asignadoA}', '${inc.room}')">🔄</button>` : ''}
                             ${isAdmin ? `<button class="delete-btn" onclick="deleteIncident(${inc.id})">🗑️</button>` : ''}
                         </td>
                         ` : ''}
@@ -7873,6 +8199,9 @@
                 'atendido': { text: '✅ Cerrado', class: 'resolved' }
             };
             
+            // Verificar si puede reasignar (mantenimiento, avanzado, admin)
+            const canReassign = currentUser && ['mantenimiento', 'advanced', 'admin'].includes(currentUser.level);
+            
             container.innerHTML = incidents.map(inc => {
                 const date = new Date(inc.timestamp);
                 const dateStr = date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
@@ -7882,12 +8211,18 @@
                 const isInProgress = inc.status === 'en_revision';
                 const canAct = isPending || isInProgress;
                 
+                // Mostrar asignación específica si existe
+                const asignadoInfo = inc.asignadoNombre 
+                    ? `<span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: 8px;">👷 ${inc.asignadoNombre}</span>` 
+                    : '';
+                
                 return `
                     <div class="maint-incident-card ${status.class}">
                         <div class="maint-card-header">
                             <div>
                                 <span class="maint-card-room">🚪 Hab. ${inc.room}</span>
                                 <span style="margin-left: 10px; font-size: 0.9rem;">${faultLabels[inc.faultType] || inc.faultType}</span>
+                                ${asignadoInfo}
                             </div>
                             <span class="maint-card-status ${status.class}">${status.text}</span>
                         </div>
@@ -7905,6 +8240,7 @@
                             ${isPending ? `<button class="maint-btn maint-btn-review" onclick="markInReview(${inc.id})">👁️ Revisar</button>` : ''}
                             ${canAct ? `<button class="maint-btn maint-btn-resolve" onclick="showResolveMaintenanceModal(${inc.id}, '${inc.room}')">✅ Resuelto</button>` : ''}
                             ${canAct ? `<button class="maint-btn maint-btn-escalate" onclick="showEscalateModal(${inc.id}, '${inc.room}')">🔺 Escalar a Sistemas</button>` : ''}
+                            ${canReassign && canAct ? `<button class="maint-btn" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid #3b82f6;" onclick="showReassignModal(${inc.id}, '${inc.asignadoA}', '${inc.room}')">🔄 Reasignar</button>` : ''}
                         </div>
                         ` : ''}
                     </div>
