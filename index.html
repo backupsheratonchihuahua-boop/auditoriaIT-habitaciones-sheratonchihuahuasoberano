@@ -4007,6 +4007,50 @@
                     </p>
                 </div>
             </div>
+            
+            <!-- Historial de Tickets Atendidos -->
+            <div class="data-table-container" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3>📜 Historial de Tickets Atendidos</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <select id="historialPeriodo" onchange="loadHistorial()" style="padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                            <option value="7">Últimos 7 días</option>
+                            <option value="30" selected>Últimos 30 días</option>
+                            <option value="90">Últimos 90 días</option>
+                            <option value="all">Todo el historial</option>
+                        </select>
+                        <button class="btn" onclick="loadHistorial()">🔄 Actualizar</button>
+                        <button class="btn" onclick="exportHistorial()">📥 Exportar</button>
+                    </div>
+                </div>
+                
+                <!-- KPIs de Historial -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #10b981;" id="histTotalAtendidos">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">✅ Tickets Atendidos</div>
+                    </div>
+                    <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #3b82f6;" id="histTiempoPromedio">--</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">⏱️ Tiempo Promedio</div>
+                    </div>
+                    <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #f59e0b;" id="histTiempoMin">--</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">🚀 Más Rápido</div>
+                    </div>
+                    <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #ef4444;" id="histTiempoMax">--</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">🐢 Más Lento</div>
+                    </div>
+                </div>
+                
+                <!-- Tabla de Historial -->
+                <div id="historialContainer" style="max-height: 400px; overflow-y: auto;">
+                    <p style="color: var(--text-muted); text-align: center; padding: 30px;">
+                        Clic en "🔄 Actualizar" para cargar el historial
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- TAB 3: GESTIÓN DE USUARIOS (Solo Admin) -->
@@ -4980,6 +5024,7 @@
             if (tabName === 'reports') {
                 refreshCharts();
                 loadIncidents(); // Cargar incidencias al entrar a reportes
+                loadHistorial(); // Cargar historial de tickets
             }
             if (tabName === 'users') {
                 loadUsersList();
@@ -7541,6 +7586,229 @@
                 statusEl.style.color = '#f59e0b';
                 asignacionEl.innerHTML = `Las incidencias se asignan a <strong style="color: #f59e0b;">Mantenimiento</strong> | Próximo turno: ${infoTurno.proximoHorario || ''}`;
             }
+        }
+        
+        // ============================================
+        // HISTORIAL DE TICKETS ATENDIDOS
+        // ============================================
+        
+        let historialData = [];
+        
+        async function loadHistorial() {
+            const container = document.getElementById('historialContainer');
+            if (!container) return;
+            
+            container.innerHTML = '<p style="text-align: center; padding: 30px;">⏳ Cargando historial...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const result = await response.json();
+                
+                if (result.success && result.incidents) {
+                    // Filtrar solo tickets cerrados (atendido o resuelto_mant)
+                    const cerrados = result.incidents.filter(inc => 
+                        inc.status === 'atendido' || inc.status === 'resuelto_mant'
+                    );
+                    
+                    // Aplicar filtro de período
+                    const periodo = document.getElementById('historialPeriodo')?.value || '30';
+                    const ahora = new Date();
+                    
+                    let filtrados = cerrados;
+                    if (periodo !== 'all') {
+                        const dias = parseInt(periodo);
+                        const fechaLimite = new Date(ahora.getTime() - (dias * 24 * 60 * 60 * 1000));
+                        filtrados = cerrados.filter(inc => {
+                            const fechaInc = new Date(inc.timestamp);
+                            return fechaInc >= fechaLimite;
+                        });
+                    }
+                    
+                    historialData = filtrados;
+                    renderHistorial(filtrados);
+                    updateHistorialStats(filtrados);
+                } else {
+                    container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 30px;">No se pudo cargar el historial</p>';
+                }
+            } catch (error) {
+                console.error('Error cargando historial:', error);
+                container.innerHTML = '<p style="color: #ef4444; text-align: center; padding: 30px;">Error de conexión</p>';
+            }
+        }
+        
+        function calcularTiempoAtencion(timestamp, fechaResolucion) {
+            if (!timestamp || !fechaResolucion) return null;
+            
+            const inicio = new Date(timestamp);
+            const fin = new Date(fechaResolucion);
+            const diffMs = fin - inicio;
+            
+            if (diffMs < 0) return null;
+            
+            return diffMs;
+        }
+        
+        function formatearTiempo(ms) {
+            if (!ms || ms < 0) return '--';
+            
+            const segundos = Math.floor(ms / 1000);
+            const minutos = Math.floor(segundos / 60);
+            const horas = Math.floor(minutos / 60);
+            const dias = Math.floor(horas / 24);
+            
+            if (dias > 0) {
+                const horasRestantes = horas % 24;
+                return `${dias}d ${horasRestantes}h`;
+            } else if (horas > 0) {
+                const minutosRestantes = minutos % 60;
+                return `${horas}h ${minutosRestantes}m`;
+            } else if (minutos > 0) {
+                return `${minutos}m`;
+            } else {
+                return `${segundos}s`;
+            }
+        }
+        
+        function updateHistorialStats(incidents) {
+            const tiempos = incidents
+                .map(inc => calcularTiempoAtencion(inc.timestamp, inc.fechaResolucion))
+                .filter(t => t !== null && t > 0);
+            
+            // Total atendidos
+            document.getElementById('histTotalAtendidos').textContent = incidents.length;
+            
+            if (tiempos.length > 0) {
+                // Promedio
+                const promedio = tiempos.reduce((a, b) => a + b, 0) / tiempos.length;
+                document.getElementById('histTiempoPromedio').textContent = formatearTiempo(promedio);
+                
+                // Mínimo
+                const minimo = Math.min(...tiempos);
+                document.getElementById('histTiempoMin').textContent = formatearTiempo(minimo);
+                
+                // Máximo
+                const maximo = Math.max(...tiempos);
+                document.getElementById('histTiempoMax').textContent = formatearTiempo(maximo);
+            } else {
+                document.getElementById('histTiempoPromedio').textContent = '--';
+                document.getElementById('histTiempoMin').textContent = '--';
+                document.getElementById('histTiempoMax').textContent = '--';
+            }
+        }
+        
+        function renderHistorial(incidents) {
+            const container = document.getElementById('historialContainer');
+            if (!container) return;
+            
+            if (incidents.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <div style="font-size: 2.5rem; margin-bottom: 10px;">📭</div>
+                        <p>No hay tickets atendidos en este período</p>
+                    </div>`;
+                return;
+            }
+            
+            const faultLabels = {
+                'telefono': '📞 Teléfono',
+                'tv': '📺 TV',
+                'internet': '📶 Internet',
+                'router': '📡 Router',
+                'ac': '❄️ A/C',
+                'otro': '⚠️ Otro'
+            };
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="background: var(--bg-secondary); position: sticky; top: 0;">
+                            <th style="padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border-color);">Hab.</th>
+                            <th style="padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border-color);">Tipo</th>
+                            <th style="padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border-color);">Reportado</th>
+                            <th style="padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border-color);">Cerrado</th>
+                            <th style="padding: 12px 8px; text-align: center; border-bottom: 1px solid var(--border-color);">⏱️ Duración</th>
+                            <th style="padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border-color);">Atendido por</th>
+                            <th style="padding: 12px 8px; text-align: center; border-bottom: 1px solid var(--border-color);">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            incidents.forEach(inc => {
+                const fechaReporte = new Date(inc.timestamp);
+                const fechaCierre = inc.fechaResolucion ? new Date(inc.fechaResolucion) : null;
+                
+                const reporteStr = fechaReporte.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: '2-digit' }) + 
+                                   ' ' + fechaReporte.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                
+                const cierreStr = fechaCierre 
+                    ? fechaCierre.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: '2-digit' }) + 
+                      ' ' + fechaCierre.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+                    : '--';
+                
+                const tiempoMs = calcularTiempoAtencion(inc.timestamp, inc.fechaResolucion);
+                const tiempoStr = formatearTiempo(tiempoMs);
+                
+                // Color según tiempo
+                let tiempoColor = '#10b981'; // Verde por defecto
+                if (tiempoMs) {
+                    const horas = tiempoMs / (1000 * 60 * 60);
+                    if (horas > 24) tiempoColor = '#ef4444'; // Rojo > 24h
+                    else if (horas > 8) tiempoColor = '#f59e0b'; // Amarillo > 8h
+                }
+                
+                const estadoBadge = inc.status === 'atendido' 
+                    ? '<span style="background: #06b6d4; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem;">💻 Sistemas</span>'
+                    : '<span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem;">🔧 Mant.</span>';
+                
+                html += `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 10px 8px;"><strong>${inc.room}</strong></td>
+                        <td style="padding: 10px 8px;">${faultLabels[inc.faultType] || inc.faultType}</td>
+                        <td style="padding: 10px 8px; font-size: 0.8rem; color: var(--text-secondary);">${reporteStr}</td>
+                        <td style="padding: 10px 8px; font-size: 0.8rem; color: var(--text-secondary);">${cierreStr}</td>
+                        <td style="padding: 10px 8px; text-align: center;">
+                            <span style="background: ${tiempoColor}22; color: ${tiempoColor}; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;">
+                                ${tiempoStr}
+                            </span>
+                        </td>
+                        <td style="padding: 10px 8px; font-size: 0.85rem;">${inc.atendidoPor || '--'}</td>
+                        <td style="padding: 10px 8px; text-align: center;">${estadoBadge}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        function exportHistorial() {
+            if (historialData.length === 0) {
+                showToast('No hay datos para exportar', 'warning');
+                return;
+            }
+            
+            let csv = 'Habitación,Tipo,Descripción,Reportado Por,Fecha Reporte,Fecha Cierre,Duración (min),Atendido Por,Estado\n';
+            
+            historialData.forEach(inc => {
+                const fechaReporte = new Date(inc.timestamp).toLocaleString('es-MX');
+                const fechaCierre = inc.fechaResolucion ? new Date(inc.fechaResolucion).toLocaleString('es-MX') : '';
+                const tiempoMs = calcularTiempoAtencion(inc.timestamp, inc.fechaResolucion);
+                const duracionMin = tiempoMs ? Math.round(tiempoMs / 60000) : '';
+                const estado = inc.status === 'atendido' ? 'Sistemas' : 'Mantenimiento';
+                
+                csv += `"${inc.room}","${inc.faultType}","${(inc.description || '').replace(/"/g, '""')}","${inc.reporter}","${fechaReporte}","${fechaCierre}","${duracionMin}","${inc.atendidoPor || ''}","${estado}"\n`;
+            });
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `historial_tickets_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('✅ Historial exportado', 'success');
         }
         
         function renderIncidentsTable(incidents) {
