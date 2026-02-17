@@ -3418,7 +3418,7 @@
                     <span style="font-size: 2rem;">📢</span>
                     <div>
                         <h3 style="margin: 0; color: #22d3ee;">Panel de Reporte Rápido</h3>
-                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Reporta incidencias de habitaciones para que el equipo de IT las atienda</p>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Reporta incidencias de habitaciones para que el equipo correspondiente las atienda</p>
                     </div>
                 </div>
                 
@@ -3517,14 +3517,29 @@
                     </div>
                     <div class="input-group">
                         <label>Tipo de Falla</label>
-                        <select id="agentFaultType">
+                        <select id="agentFaultType" onchange="updateFaultDeptIndicator()">
                             <option value="">Selecciona...</option>
-                            <option value="telefono">📞 Teléfono</option>
-                            <option value="tv">📺 TV</option>
-                            <option value="internet">📶 Internet/WiFi</option>
-                            <option value="router">📡 Router</option>
-                            <option value="ac">❄️ A/C</option>
-                            <option value="otro">⚠️ Otro</option>
+                            <optgroup label="💻 Sistemas">
+                                <option value="telefono">📞 Teléfono</option>
+                                <option value="tv">📺 TV</option>
+                                <option value="internet">📶 Internet/WiFi</option>
+                                <option value="router">📡 Router</option>
+                            </optgroup>
+                            <optgroup label="🔧 Mantenimiento">
+                                <option value="plomeria">🔧 Plomería</option>
+                                <option value="electricidad">💡 Electricidad / Focos</option>
+                                <option value="ac">❄️ Aire Acondicionado</option>
+                                <option value="cerrajeria">🔑 Cerrajería / Chapas</option>
+                                <option value="mobiliario">🪑 Mobiliario</option>
+                                <option value="pintura">🎨 Pintura / Resane</option>
+                                <option value="carpinteria">🚪 Carpintería / Puertas</option>
+                                <option value="cristaleria">🪟 Cristalería / Espejos</option>
+                                <option value="cortinas">🪟 Cortinas / Cortineros</option>
+                                <option value="limpieza-profunda">🧹 Limpieza Profunda</option>
+                            </optgroup>
+                            <optgroup label="⚠️ Otros">
+                                <option value="otro">⚠️ Otro</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="input-group">
@@ -5210,6 +5225,17 @@
                             <li>❌ Gestionar usuarios</li>
                         </ul>
                     </div>
+                    <div class="role-card" style="border-left-color: #f59e0b;">
+                        <h4>🏨 Ama de Llaves</h4>
+                        <ul>
+                            <li>✅ Auditar mantenimiento</li>
+                            <li>✅ Reportar incidencias</li>
+                            <li>✅ Exportar datos</li>
+                            <li>✅ Ver reportes</li>
+                            <li>❌ Auditar sistemas</li>
+                            <li>❌ Gestionar usuarios</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             
@@ -5853,7 +5879,7 @@
             
             const incidentCategories = {};
             incidents.forEach(inc => {
-                const faultLabels = { 'telefono': '📞 Teléfono', 'tv': '📺 TV', 'internet': '📶 Internet', 'router': '📡 Router', 'ac': '❄️ A/C', 'otro': '⚠️ Otro' };
+                const faultLabels = FAULT_LABELS;
                 const label = faultLabels[inc.faultType] || inc.faultType;
                 incidentCategories[label] = (incidentCategories[label] || 0) + 1;
             });
@@ -6115,7 +6141,7 @@
                 } else {
                     // Renderizar incidencia (solo en sistemas/todas)
                     const incident = item.data;
-                    const faultLabels = { 'telefono': '📞 Teléfono', 'tv': '📺 TV', 'internet': '📶 Internet', 'router': '📡 Router', 'ac': '❄️ A/C', 'otro': '⚠️ Otro' };
+                    const faultLabels = FAULT_LABELS;
                     const dateStr = new Date(incident.timestamp).toLocaleDateString('es-MX');
                     const timeStr = new Date(incident.timestamp).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
                     const isPending = incident.status === 'pendiente';
@@ -6873,6 +6899,24 @@
         
         const MAINT_SECTIONS = ['maint-door','maint-bath','maint-connect','maint-room','maint-tv','maint-closet','maint-ac'];
         let currentDeptFilter = 'todas';
+        
+        const FAULT_LABELS = {
+            'telefono': '📞 Teléfono', 'tv': '📺 TV', 'internet': '📶 Internet/WiFi', 'router': '📡 Router',
+            'plomeria': '🔧 Plomería', 'electricidad': '💡 Electricidad/Focos', 'ac': '❄️ A/C',
+            'cerrajeria': '🔑 Cerrajería/Chapas', 'mobiliario': '🪑 Mobiliario', 'pintura': '🎨 Pintura/Resane',
+            'carpinteria': '🚪 Carpintería/Puertas', 'cristaleria': '🪟 Cristalería/Espejos',
+            'cortinas': '🪟 Cortinas/Cortineros', 'limpieza-profunda': '🧹 Limpieza Profunda',
+            'otro': '⚠️ Otro'
+        };
+        
+        const FAULT_DEPT = {
+            'telefono': 'sistemas', 'tv': 'sistemas', 'internet': 'sistemas', 'router': 'sistemas',
+            'plomeria': 'mantenimiento', 'electricidad': 'mantenimiento', 'ac': 'mantenimiento',
+            'cerrajeria': 'mantenimiento', 'mobiliario': 'mantenimiento', 'pintura': 'mantenimiento',
+            'carpinteria': 'mantenimiento', 'cristaleria': 'mantenimiento',
+            'cortinas': 'mantenimiento', 'limpieza-profunda': 'mantenimiento',
+            'otro': 'ambos'
+        };
         
         function setMaintCheck(sectionId, itemId, status) {
             const el = document.getElementById(sectionId + '-' + itemId);
@@ -9275,10 +9319,7 @@
             const existing = document.querySelector('.welcome-notification');
             if (existing) existing.remove();
             
-            const faultLabels = {
-                'telefono': '📞', 'tv': '📺', 'internet': '📶',
-                'router': '📡', 'ac': '❄️', 'otro': '⚠️'
-            };
+            const faultLabels = FAULT_LABELS;
             
             const recentList = recentIncidents.map(inc => {
                 const icon = faultLabels[inc.faultType] || '📋';
@@ -9475,14 +9516,7 @@
                 return;
             }
             
-            const faultLabels = {
-                'telefono': '📞 Teléfono',
-                'tv': '📺 TV',
-                'internet': '📶 Internet',
-                'router': '📡 Router',
-                'ac': '❄️ A/C',
-                'otro': '⚠️ Otro'
-            };
+            const faultLabels = FAULT_LABELS;
             
             let html = `
                 <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
@@ -9586,14 +9620,7 @@
                 return;
             }
             
-            const faultLabels = {
-                'telefono': '📞 Teléfono',
-                'tv': '📺 TV',
-                'internet': '📶 Internet',
-                'router': '📡 Router',
-                'ac': '❄️ A/C',
-                'otro': '⚠️ Otro'
-            };
+            const faultLabels = FAULT_LABELS;
             
             const isAdmin = currentUser && currentUser.level === 'admin';
             const canAudit = currentUser && USER_LEVELS[currentUser.level]?.canAudit;
@@ -9681,14 +9708,7 @@
         
         // Mostrar detalle completo de incidencia (con datos completos)
         function showIncidentDetailFull(inc) {
-            const faultLabels = {
-                'telefono': '📞 Teléfono',
-                'tv': '📺 TV',
-                'internet': '📶 Internet',
-                'router': '📡 Router',
-                'ac': '❄️ A/C',
-                'otro': '⚠️ Otro'
-            };
+            const faultLabels = FAULT_LABELS;
             
             const statusLabels = {
                 'pendiente': '⏳ Pendiente',
@@ -10020,10 +10040,12 @@
             btn.textContent = '⏳ Enviando...';
             
             try {
+                const faultDept = FAULT_DEPT[faultType] || 'ambos';
                 const params = new URLSearchParams({
                     action: 'reportIncident',
                     room: room,
                     faultType: faultType,
+                    faultDept: faultDept,
                     description: description || 'Sin descripción',
                     reporter: reporter,
                     timestamp: new Date().toISOString()
@@ -10036,8 +10058,12 @@
                     const asignadoA = result.asignadoA === 'mantenimiento' ? '🔧 Mantenimiento' : '💻 Sistemas';
                     showToast(`¡Reporte enviado! Asignado a: ${asignadoA}`, 'success');
                     
-                    // Si fue asignado a mantenimiento, mostrar mensaje adicional
-                    if (result.asignadoA === 'mantenimiento') {
+                    // Mensaje contextual según tipo de falla
+                    if (faultDept === 'mantenimiento') {
+                        setTimeout(() => {
+                            showToast('🔧 Falla de mantenimiento — Se notificó al depto. correspondiente', 'info');
+                        }, 2000);
+                    } else if (result.asignadoA === 'mantenimiento') {
                         setTimeout(() => {
                             showToast('⚠️ Fuera de horario de Sistemas - Se notificó a Mantenimiento', 'info');
                         }, 2000);
@@ -10087,10 +10113,7 @@
                         return;
                     }
                     
-                    const faultLabels = {
-                        'telefono': '📞', 'tv': '📺', 'internet': '📶',
-                        'router': '📡', 'ac': '❄️', 'otro': '⚠️'
-                    };
+                    const faultLabels = FAULT_LABELS;
                     
                     const currentReporter = currentUser?.displayName || currentUser?.username;
                     
@@ -10117,6 +10140,9 @@
             
             if (!statusEl || !msgEl) return;
             
+            // Guardar info de turno para uso posterior
+            window._lastTurnoInfo = infoTurno;
+            
             if (infoTurno.enHorario) {
                 statusEl.innerHTML = '💻 Sistemas disponible';
                 statusEl.style.background = 'rgba(16, 185, 129, 0.2)';
@@ -10127,6 +10153,38 @@
                 statusEl.style.background = 'rgba(245, 158, 11, 0.2)';
                 statusEl.style.color = '#f59e0b';
                 msgEl.innerHTML = `Se asignará a Mantenimiento | Sistemas regresa: ${infoTurno.proximoHorario || ''}`;
+            }
+        }
+        
+        function updateFaultDeptIndicator() {
+            const faultType = document.getElementById('agentFaultType').value;
+            if (!faultType) return;
+            
+            const dept = FAULT_DEPT[faultType] || 'ambos';
+            const statusEl = document.getElementById('agentTurnoStatus');
+            const msgEl = document.getElementById('agentTurnoMsg');
+            if (!statusEl || !msgEl) return;
+            
+            if (dept === 'mantenimiento') {
+                statusEl.innerHTML = '🔧 Mantenimiento';
+                statusEl.style.background = 'rgba(245, 158, 11, 0.2)';
+                statusEl.style.color = '#f59e0b';
+                msgEl.innerHTML = 'Este tipo de falla se asigna directamente a Mantenimiento';
+            } else if (dept === 'sistemas') {
+                // Restaurar indicador de turno de sistemas
+                if (window._lastTurnoInfo) {
+                    updateAgentTurnoIndicator(window._lastTurnoInfo);
+                } else {
+                    statusEl.innerHTML = '💻 Sistemas';
+                    statusEl.style.background = 'rgba(16, 185, 129, 0.2)';
+                    statusEl.style.color = '#10b981';
+                    msgEl.innerHTML = 'Este tipo de falla se asigna a Sistemas';
+                }
+            } else {
+                statusEl.innerHTML = '📋 General';
+                statusEl.style.background = 'rgba(139, 92, 246, 0.2)';
+                statusEl.style.color = '#a78bfa';
+                msgEl.innerHTML = 'Se asignará según disponibilidad de departamento';
             }
         }
         
@@ -10216,14 +10274,7 @@
                 return;
             }
             
-            const faultLabels = {
-                'telefono': '📞 Teléfono',
-                'tv': '📺 TV',
-                'internet': '📶 Internet',
-                'router': '📡 Router',
-                'ac': '❄️ A/C',
-                'otro': '⚠️ Otro'
-            };
+            const faultLabels = FAULT_LABELS;
             
             const statusLabels = {
                 'pendiente': { text: '⏳ Pendiente', class: 'pending' },
@@ -10507,10 +10558,10 @@
                 else el.classList.remove('permission-hidden');
             });
             
-            // Panel de agentes - mostrar solo para rol agente
+            // Panel de agentes - mostrar para rol agente y amaDeLlaves
             const agentPanel = document.getElementById('agentReportPanel');
             if (agentPanel) {
-                if (currentUser.level === 'agente') {
+                if (currentUser.level === 'agente' || currentUser.level === 'amaDeLlaves') {
                     agentPanel.classList.add('show');
                     const reporterField = document.getElementById('agentReporter');
                     if (reporterField) {
