@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auditoria-integral-v5';
+const CACHE_NAME = 'auditoria-integral-v6';
 const urlsToCache = [
   './',
   './index.html',
