@@ -3288,8 +3288,8 @@
                 </div>
             </header>
 
-            <!-- Summary Cards -->
-            <div class="summary-grid">
+            <!-- Summary Cards - Sistemas -->
+            <div class="summary-grid" id="summaryGrid-sistemas">
                 <div class="summary-card success">
                     <div class="summary-value" id="roomsAudited">0</div>
                     <div class="summary-label">Auditadas</div>
@@ -3310,6 +3310,37 @@
                     <div class="summary-value" id="routerCount">0</div>
                     <div class="summary-label">Routers/42</div>
                 </div>
+            </div>
+
+            <!-- Summary Cards - Mantenimiento -->
+            <div class="summary-grid" id="summaryGrid-mantenimiento" style="display: none;">
+                <div class="summary-card success">
+                    <div class="summary-value" id="maintRoomsChecked">0</div>
+                    <div class="summary-label">🔧 Revisadas</div>
+                </div>
+                <div class="summary-card purple">
+                    <div class="summary-value" id="maintRoomsPending">204</div>
+                    <div class="summary-label">🔧 Pendientes</div>
+                </div>
+                <div class="summary-card danger">
+                    <div class="summary-value" id="maintFallas">0</div>
+                    <div class="summary-label">Fallas</div>
+                </div>
+                <div class="summary-card warning">
+                    <div class="summary-value" id="maintAjustes">0</div>
+                    <div class="summary-label">Ajustes</div>
+                </div>
+                <div class="summary-card info">
+                    <div class="summary-value" id="maintEnProceso">0</div>
+                    <div class="summary-label">En Proceso</div>
+                </div>
+            </div>
+
+            <!-- Department Filter -->
+            <div class="dept-filter-bar" id="deptFilterBar">
+                <button class="dept-filter-btn active" data-dept="todas" onclick="filterByDepartment('todas')">📋 Todas</button>
+                <button class="dept-filter-btn" data-dept="sistemas" onclick="filterByDepartment('sistemas')">💻 Sistemas</button>
+                <button class="dept-filter-btn" data-dept="mantenimiento" onclick="filterByDepartment('mantenimiento')">🔧 Mantenimiento</button>
             </div>
 
             <!-- Panel de Reporte Rápido para Agentes -->
@@ -3474,13 +3505,6 @@
                 </div>
             </div>
 
-
-            <!-- Department Filter -->
-            <div class="dept-filter-bar" id="deptFilterBar">
-                <button class="dept-filter-btn active" data-dept="todas" onclick="filterByDepartment('todas')">📋 Todas</button>
-                <button class="dept-filter-btn" data-dept="sistemas" onclick="filterByDepartment('sistemas')">💻 Sistemas</button>
-                <button class="dept-filter-btn" data-dept="mantenimiento" onclick="filterByDepartment('mantenimiento')">🔧 Mantenimiento</button>
-            </div>
 
             <!-- Audit Sections -->
             <section class="audit-section" data-dept="sistemas">
@@ -6742,6 +6766,24 @@
                     section.classList.toggle('dept-hidden', sectionDept !== dept);
                 }
             });
+            
+            // Switch KPI panels
+            const sisSummary = document.getElementById('summaryGrid-sistemas');
+            const maintSummary = document.getElementById('summaryGrid-mantenimiento');
+            if (sisSummary && maintSummary) {
+                if (dept === 'mantenimiento') {
+                    sisSummary.style.display = 'none';
+                    maintSummary.style.display = '';
+                    updateMaintSummary();
+                } else if (dept === 'sistemas') {
+                    sisSummary.style.display = '';
+                    maintSummary.style.display = 'none';
+                } else {
+                    // "Todas" - show sistemas KPIs by default
+                    sisSummary.style.display = '';
+                    maintSummary.style.display = 'none';
+                }
+            }
         }
 
         function previousRoom() { const idx = ALL_ROOMS.indexOf(parseInt(currentRoom)); if (idx > 0) loadRoom(ALL_ROOMS[idx - 1]); }
@@ -6759,6 +6801,39 @@
             document.getElementById('roomsPending').textContent = TOTAL_ROOMS - rooms.length;
             document.getElementById('issuesFound').textContent = totalIssues;
             document.getElementById('phoneMissing').textContent = phoneMissing;
+            
+            // También actualizar KPIs de mantenimiento si están visibles
+            updateMaintSummary();
+        }
+        
+        function updateMaintSummary() {
+            const rooms = Object.keys(auditData);
+            let maintChecked = 0, totalFallas = 0, totalAjustes = 0, totalProceso = 0;
+            
+            rooms.forEach(room => {
+                const maint = auditData[room]?.maintenance;
+                if (maint && Object.keys(maint).length > 0) {
+                    maintChecked++;
+                    // Contar estados en todas las secciones
+                    MAINT_SECTIONS.forEach(sid => {
+                        const section = maint[sid];
+                        if (!section) return;
+                        Object.keys(section).forEach(key => {
+                            if (key.startsWith('_')) return;
+                            if (section[key] === 'falla') totalFallas++;
+                            else if (section[key] === 'ajuste') totalAjustes++;
+                            else if (section[key] === 'proceso') totalProceso++;
+                        });
+                    });
+                }
+            });
+            
+            const el = id => document.getElementById(id);
+            if (el('maintRoomsChecked')) el('maintRoomsChecked').textContent = maintChecked;
+            if (el('maintRoomsPending')) el('maintRoomsPending').textContent = TOTAL_ROOMS - maintChecked;
+            if (el('maintFallas')) el('maintFallas').textContent = totalFallas;
+            if (el('maintAjustes')) el('maintAjustes').textContent = totalAjustes;
+            if (el('maintEnProceso')) el('maintEnProceso').textContent = totalProceso;
         }
 
         function updateProgress() {
