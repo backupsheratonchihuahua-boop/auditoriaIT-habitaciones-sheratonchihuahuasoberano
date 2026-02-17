@@ -5040,6 +5040,68 @@
                             <option value="wifi-media">WiFi - Cobertura media</option>
                             <option value="router-needed">Necesita Router</option>
                         </optgroup>
+                        <optgroup label="🚪 Puerta Principal">
+                            <option value="maint-door--ALL">Todas las fallas de Puerta</option>
+                            <option value="maint-door--puerta">Puerta</option>
+                            <option value="maint-door--bisagra">Bisagra</option>
+                            <option value="maint-door--chapa">Chapa</option>
+                            <option value="maint-door--seguro">Seguro/Pasador</option>
+                            <option value="maint-door--mirilla">Mirilla</option>
+                            <option value="maint-door--tope">Tope de Puerta</option>
+                            <option value="maint-door--marco">Marco</option>
+                        </optgroup>
+                        <optgroup label="🚿 Baño">
+                            <option value="maint-bath--ALL">Todas las fallas de Baño</option>
+                            <option value="maint-bath--mangueras">Mangueras</option>
+                            <option value="maint-bath--llaves-paso">Llaves de Paso</option>
+                            <option value="maint-bath--ducha">Ducha</option>
+                            <option value="maint-bath--monomando">Monomando</option>
+                            <option value="maint-bath--lavamanos">Lavamanos</option>
+                            <option value="maint-bath--lamparas">Lámparas</option>
+                            <option value="maint-bath--tina">Tina</option>
+                            <option value="maint-bath--wc">W.C.</option>
+                            <option value="maint-bath--coladera">Coladera</option>
+                            <option value="maint-bath--secadora">Secadora</option>
+                            <option value="maint-bath--espejo-vanity">Espejo y Vanity</option>
+                        </optgroup>
+                        <optgroup label="🚪 Puertas Comunicadas">
+                            <option value="maint-connect--ALL">Todas las fallas de P. Comunicadas</option>
+                            <option value="maint-connect--chapa-contra">Chapa y Contrachapa</option>
+                            <option value="maint-connect--bisagras">Bisagras</option>
+                        </optgroup>
+                        <optgroup label="🛏️ Habitación / Mobiliario">
+                            <option value="maint-room--ALL">Todas las fallas de Mobiliario</option>
+                            <option value="maint-room--base-colchon">Base y Colchón</option>
+                            <option value="maint-room--cabecera">Cabecera</option>
+                            <option value="maint-room--lampara-buro">Lámparas de Buro</option>
+                            <option value="maint-room--lampara-escritorio">Lámpara de Escritorio</option>
+                            <option value="maint-room--cortinero">Cortinero</option>
+                            <option value="maint-room--ventana">Ventana</option>
+                            <option value="maint-room--detector-humo">Detector de Humo</option>
+                            <option value="maint-room--resane-pintura">Resane y Pintura</option>
+                            <option value="maint-room--zoclo">Zoclo</option>
+                        </optgroup>
+                        <optgroup label="📺 TV Estado Físico">
+                            <option value="maint-tv--ALL">Todas las fallas de TV Físico</option>
+                            <option value="maint-tv--calidad-img">Calidad Imagen/Sonido</option>
+                            <option value="maint-tv--control">Control Remoto (físico)</option>
+                        </optgroup>
+                        <optgroup label="👔 Closet">
+                            <option value="maint-closet--ALL">Todas las fallas de Closet</option>
+                            <option value="maint-closet--tabla-planchar">Tabla de Planchar</option>
+                            <option value="maint-closet--plancha">Plancha</option>
+                            <option value="maint-closet--ganchos">Ganchos</option>
+                            <option value="maint-closet--luz">Luz</option>
+                        </optgroup>
+                        <optgroup label="❄️ Aire Acondicionado">
+                            <option value="maint-ac--ALL">Todas las fallas de A/C</option>
+                            <option value="maint-ac--funcion">Función Frío/Calor</option>
+                            <option value="maint-ac--limpieza">Limpieza General</option>
+                            <option value="maint-ac--termostato">Termostato</option>
+                            <option value="maint-ac--valvula">Válvula 3 Vías</option>
+                            <option value="maint-ac--drenaje">Drenaje y Limpieza</option>
+                            <option value="maint-ac--conexion">Conexión Eléctrica</option>
+                        </optgroup>
                     </select>
                 </div>
 
@@ -7796,6 +7858,24 @@
             'wifi-media': { name: 'WiFi - Cobertura media', icon: '📶', category: 'wifi' },
             'router-needed': { name: 'Necesita Router', icon: '🔴', category: 'wifi' }
         };
+        
+        function getFailureTypeInfo(failureType) {
+            // Check static map first
+            if (FAILURE_TYPES[failureType]) return FAILURE_TYPES[failureType];
+            // Dynamic resolution for maintenance types: "maint-section--itemId"
+            if (failureType.startsWith('maint-')) {
+                const [sectionId, itemId] = failureType.split('--');
+                const labels = MAINT_ITEM_LABELS[sectionId] || {};
+                const sectionTitle = (labels._title || sectionId).replace(/[🚪🚿🛏️📺👔❄️]/g, '').trim();
+                const sectionIcon = (labels._title || '🔧').match(/^./)?.[0] || '🔧';
+                if (itemId === 'ALL') {
+                    return { name: `${sectionTitle} - Todas las fallas`, icon: sectionIcon, category: 'mantenimiento' };
+                }
+                const itemLabel = labels[itemId] || itemId;
+                return { name: `${sectionTitle} - ${itemLabel}`, icon: sectionIcon, category: 'mantenimiento' };
+            }
+            return { name: failureType, icon: '⚠️', category: 'otro' };
+        }
 
         function generateFailureReport() {
             const failureType = document.getElementById('failureTypeSelect').value;
@@ -7813,7 +7893,7 @@
             }
             
             const failedRooms = getFailedRoomsByType(failureType);
-            const typeInfo = FAILURE_TYPES[failureType];
+            const typeInfo = getFailureTypeInfo(failureType);
             
             if (failedRooms.length === 0) {
                 resultContainer.innerHTML = `
@@ -7853,7 +7933,25 @@
                         <div class="failure-floor-group">
                             <span class="failure-floor-title">Piso ${floor} (${sortedRooms.length} habitaciones)</span>
                             <div class="failure-floor-rooms">
-                                ${sortedRooms.map(room => `<span class="failure-room-badge">${room}</span>`).join('')}
+                                ${sortedRooms.map(room => {
+                                    // For maintenance types, show falla/ajuste detail
+                                    if (failureType.startsWith('maint-')) {
+                                        const [sectionId, itemId] = failureType.split('--');
+                                        const maint = auditData[room]?.maintenance?.[sectionId];
+                                        if (maint && itemId === 'ALL') {
+                                            const fallas = Object.keys(maint).filter(k => !k.startsWith('_') && maint[k] === 'falla').length;
+                                            const ajustes = Object.keys(maint).filter(k => !k.startsWith('_') && maint[k] === 'ajuste').length;
+                                            const clr = fallas > 0 ? 'background:rgba(239,68,68,0.2); border-color:#ef4444; color:#ef4444;' : 'background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#f59e0b;';
+                                            return `<span class="failure-room-badge" style="${clr}" title="${fallas}F ${ajustes}A">${room} <small style="font-size:0.6rem;">${fallas > 0 ? fallas + 'F' : ''}${ajustes > 0 ? ' ' + ajustes + 'A' : ''}</small></span>`;
+                                        } else if (maint) {
+                                            const v = maint[itemId];
+                                            const clr = v === 'falla' ? 'background:rgba(239,68,68,0.2); border-color:#ef4444; color:#ef4444;' : 'background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#f59e0b;';
+                                            const lbl = v === 'falla' ? 'F' : 'A';
+                                            return `<span class="failure-room-badge" style="${clr}">${room} <small style="font-size:0.6rem;">${lbl}</small></span>`;
+                                        }
+                                    }
+                                    return `<span class="failure-room-badge">${room}</span>`;
+                                }).join('')}
                             </div>
                         </div>
                     `;
@@ -7869,6 +7967,23 @@
         function getFailedRoomsByType(failureType) {
             const rooms = Object.keys(auditData);
             const failedRooms = [];
+            
+            // Handle maintenance types: "maint-section--itemId" or "maint-section--ALL"
+            if (failureType.startsWith('maint-')) {
+                const [sectionId, itemId] = failureType.split('--');
+                rooms.forEach(room => {
+                    const sec = auditData[room]?.maintenance?.[sectionId];
+                    if (!sec) return;
+                    if (itemId === 'ALL') {
+                        // Any falla or ajuste in this section
+                        const hasFail = Object.keys(sec).some(k => !k.startsWith('_') && (sec[k] === 'falla' || sec[k] === 'ajuste'));
+                        if (hasFail) failedRooms.push(room);
+                    } else {
+                        if (sec[itemId] === 'falla' || sec[itemId] === 'ajuste') failedRooms.push(room);
+                    }
+                });
+                return failedRooms.sort((a, b) => parseInt(a) - parseInt(b));
+            }
             
             rooms.forEach(room => {
                 const data = auditData[room];
@@ -7938,7 +8053,7 @@
             if (!failureType) return;
             
             const failedRooms = getFailedRoomsByType(failureType);
-            const typeInfo = FAILURE_TYPES[failureType];
+            const typeInfo = getFailureTypeInfo(failureType);
             
             // Agrupar por piso
             const byFloor = {};
@@ -7976,7 +8091,7 @@
             if (!failureType) return;
             
             const failedRooms = getFailedRoomsByType(failureType);
-            const typeInfo = FAILURE_TYPES[failureType];
+            const typeInfo = getFailureTypeInfo(failureType);
             
             // Agrupar por piso
             const byFloor = {};
@@ -8043,7 +8158,7 @@
             if (!failureType) return;
             
             const failedRooms = getFailedRoomsByType(failureType);
-            const typeInfo = FAILURE_TYPES[failureType];
+            const typeInfo = getFailureTypeInfo(failureType);
             
             let csv = 'Habitacion,Piso,Tipo_Falla,Fecha_Reporte\n';
             
@@ -8076,11 +8191,11 @@
                 return;
             }
             
-            let html = '';
+            let html = '<div style="grid-column: 1 / -1; font-size: 0.75rem; color: #60a5fa; font-weight: 700; padding: 4px 0;">💻 SISTEMAS</div>';
             
             Object.keys(FAILURE_TYPES).forEach(key => {
                 const failedRooms = getFailedRoomsByType(key);
-                const info = FAILURE_TYPES[key];
+                const info = getFailureTypeInfo(key);
                 const hasFailures = failedRooms.length > 0;
                 
                 html += `
@@ -8090,6 +8205,27 @@
                         <div class="failure-summary-info">
                             <div class="failure-summary-name">${info.name}</div>
                             <div class="failure-summary-count">${failedRooms.length}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Maintenance sections summary
+            html += '<div style="grid-column: 1 / -1; font-size: 0.75rem; color: #fbbf24; font-weight: 700; padding: 8px 0 4px;">🔧 MANTENIMIENTO</div>';
+            
+            MAINT_SECTIONS.forEach(sid => {
+                const key = `${sid}--ALL`;
+                const failedRooms = getFailedRoomsByType(key);
+                const info = getFailureTypeInfo(key);
+                const hasFailures = failedRooms.length > 0;
+                
+                html += `
+                    <div class="failure-summary-card ${hasFailures ? '' : 'no-failures'}" 
+                         onclick="document.getElementById('failureTypeSelect').value='${key}'; generateFailureReport(); document.getElementById('failureTypeSelect').scrollIntoView({behavior:'smooth'});">
+                        <span class="failure-summary-icon">${info.icon}</span>
+                        <div class="failure-summary-info">
+                            <div class="failure-summary-name">${info.name}</div>
+                            <div class="failure-summary-count" style="${hasFailures ? 'color:#f59e0b;' : ''}">${failedRooms.length}</div>
                         </div>
                     </div>
                 `;
