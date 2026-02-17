@@ -1,8 +1,8 @@
 {
   "id": "/auditoriaIT-habitaciones-sheratonchihuahuasoberano/",
-  "name": "Auditoria de Sistemas - Hotel Sheraton Chihuahua",
-  "short_name": "Auditoria IT",
-  "description": "Sistema de auditoria de sistemas para Hotel Sheraton Chihuahua Soberano",
+  "name": "Auditoría Integral - Hotel Sheraton Chihuahua",
+  "short_name": "Auditoría Hotel",
+  "description": "Sistema integral de auditoría de sistemas y mantenimiento para Hotel Sheraton Chihuahua Soberano",
   "start_url": "./index.html",
   "scope": ".",
   "display": "standalone",
