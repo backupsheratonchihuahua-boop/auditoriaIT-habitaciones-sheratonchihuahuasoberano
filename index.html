@@ -1223,6 +1223,48 @@
         .dept-filter-btn[data-dept="sistemas"].active { background: var(--accent-info); border-color: var(--accent-info); }
         .dept-filter-btn[data-dept="mantenimiento"].active { background: #f59e0b; border-color: #f59e0b; }
 
+        /* Department Dashboard Headers */
+        .dept-dashboard { margin-bottom: 12px; }
+        .dept-dashboard-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .dept-dashboard-header.sistemas {
+            background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.05));
+            border: 1px solid rgba(59,130,246,0.3);
+            border-bottom: none;
+            color: #60a5fa;
+        }
+        .dept-dashboard-header.mantenimiento {
+            background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05));
+            border: 1px solid rgba(245,158,11,0.3);
+            border-bottom: none;
+            color: #fbbf24;
+        }
+        .dept-dashboard-icon { font-size: 1.1rem; }
+        .dept-dashboard-title { font-size: 0.9rem; }
+        .dept-dashboard-subtitle { font-size: 0.7rem; font-weight: 400; color: var(--text-muted); margin-left: auto; }
+        .dept-dashboard .summary-grid { margin-top: 0; border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+
+        .maint-info-banner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            margin-top: 8px;
+            background: rgba(245,158,11,0.08);
+            border: 1px dashed rgba(245,158,11,0.3);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .maint-info-banner span { font-size: 1rem; flex-shrink: 0; }
+
         .audit-section[data-dept].dept-hidden { display: none; }
 
         /* ========== MAINTENANCE CHECK ITEMS ========== */
@@ -3288,51 +3330,70 @@
                 </div>
             </header>
 
-            <!-- Summary Cards - Sistemas -->
-            <div class="summary-grid" id="summaryGrid-sistemas">
-                <div class="summary-card success">
-                    <div class="summary-value" id="roomsAudited">0</div>
-                    <div class="summary-label">Auditadas</div>
+            <!-- ===== DASHBOARD POR DEPARTAMENTO ===== -->
+            
+            <!-- SISTEMAS Dashboard -->
+            <div id="dashSistemas" class="dept-dashboard">
+                <div class="dept-dashboard-header sistemas">
+                    <span class="dept-dashboard-icon">💻</span>
+                    <span class="dept-dashboard-title">Sistemas</span>
+                    <span class="dept-dashboard-subtitle" id="sisSubtitle">Secciones 1-5</span>
                 </div>
-                <div class="summary-card purple">
-                    <div class="summary-value" id="roomsPending">204</div>
-                    <div class="summary-label">Pendientes</div>
-                </div>
-                <div class="summary-card danger">
-                    <div class="summary-value" id="issuesFound">0</div>
-                    <div class="summary-label">Incidencias</div>
-                </div>
-                <div class="summary-card warning">
-                    <div class="summary-value" id="phoneMissing">0</div>
-                    <div class="summary-label">Tel. Faltantes</div>
-                </div>
-                <div class="summary-card info">
-                    <div class="summary-value" id="routerCount">0</div>
-                    <div class="summary-label">Routers/42</div>
+                <div class="summary-grid">
+                    <div class="summary-card success">
+                        <div class="summary-value" id="roomsAudited">0</div>
+                        <div class="summary-label">Auditadas</div>
+                    </div>
+                    <div class="summary-card purple">
+                        <div class="summary-value" id="roomsPending">204</div>
+                        <div class="summary-label">Pendientes</div>
+                    </div>
+                    <div class="summary-card danger">
+                        <div class="summary-value" id="issuesFound">0</div>
+                        <div class="summary-label">Incidencias</div>
+                    </div>
+                    <div class="summary-card warning">
+                        <div class="summary-value" id="phoneMissing">0</div>
+                        <div class="summary-label">Tel. Faltantes</div>
+                    </div>
+                    <div class="summary-card info">
+                        <div class="summary-value" id="routerCount">0</div>
+                        <div class="summary-label">Routers/42</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Summary Cards - Mantenimiento -->
-            <div class="summary-grid" id="summaryGrid-mantenimiento" style="display: none;">
-                <div class="summary-card success">
-                    <div class="summary-value" id="maintRoomsChecked">0</div>
-                    <div class="summary-label">🔧 Revisadas</div>
+            <!-- MANTENIMIENTO Dashboard -->
+            <div id="dashMantenimiento" class="dept-dashboard" style="display: none;">
+                <div class="dept-dashboard-header mantenimiento">
+                    <span class="dept-dashboard-icon">🔧</span>
+                    <span class="dept-dashboard-title">Mantenimiento</span>
+                    <span class="dept-dashboard-subtitle">Secciones 6-12 · 72 items por habitación</span>
                 </div>
-                <div class="summary-card purple">
-                    <div class="summary-value" id="maintRoomsPending">204</div>
-                    <div class="summary-label">🔧 Pendientes</div>
+                <div class="summary-grid">
+                    <div class="summary-card success">
+                        <div class="summary-value" id="maintRoomsChecked">0</div>
+                        <div class="summary-label">Hab. Revisadas</div>
+                    </div>
+                    <div class="summary-card purple">
+                        <div class="summary-value" id="maintRoomsPending">204</div>
+                        <div class="summary-label">Hab. Pendientes</div>
+                    </div>
+                    <div class="summary-card danger">
+                        <div class="summary-value" id="maintFallas">0</div>
+                        <div class="summary-label">Fallas</div>
+                    </div>
+                    <div class="summary-card warning">
+                        <div class="summary-value" id="maintAjustes">0</div>
+                        <div class="summary-label">Ajustes</div>
+                    </div>
+                    <div class="summary-card info">
+                        <div class="summary-value" id="maintEnProceso">0</div>
+                        <div class="summary-label">En Proceso</div>
+                    </div>
                 </div>
-                <div class="summary-card danger">
-                    <div class="summary-value" id="maintFallas">0</div>
-                    <div class="summary-label">Fallas</div>
-                </div>
-                <div class="summary-card warning">
-                    <div class="summary-value" id="maintAjustes">0</div>
-                    <div class="summary-label">Ajustes</div>
-                </div>
-                <div class="summary-card info">
-                    <div class="summary-value" id="maintEnProceso">0</div>
-                    <div class="summary-label">En Proceso</div>
+                <div class="maint-info-banner" id="maintInfoBanner">
+                    <span>ℹ️</span> Aún no se han realizado auditorías de mantenimiento. Selecciona una habitación y completa las secciones 6-12 para comenzar.
                 </div>
             </div>
 
@@ -6762,26 +6823,26 @@
                 if (dept === 'todas') {
                     section.classList.remove('dept-hidden');
                 } else {
-                    const sectionDept = section.dataset.dept;
-                    section.classList.toggle('dept-hidden', sectionDept !== dept);
+                    section.classList.toggle('dept-hidden', section.dataset.dept !== dept);
                 }
             });
             
-            // Switch KPI panels
-            const sisSummary = document.getElementById('summaryGrid-sistemas');
-            const maintSummary = document.getElementById('summaryGrid-mantenimiento');
-            if (sisSummary && maintSummary) {
+            // Switch Dashboard KPIs
+            const dashSis = document.getElementById('dashSistemas');
+            const dashMaint = document.getElementById('dashMantenimiento');
+            if (dashSis && dashMaint) {
                 if (dept === 'mantenimiento') {
-                    sisSummary.style.display = 'none';
-                    maintSummary.style.display = '';
+                    dashSis.style.display = 'none';
+                    dashMaint.style.display = '';
                     updateMaintSummary();
                 } else if (dept === 'sistemas') {
-                    sisSummary.style.display = '';
-                    maintSummary.style.display = 'none';
+                    dashSis.style.display = '';
+                    dashMaint.style.display = 'none';
                 } else {
-                    // "Todas" - show sistemas KPIs by default
-                    sisSummary.style.display = '';
-                    maintSummary.style.display = 'none';
+                    // "Todas" - mostrar ambos dashboards
+                    dashSis.style.display = '';
+                    dashMaint.style.display = '';
+                    updateMaintSummary();
                 }
             }
         }
@@ -6812,7 +6873,7 @@
             
             rooms.forEach(room => {
                 const maint = auditData[room]?.maintenance;
-                if (maint && Object.keys(maint).length > 0) {
+                if (maint && Object.keys(maint).length > 1) { // >1 porque maintIssueCount siempre existe
                     maintChecked++;
                     // Contar estados en todas las secciones
                     MAINT_SECTIONS.forEach(sid => {
@@ -6834,6 +6895,12 @@
             if (el('maintFallas')) el('maintFallas').textContent = totalFallas;
             if (el('maintAjustes')) el('maintAjustes').textContent = totalAjustes;
             if (el('maintEnProceso')) el('maintEnProceso').textContent = totalProceso;
+            
+            // Mostrar/ocultar banner informativo
+            const banner = el('maintInfoBanner');
+            if (banner) {
+                banner.style.display = maintChecked === 0 ? '' : 'none';
+            }
         }
 
         function updateProgress() {
