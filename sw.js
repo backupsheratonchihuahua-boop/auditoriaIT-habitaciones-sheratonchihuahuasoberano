@@ -1,11 +1,11 @@
-const CACHE_NAME = 'auditoria-sistemas-v4';
+const CACHE_NAME = 'auditoria-integral-v5';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json'
 ];
 
-// Instalación del Service Worker
+// InstalaciÃ³n del Service Worker
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -18,7 +18,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activación
+// ActivaciÃ³n
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
