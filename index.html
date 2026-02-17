@@ -1092,6 +1092,9 @@
         .room-btn.presidencial { border-left: 2px solid var(--accent-gold); background: linear-gradient(135deg, rgba(234, 179, 8, 0.1), transparent); }
         .room-btn.audited { background: rgba(16, 185, 129, 0.15); border-color: var(--accent-primary); color: var(--accent-primary); }
         .room-btn.has-issues { background: rgba(239, 68, 68, 0.15); border-color: var(--accent-danger); color: var(--accent-danger); }
+        .room-btn.maint-ok { background: rgba(16, 185, 129, 0.15); border-color: #10b981; color: #10b981; }
+        .room-btn.maint-issues { background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; color: #f59e0b; }
+        .room-btn.maint-fallas { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #ef4444; }
         .room-btn.current { background: var(--accent-info); border-color: var(--accent-info); color: white; transform: scale(1.1); }
 
         /* Audit Sections */
@@ -3027,6 +3030,11 @@
             <div class="modal-header">
                 <h3>📜 Historial de Habitación <span id="historyRoomNumber"></span></h3>
                 <button class="modal-close" onclick="closeHistoryModal()">✕</button>
+            </div>
+            <div style="display: flex; gap: 6px; padding: 8px 20px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);" id="historyDeptTabs">
+                <button class="dept-filter-btn active" data-hdept="todas" onclick="filterHistoryByDept('todas')" style="flex:1; font-size:0.75rem; padding:6px 10px;">📋 Todas</button>
+                <button class="dept-filter-btn" data-hdept="sistemas" onclick="filterHistoryByDept('sistemas')" style="flex:1; font-size:0.75rem; padding:6px 10px;">💻 Sistemas</button>
+                <button class="dept-filter-btn" data-hdept="mantenimiento" onclick="filterHistoryByDept('mantenimiento')" style="flex:1; font-size:0.75rem; padding:6px 10px;">🔧 Mantenimiento</button>
             </div>
             <div class="modal-body" id="historyContent">
                 <p style="text-align: center; color: var(--text-muted);">Cargando historial...</p>
@@ -5115,6 +5123,22 @@
                     </p>
                 </div>
             </div>
+
+            <!-- ========== REPORTE DE MANTENIMIENTO ========== -->
+            <div class="data-table-container" id="maintReportSection">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+                    <h3 style="margin: 0;">🔧 Reporte de Mantenimiento — Desglose por Tipo de Falla</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn" onclick="refreshMaintReport()">🔄 Actualizar</button>
+                        <button class="btn btn-primary" onclick="exportMaintReportCSV()">📥 Exportar CSV</button>
+                    </div>
+                </div>
+                <div id="maintReportContent">
+                    <p style="color: var(--text-muted); text-align: center; padding: 30px;">
+                        Haz clic en "🔄 Actualizar" para generar el reporte de mantenimiento
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- TAB 3: GESTIÓN DE USUARIOS (Solo Admin) -->
@@ -5766,26 +5790,46 @@
             }
         }
 
+        // Store history data for re-filtering
+        let _historyCache = { history: [], roomNum: '', incidents: [] };
+        
         function renderHistory(history, roomNum, incidents = []) {
+            _historyCache = { history, roomNum, incidents };
+            // Default to active department filter, or 'todas'
+            const defaultDept = currentDeptFilter === 'todas' ? 'todas' : currentDeptFilter;
+            // Update tab buttons
+            document.querySelectorAll('#historyDeptTabs .dept-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.hdept === defaultDept);
+            });
+            renderHistoryFiltered(defaultDept);
+        }
+        
+        function filterHistoryByDept(dept) {
+            document.querySelectorAll('#historyDeptTabs .dept-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.hdept === dept);
+            });
+            renderHistoryFiltered(dept);
+        }
+        
+        function renderHistoryFiltered(dept) {
+            const { history, roomNum, incidents } = _historyCache;
             const container = document.getElementById('historyContent');
             
             if (history.length === 0 && incidents.length === 0) {
                 container.innerHTML = `<p style="text-align: center; color: var(--text-muted);">No hay historial para la habitación ${roomNum}</p>`;
                 return;
             }
-
-            // Calcular estadísticas de auditorías
+            
+            // ---- SISTEMAS stats ----
             const totalAudits = history.length;
             const auditsWithIssues = history.filter(h => h.issueCount > 0).length;
             const totalIssues = history.reduce((sum, h) => sum + (h.issueCount || 0), 0);
-            const issueRate = totalAudits > 0 ? Math.round((auditsWithIssues / totalAudits) * 100) : 0;
             
-            // Estadísticas de incidencias reportadas
             const totalIncidents = incidents.length;
             const pendingIncidents = incidents.filter(i => i.status === 'pendiente').length;
             const resolvedIncidents = incidents.filter(i => i.status === 'atendido').length;
-
-            // Detectar fallas recurrentes (auditorías)
+            
+            // Fallas recurrentes de sistemas
             const failureCategories = {};
             history.forEach(h => {
                 if (h.screen?.['screen-power'] === 'fail') failureCategories['TV Principal - Encendido'] = (failureCategories['TV Principal - Encendido'] || 0) + 1;
@@ -5807,149 +5851,271 @@
                 if (h.network?.['network-speed'] === 'fail') failureCategories['Velocidad de red'] = (failureCategories['Velocidad de red'] || 0) + 1;
             });
             
-            // Agregar incidencias reportadas a las categorías
             const incidentCategories = {};
             incidents.forEach(inc => {
-                const faultLabels = {
-                    'telefono': '📞 Teléfono',
-                    'tv': '📺 TV',
-                    'internet': '📶 Internet',
-                    'router': '📡 Router',
-                    'ac': '❄️ A/C',
-                    'otro': '⚠️ Otro'
-                };
+                const faultLabels = { 'telefono': '📞 Teléfono', 'tv': '📺 TV', 'internet': '📶 Internet', 'router': '📡 Router', 'ac': '❄️ A/C', 'otro': '⚠️ Otro' };
                 const label = faultLabels[inc.faultType] || inc.faultType;
                 incidentCategories[label] = (incidentCategories[label] || 0) + 1;
             });
-
-            // Ordenar fallas por frecuencia
+            
             const sortedFailures = Object.entries(failureCategories).sort((a, b) => b[1] - a[1]);
             const recurrentIssues = sortedFailures.filter(([_, count]) => count >= 2);
-            
             const sortedIncidentTypes = Object.entries(incidentCategories).sort((a, b) => b[1] - a[1]);
-
-            let html = `
-                <div class="history-summary">
-                    <h4>📊 Resumen de Historial - Habitación ${roomNum}</h4>
-                    <div class="history-stats">
-                        <div class="history-stat">
-                            <div class="history-stat-value">${totalAudits}</div>
-                            <div class="history-stat-label">Auditorías</div>
-                        </div>
-                        <div class="history-stat">
-                            <div class="history-stat-value ${auditsWithIssues > 0 ? 'red' : 'green'}">${auditsWithIssues}</div>
-                            <div class="history-stat-label">Con Fallas</div>
-                        </div>
-                        <div class="history-stat">
-                            <div class="history-stat-value" style="color: #06b6d4;">${totalIncidents}</div>
-                            <div class="history-stat-label">Reportes</div>
-                        </div>
-                        <div class="history-stat">
-                            <div class="history-stat-value ${pendingIncidents > 0 ? 'yellow' : 'green'}">${pendingIncidents}</div>
-                            <div class="history-stat-label">Pendientes</div>
-                        </div>
-                    </div>
-                    ${recurrentIssues.length > 0 ? `
-                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                            <h4 style="color: var(--accent-danger); margin-bottom: 8px;">⚠️ Fallas Recurrentes (Auditorías):</h4>
-                            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary);">
-                                ${recurrentIssues.map(([name, count]) => `<li><strong>${name}</strong>: ${count} veces</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    ${sortedIncidentTypes.length > 0 ? `
-                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                            <h4 style="color: #06b6d4; margin-bottom: 8px;">📢 Tipos de Reportes por Agentes:</h4>
-                            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary);">
-                                ${sortedIncidentTypes.map(([name, count]) => `<li><strong>${name}</strong>: ${count} reportes</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
             
-            // Combinar auditorías e incidencias en un timeline único
+            // ---- MANTENIMIENTO stats ----
+            let maintAudits = 0, maintTotalFallas = 0, maintTotalAjustes = 0, maintTotalProceso = 0;
+            const maintFailureItems = {}; // { label: { falla: N, ajuste: N, proceso: N, dates: [] } }
+            
+            history.forEach(h => {
+                const maint = h.maintenance;
+                if (!maint || Object.keys(maint).length <= 1) return;
+                maintAudits++;
+                MAINT_SECTIONS.forEach(sid => {
+                    const sec = maint[sid];
+                    if (!sec) return;
+                    const labels = MAINT_ITEM_LABELS[sid] || {};
+                    Object.keys(sec).forEach(k => {
+                        if (k.startsWith('_')) return;
+                        const v = sec[k];
+                        if (v === 'ok' || v === 'na') return;
+                        const itemLabel = `${labels._title || sid} → ${labels[k] || k}`;
+                        if (!maintFailureItems[itemLabel]) maintFailureItems[itemLabel] = { falla:0, ajuste:0, proceso:0, dates:[] };
+                        if (v === 'falla') { maintFailureItems[itemLabel].falla++; maintTotalFallas++; }
+                        if (v === 'ajuste') { maintFailureItems[itemLabel].ajuste++; maintTotalAjustes++; }
+                        if (v === 'proceso') { maintFailureItems[itemLabel].proceso++; maintTotalProceso++; }
+                        maintFailureItems[itemLabel].dates.push(h.fecha || '');
+                    });
+                });
+            });
+            
+            const sortedMaintItems = Object.entries(maintFailureItems).sort((a, b) => (b[1].falla + b[1].ajuste) - (a[1].falla + a[1].ajuste));
+            
+            // ============ BUILD HTML ============
+            let html = '';
+            
+            // --- SISTEMAS summary ---
+            if (dept === 'todas' || dept === 'sistemas') {
+                html += `
+                <div style="margin-bottom: 16px; border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.05)); padding: 8px 14px; display: flex; align-items: center; gap: 8px;">
+                        <span>💻</span><strong style="color: #60a5fa; font-size: 0.85rem;">Sistemas</strong>
+                        <span style="margin-left: auto; font-size: 0.7rem; color: var(--text-muted);">Secciones 1-5</span>
+                    </div>
+                    <div class="history-summary" style="border:none; border-radius:0;">
+                        <div class="history-stats">
+                            <div class="history-stat">
+                                <div class="history-stat-value">${totalAudits}</div>
+                                <div class="history-stat-label">Auditorías</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value ${auditsWithIssues > 0 ? 'red' : 'green'}">${auditsWithIssues}</div>
+                                <div class="history-stat-label">Con Fallas</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value" style="color: #06b6d4;">${totalIncidents}</div>
+                                <div class="history-stat-label">Reportes</div>
+                            </div>
+                            <div class="history-stat">
+                                <div class="history-stat-value ${pendingIncidents > 0 ? 'yellow' : 'green'}">${pendingIncidents}</div>
+                                <div class="history-stat-label">Pendientes</div>
+                            </div>
+                        </div>
+                        ${recurrentIssues.length > 0 ? `
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                <h4 style="color: var(--accent-danger); margin-bottom: 6px; font-size: 0.8rem;">⚠️ Fallas Recurrentes:</h4>
+                                <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 0.8rem;">
+                                    ${recurrentIssues.map(([name, count]) => `<li><strong>${name}</strong>: ${count} veces</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${sortedIncidentTypes.length > 0 ? `
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                <h4 style="color: #06b6d4; margin-bottom: 6px; font-size: 0.8rem;">📢 Reportes por Tipo:</h4>
+                                <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 0.8rem;">
+                                    ${sortedIncidentTypes.map(([name, count]) => `<li><strong>${name}</strong>: ${count}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>`;
+            }
+            
+            // --- MANTENIMIENTO summary ---
+            if (dept === 'todas' || dept === 'mantenimiento') {
+                html += `
+                <div style="margin-bottom: 16px; border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05)); padding: 8px 14px; display: flex; align-items: center; gap: 8px;">
+                        <span>🔧</span><strong style="color: #fbbf24; font-size: 0.85rem;">Mantenimiento</strong>
+                        <span style="margin-left: auto; font-size: 0.7rem; color: var(--text-muted);">Secciones 6-12</span>
+                    </div>
+                    <div style="padding: 14px;">
+                        ${maintAudits === 0 ? `
+                            <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 8px 0;">
+                                ℹ️ Sin auditorías de mantenimiento para esta habitación
+                            </p>
+                        ` : `
+                            <div class="history-stats">
+                                <div class="history-stat">
+                                    <div class="history-stat-value">${maintAudits}</div>
+                                    <div class="history-stat-label">Revisiones</div>
+                                </div>
+                                <div class="history-stat">
+                                    <div class="history-stat-value red">${maintTotalFallas}</div>
+                                    <div class="history-stat-label">Fallas</div>
+                                </div>
+                                <div class="history-stat">
+                                    <div class="history-stat-value yellow">${maintTotalAjustes}</div>
+                                    <div class="history-stat-label">Ajustes</div>
+                                </div>
+                                <div class="history-stat">
+                                    <div class="history-stat-value" style="color:#3b82f6;">${maintTotalProceso}</div>
+                                    <div class="history-stat-label">En Proceso</div>
+                                </div>
+                            </div>
+                            ${sortedMaintItems.length > 0 ? `
+                                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                    <h4 style="color: #f59e0b; margin-bottom: 6px; font-size: 0.8rem;">🔧 Detalle de Hallazgos:</h4>
+                                    <table style="width:100%; font-size:0.75rem; border-collapse:collapse;">
+                                        <thead><tr style="border-bottom:1px solid var(--border-color);">
+                                            <th style="text-align:left; padding:4px 6px; color:var(--text-muted);">Item</th>
+                                            <th style="text-align:center; padding:4px; color:#ef4444; width:45px;">Falla</th>
+                                            <th style="text-align:center; padding:4px; color:#f59e0b; width:45px;">Ajuste</th>
+                                            <th style="text-align:center; padding:4px; color:#3b82f6; width:35px;">EP</th>
+                                        </tr></thead>
+                                        <tbody>
+                                            ${sortedMaintItems.map(([label, d]) => `
+                                                <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                                    <td style="padding:3px 6px; color:var(--text-primary);">${label}</td>
+                                                    <td style="text-align:center; padding:3px; ${d.falla > 0 ? 'color:#ef4444; font-weight:700;' : 'color:var(--text-muted);'}">${d.falla || '-'}</td>
+                                                    <td style="text-align:center; padding:3px; ${d.ajuste > 0 ? 'color:#f59e0b; font-weight:700;' : 'color:var(--text-muted);'}">${d.ajuste || '-'}</td>
+                                                    <td style="text-align:center; padding:3px; ${d.proceso > 0 ? 'color:#3b82f6; font-weight:700;' : 'color:var(--text-muted);'}">${d.proceso || '-'}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ` : ''}
+                        `}
+                    </div>
+                </div>`;
+            }
+            
+            // ============ TIMELINE ============
             const timeline = [];
             
-            // Agregar auditorías al timeline
             history.forEach(audit => {
-                timeline.push({
-                    type: 'audit',
-                    date: new Date(audit.timestamp || audit.fecha),
-                    data: audit
-                });
+                const hasSis = (audit.issueCount || 0) > 0 || audit.screen || audit.phone || audit.network || audit.channels;
+                const hasMaint = audit.maintenance && Object.keys(audit.maintenance).length > 1;
+                timeline.push({ type: 'audit', date: new Date(audit.timestamp || audit.fecha), data: audit, hasSis: !!hasSis, hasMaint: !!hasMaint });
             });
             
-            // Agregar incidencias al timeline
             incidents.forEach(incident => {
-                timeline.push({
-                    type: 'incident',
-                    date: new Date(incident.timestamp),
-                    data: incident
-                });
+                timeline.push({ type: 'incident', date: new Date(incident.timestamp), data: incident, hasSis: true, hasMaint: false });
             });
             
-            // Ordenar por fecha (más recientes primero)
             timeline.sort((a, b) => b.date - a.date);
-
-            // Renderizar timeline
-            timeline.forEach((item) => {
+            
+            // Filter timeline by department
+            const filteredTimeline = timeline.filter(item => {
+                if (dept === 'todas') return true;
+                if (dept === 'sistemas') return item.hasSis;
+                if (dept === 'mantenimiento') return item.hasMaint;
+                return true;
+            });
+            
+            if (filteredTimeline.length === 0 && dept !== 'todas') {
+                html += `<p style="text-align:center; color:var(--text-muted); padding: 20px;">Sin registros de ${dept === 'sistemas' ? 'Sistemas' : 'Mantenimiento'} para esta habitación</p>`;
+            }
+            
+            filteredTimeline.forEach(item => {
                 if (item.type === 'audit') {
                     const audit = item.data;
-                    const hasIssues = audit.issueCount > 0;
-                    const issues = [];
                     
-                    // Recopilar detalles de fallas
-                    if (audit.screen?.['screen-power'] === 'fail') issues.push('TV Principal no enciende');
-                    if (audit.screen?.['screen-remote'] === 'fail') issues.push('Control remoto falla');
-                    if (audit.screen?.['screen-image'] === 'fail') issues.push('Calidad de imagen deficiente');
-                    if (audit.screen2?.['screen2-power'] === 'fail') issues.push('TV Secundaria no enciende');
-                    if (audit.screen2?.['screen2-remote'] === 'fail') issues.push('Control remoto 2 falla');
-                    if (audit.screen2?.['screen2-image'] === 'fail') issues.push('Calidad de imagen TV2 deficiente');
-                    if (audit.channels?.startup === 'fail') issues.push('No inicia en canal 62');
-                    const failedChs = audit.failedChannels || audit.channels?.failed || [];
-                    if (failedChs.length > 0) issues.push(`Canales fallando: ${failedChs.join(', ')}`);
-                    if (audit.phone?.['phone-desk'] === 'fail') issues.push('Teléfono de escritorio falla');
-                    if (audit.phone?.['phone-nightstand'] === 'fail') issues.push('Teléfono de buró falla');
-                    if (audit.phone?.['phone-battery'] === 'fail') issues.push('Batería de auriculares falla');
-                    if (audit.phone?.['phone-condition'] === 'fail') issues.push('Condición física del teléfono');
-                    if (audit.network?.['network-wall'] === 'fail') issues.push('Nodo de pared falla');
-                    if (audit.network?.['network-connection'] === 'fail') issues.push('Sin conexión de red');
-                    if (audit.network?.['network-speed'] === 'fail') issues.push('Velocidad de red baja');
-
+                    // --- Sistemas issues ---
+                    const sisIssues = [];
+                    if (dept !== 'mantenimiento') {
+                        if (audit.screen?.['screen-power'] === 'fail') sisIssues.push('TV Principal no enciende');
+                        if (audit.screen?.['screen-remote'] === 'fail') sisIssues.push('Control remoto falla');
+                        if (audit.screen?.['screen-image'] === 'fail') sisIssues.push('Calidad de imagen deficiente');
+                        if (audit.screen2?.['screen2-power'] === 'fail') sisIssues.push('TV Secundaria no enciende');
+                        if (audit.screen2?.['screen2-remote'] === 'fail') sisIssues.push('Control remoto 2 falla');
+                        if (audit.screen2?.['screen2-image'] === 'fail') sisIssues.push('Calidad de imagen TV2 deficiente');
+                        if (audit.channels?.startup === 'fail') sisIssues.push('No inicia en canal 62');
+                        const failedChs = audit.failedChannels || audit.channels?.failed || [];
+                        if (failedChs.length > 0) sisIssues.push(`Canales fallando: ${failedChs.join(', ')}`);
+                        if (audit.phone?.['phone-desk'] === 'fail') sisIssues.push('Teléfono de escritorio falla');
+                        if (audit.phone?.['phone-nightstand'] === 'fail') sisIssues.push('Teléfono de buró falla');
+                        if (audit.phone?.['phone-battery'] === 'fail') sisIssues.push('Batería de auriculares falla');
+                        if (audit.phone?.['phone-condition'] === 'fail') sisIssues.push('Condición física del teléfono');
+                        if (audit.network?.['network-wall'] === 'fail') sisIssues.push('Nodo de pared falla');
+                        if (audit.network?.['network-connection'] === 'fail') sisIssues.push('Sin conexión de red');
+                        if (audit.network?.['network-speed'] === 'fail') sisIssues.push('Velocidad de red baja');
+                    }
+                    
+                    // --- Mantenimiento issues ---
+                    const maintIssues = [];
+                    if (dept !== 'sistemas') {
+                        const maint = audit.maintenance;
+                        if (maint && Object.keys(maint).length > 1) {
+                            MAINT_SECTIONS.forEach(sid => {
+                                const sec = maint[sid];
+                                if (!sec) return;
+                                const labels = MAINT_ITEM_LABELS[sid] || {};
+                                Object.keys(sec).forEach(k => {
+                                    if (k.startsWith('_')) return;
+                                    const v = sec[k];
+                                    const lbl = labels[k] || k;
+                                    if (v === 'falla') maintIssues.push({ text: `${lbl}`, status: 'falla', section: labels._title || sid });
+                                    else if (v === 'ajuste') maintIssues.push({ text: `${lbl}`, status: 'ajuste', section: labels._title || sid });
+                                    else if (v === 'proceso') maintIssues.push({ text: `${lbl}`, status: 'proceso', section: labels._title || sid });
+                                });
+                            });
+                        }
+                    }
+                    
+                    const allIssueCount = sisIssues.length + maintIssues.length;
+                    const hasIssues = allIssueCount > 0;
+                    
+                    // Determine badge
+                    let deptBadge = '';
+                    if (item.hasSis && item.hasMaint) deptBadge = '<span style="font-size:0.65rem; padding:2px 6px; border-radius:3px; background:rgba(139,92,246,0.2); color:#a78bfa; margin-left:6px;">SIS + MTTO</span>';
+                    else if (item.hasMaint) deptBadge = '<span style="font-size:0.65rem; padding:2px 6px; border-radius:3px; background:rgba(245,158,11,0.2); color:#fbbf24; margin-left:6px;">MTTO</span>';
+                    else deptBadge = '<span style="font-size:0.65rem; padding:2px 6px; border-radius:3px; background:rgba(59,130,246,0.2); color:#60a5fa; margin-left:6px;">SIS</span>';
+                    
                     html += `
                         <div class="history-item ${hasIssues ? 'has-issues' : 'no-issues'}">
                             <div class="history-header">
                                 <div>
-                                    <div class="history-date">🔍 AUDITORÍA - ${audit.fecha || 'Sin fecha'}</div>
+                                    <div class="history-date">🔍 AUDITORÍA - ${audit.fecha || 'Sin fecha'}${deptBadge}</div>
                                     <div class="history-auditor">Auditó: <strong>${audit.auditor || 'Sin nombre'}</strong> | Turno: ${audit.shift || '-'}</div>
                                 </div>
                                 <div class="history-issues ${hasIssues ? 'danger' : 'success'}">
-                                    ${hasIssues ? `⚠️ ${audit.issueCount} incidencias` : '✓ Sin incidencias'}
+                                    ${hasIssues ? `⚠️ ${allIssueCount} hallazgos` : '✓ Sin hallazgos'}
                                 </div>
                             </div>
-                            ${issues.length > 0 ? `
+                            ${sisIssues.length > 0 ? `
                                 <div class="history-details">
-                                    <strong>Fallas detectadas:</strong>
-                                    <ul>
-                                        ${issues.map(issue => `<li>${issue}</li>`).join('')}
-                                    </ul>
+                                    <strong style="color:#60a5fa;">💻 Sistemas:</strong>
+                                    <ul>${sisIssues.map(i => `<li>${i}</li>`).join('')}</ul>
+                                </div>
+                            ` : ''}
+                            ${maintIssues.length > 0 ? `
+                                <div class="history-details" style="margin-top: 6px;">
+                                    <strong style="color:#fbbf24;">🔧 Mantenimiento:</strong>
+                                    <ul>${maintIssues.map(i => {
+                                        const clr = i.status === 'falla' ? '#ef4444' : i.status === 'ajuste' ? '#f59e0b' : '#3b82f6';
+                                        const lbl = i.status === 'falla' ? 'FALLA' : i.status === 'ajuste' ? 'AJUSTE' : 'EN PROCESO';
+                                        return `<li>${i.section} → ${i.text} <span style="color:${clr}; font-weight:700; font-size:0.7rem; margin-left:4px;">[${lbl}]</span></li>`;
+                                    }).join('')}</ul>
                                 </div>
                             ` : ''}
                             ${audit.notes ? `<div class="history-notes">📝 "${audit.notes}"</div>` : ''}
                         </div>
                     `;
                 } else {
-                    // Renderizar incidencia
+                    // Renderizar incidencia (solo en sistemas/todas)
                     const incident = item.data;
-                    const faultLabels = {
-                        'telefono': '📞 Teléfono',
-                        'tv': '📺 TV',
-                        'internet': '📶 Internet',
-                        'router': '📡 Router',
-                        'ac': '❄️ A/C',
-                        'otro': '⚠️ Otro'
-                    };
+                    const faultLabels = { 'telefono': '📞 Teléfono', 'tv': '📺 TV', 'internet': '📶 Internet', 'router': '📡 Router', 'ac': '❄️ A/C', 'otro': '⚠️ Otro' };
                     const dateStr = new Date(incident.timestamp).toLocaleDateString('es-MX');
                     const timeStr = new Date(incident.timestamp).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
                     const isPending = incident.status === 'pendiente';
@@ -6162,7 +6328,15 @@
         function updateFloorPendingCounts() {
             for (let floor = 1; floor <= 5; floor++) {
                 const floorRooms = HOTEL_ROOMS[floor] || [];
-                const pending = floorRooms.filter(r => !auditData[r]).length;
+                let pending;
+                if (currentDeptFilter === 'mantenimiento') {
+                    pending = floorRooms.filter(r => {
+                        const maint = auditData[r]?.maintenance;
+                        return !maint || Object.keys(maint).length <= 1;
+                    }).length;
+                } else {
+                    pending = floorRooms.filter(r => !auditData[r]).length;
+                }
                 const badge = document.getElementById(`floor-pending-${floor}`);
                 if (badge) {
                     badge.textContent = pending;
@@ -6186,20 +6360,61 @@
             rooms.forEach(roomNum => {
                 const type = getRoomType(roomNum);
                 const data = auditData[roomNum];
-                const isAudited = !!data;
-                const hasIssues = data && data.issueCount > 0;
                 const isCurrent = currentRoom == roomNum;
+                
+                // Determinar estado según departamento activo
+                let isAudited = false;
+                let hasIssues = false;
+                let maintStatus = ''; // '', 'ok', 'issues', 'fallas'
+                
+                if (currentDeptFilter === 'mantenimiento') {
+                    // Colorear según datos de mantenimiento
+                    const maint = data?.maintenance;
+                    if (maint && Object.keys(maint).length > 1) {
+                        isAudited = true;
+                        let fallas = 0, ajustes = 0;
+                        MAINT_SECTIONS.forEach(sid => {
+                            const sec = maint[sid];
+                            if (!sec) return;
+                            Object.keys(sec).forEach(k => {
+                                if (k.startsWith('_')) return;
+                                if (sec[k] === 'falla') fallas++;
+                                else if (sec[k] === 'ajuste') ajustes++;
+                            });
+                        });
+                        if (fallas > 0) maintStatus = 'fallas';
+                        else if (ajustes > 0) maintStatus = 'issues';
+                        else maintStatus = 'ok';
+                    }
+                } else if (currentDeptFilter === 'sistemas') {
+                    // Solo datos de sistemas
+                    isAudited = !!data;
+                    hasIssues = data && data.issueCount > 0;
+                } else {
+                    // Todas
+                    isAudited = !!data;
+                    hasIssues = data && data.issueCount > 0;
+                }
                 
                 if (filter) {
                     if (filter === 'pending' && isAudited) return;
                     if (filter === 'audited' && !isAudited) return;
-                    if (filter === 'issues' && !hasIssues) return;
+                    if (filter === 'issues' && !hasIssues && !maintStatus) return;
                     if (['sencilla', 'doble', 'suite', 'presidencial'].includes(filter) && type !== filter) return;
                 }
                 
                 const btn = document.createElement('button');
                 btn.className = `room-btn ${type}`;
-                if (isAudited) btn.classList.add(hasIssues ? 'has-issues' : 'audited');
+                
+                if (currentDeptFilter === 'mantenimiento') {
+                    if (maintStatus === 'fallas') btn.classList.add('maint-fallas');
+                    else if (maintStatus === 'issues') btn.classList.add('maint-issues');
+                    else if (maintStatus === 'ok') btn.classList.add('maint-ok');
+                    // Sin status de mtto = sin color (pendiente)
+                } else {
+                    if (isAudited) btn.classList.add(hasIssues ? 'has-issues' : 'audited');
+                }
+                
                 if (isCurrent) btn.classList.add('current');
                 btn.textContent = roomNum;
                 btn.onclick = () => loadRoom(roomNum);
@@ -6657,6 +6872,7 @@
         let maintData = {};
         
         const MAINT_SECTIONS = ['maint-door','maint-bath','maint-connect','maint-room','maint-tv','maint-closet','maint-ac'];
+        let currentDeptFilter = 'todas';
         
         function setMaintCheck(sectionId, itemId, status) {
             const el = document.getElementById(sectionId + '-' + itemId);
@@ -6812,7 +7028,205 @@
             });
         }
         
+        // ============================================
+        // REPORTE DE MANTENIMIENTO
+        // ============================================
+        
+        const MAINT_ITEM_LABELS = {
+            'maint-door': { _title: '🚪 Puerta Principal', puerta:'Puerta',bisagra:'Bisagra',chapa:'Chapa',seguro:'Seguro/Pasador',mirilla:'Mirilla',evacuacion:'Cuadro Evacuación',tope:'Tope de Puerta',marco:'Marco de Puerta' },
+            'maint-bath': { _title: '🚿 Baño', 'puerta-marco':'Puerta y Marco',mangueras:'Mangueras','llaves-paso':'Llaves de Paso',chapa:'Chapa',bisagra:'Bisagra',ducha:'Ducha',monomando:'Monomando',lavamanos:'Lavamanos',tapon:'Tapón de Lavabo',ceramica:'Cerámica y Boquilla',lamparas:'Lámparas',apagador:'Apagador',tina:'Tina',toalleros:'Toalleros','porta-papel':'Porta Papel',contactos:'Contactos',apagadores:'Apagadores',accesorios:'Accesorios','marco-espejo':'Marco Espejo',rejilla:'Rejilla de Extracción',plafon:'Plafón',jabonera:'Jabonera',coladera:'Coladera',wc:'W.C.',secadora:'Secadora','espejo-vanity':'Espejo y Vanity' },
+            'maint-connect': { _title: '🚪 Puertas Comunicadas', 'chapa-contra':'Chapa y Contrachapa',bisagras:'Bisagras',marco:'Marco',tope:'Tope de Puerta' },
+            'maint-room': { _title: '🛏️ Habitación / Mobiliario', 'base-colchon':'Base y Colchón',cabecera:'Cabecera',buros:'Buros','lampara-buro':'Lámparas de Buro','lampara-escritorio':'Lámpara de Escritorio','radio-reloj':'Radio/Reloj',telefono:'Teléfono',silla:'Silla',cortinero:'Cortinero',ventana:'Ventana',rociador:'Rociador','detector-humo':'Detector de Humo','tapa-contacto':'Tapa Cont. y Apag.','resane-pintura':'Resane y Pintura Plafón',cuadro:'Cuadro Decorativo',zoclo:'Zoclo',sillon:'Sillón',escritorio:'Escritorio',maletero:'Maletero','mueble-frigo':'Mueble y Espejo Frigobar' },
+            'maint-tv': { _title: '📺 Televisión (Físico)', 'calidad-img':'Calidad de Imagen y Sonido','progr-estandar':'Programación Estándar',control:'Control Remoto' },
+            'maint-closet': { _title: '👔 Closet', 'tabla-planchar':'Tabla de Planchar',plancha:'Plancha',ganchos:'Ganchos','resane-pintura':'Resane y Pintura Plafón',luz:'Luz' },
+            'maint-ac': { _title: '❄️ Aire Acondicionado', funcion:'Función Frío/Calor',limpieza:'Limpieza General',termostato:'Termostato',valvula:'Válvula 3 Vías',drenaje:'Drenaje y Limpieza',conexion:'Conexión Eléctrica' }
+        };
+        
+        function refreshMaintReport() {
+            const rooms = Object.keys(auditData);
+            const container = document.getElementById('maintReportContent');
+            
+            // Aggregate: { sectionId: { itemId: { ok:0, falla:0, ajuste:0, proceso:0, na:0, rooms_falla:[], rooms_ajuste:[] } } }
+            const agg = {};
+            let totalRoomsWithMaint = 0;
+            
+            MAINT_SECTIONS.forEach(sid => {
+                agg[sid] = {};
+                const labels = MAINT_ITEM_LABELS[sid] || {};
+                Object.keys(labels).forEach(k => {
+                    if (k === '_title') return;
+                    agg[sid][k] = { ok:0, falla:0, ajuste:0, proceso:0, na:0, rooms_falla:[], rooms_ajuste:[] };
+                });
+            });
+            
+            rooms.forEach(room => {
+                const maint = auditData[room]?.maintenance;
+                if (!maint || Object.keys(maint).length <= 1) return;
+                totalRoomsWithMaint++;
+                
+                MAINT_SECTIONS.forEach(sid => {
+                    const sec = maint[sid];
+                    if (!sec) return;
+                    Object.keys(sec).forEach(k => {
+                        if (k.startsWith('_')) return;
+                        if (!agg[sid][k]) agg[sid][k] = { ok:0, falla:0, ajuste:0, proceso:0, na:0, rooms_falla:[], rooms_ajuste:[] };
+                        const v = sec[k];
+                        if (agg[sid][k][v] !== undefined) agg[sid][k][v]++;
+                        if (v === 'falla') agg[sid][k].rooms_falla.push(room);
+                        if (v === 'ajuste') agg[sid][k].rooms_ajuste.push(room);
+                    });
+                });
+            });
+            
+            if (totalRoomsWithMaint === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 12px;">📋</div>
+                        <h4>Sin datos de mantenimiento</h4>
+                        <p>Aún no se han registrado auditorías de mantenimiento.<br>
+                        Selecciona "🔧 Mantenimiento" en la pestaña de Auditoría y comienza a auditar habitaciones.</p>
+                    </div>`;
+                return;
+            }
+            
+            // Build summary counts
+            let grandFallas = 0, grandAjustes = 0, grandProceso = 0, grandOk = 0;
+            MAINT_SECTIONS.forEach(sid => {
+                Object.values(agg[sid]).forEach(item => {
+                    grandFallas += item.falla;
+                    grandAjustes += item.ajuste;
+                    grandProceso += item.proceso;
+                    grandOk += item.ok;
+                });
+            });
+            
+            let html = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                    <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">${totalRoomsWithMaint}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">HAB. REVISADAS</div>
+                    </div>
+                    <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">${grandFallas}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">TOTAL FALLAS</div>
+                    </div>
+                    <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">${grandAjustes}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">TOTAL AJUSTES</div>
+                    </div>
+                    <div style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">${grandProceso}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">EN PROCESO</div>
+                    </div>
+                    <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">${grandOk}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">OK</div>
+                    </div>
+                </div>`;
+            
+            // Table per section - only show items with issues
+            MAINT_SECTIONS.forEach(sid => {
+                const labels = MAINT_ITEM_LABELS[sid] || {};
+                const title = labels._title || sid;
+                const items = agg[sid];
+                
+                // Check if section has any issues
+                let sectionFallas = 0, sectionAjustes = 0, sectionProceso = 0;
+                Object.values(items).forEach(d => {
+                    sectionFallas += d.falla;
+                    sectionAjustes += d.ajuste;
+                    sectionProceso += d.proceso;
+                });
+                
+                html += `
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg-secondary); border-radius: 6px 6px 0 0; border: 1px solid var(--border-color); border-bottom: none;">
+                        <strong style="font-size: 0.9rem;">${title}</strong>
+                        <span style="margin-left: auto; font-size: 0.75rem;">
+                            ${sectionFallas > 0 ? `<span style="color:#ef4444; font-weight:700;">${sectionFallas} fallas</span>` : ''}
+                            ${sectionAjustes > 0 ? `<span style="color:#f59e0b; font-weight:700; margin-left:8px;">${sectionAjustes} ajustes</span>` : ''}
+                            ${sectionProceso > 0 ? `<span style="color:#3b82f6; font-weight:700; margin-left:8px;">${sectionProceso} en proceso</span>` : ''}
+                            ${sectionFallas === 0 && sectionAjustes === 0 && sectionProceso === 0 ? '<span style="color:#10b981;">✓ Sin hallazgos</span>' : ''}
+                        </span>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid var(--border-color);">
+                        <thead>
+                            <tr style="background: var(--bg-input);">
+                                <th style="text-align:left; padding:6px 10px; border-bottom:1px solid var(--border-color); color:var(--text-secondary);">Item</th>
+                                <th style="text-align:center; padding:6px 8px; border-bottom:1px solid var(--border-color); color:#10b981; width:55px;">OK</th>
+                                <th style="text-align:center; padding:6px 8px; border-bottom:1px solid var(--border-color); color:#ef4444; width:55px;">Falla</th>
+                                <th style="text-align:center; padding:6px 8px; border-bottom:1px solid var(--border-color); color:#f59e0b; width:55px;">Ajuste</th>
+                                <th style="text-align:center; padding:6px 8px; border-bottom:1px solid var(--border-color); color:#3b82f6; width:55px;">EP</th>
+                                <th style="text-align:left; padding:6px 10px; border-bottom:1px solid var(--border-color); color:var(--text-muted);">Habitaciones afectadas</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                
+                Object.keys(items).forEach(itemId => {
+                    const d = items[itemId];
+                    const label = labels[itemId] || itemId;
+                    const hasProblems = d.falla > 0 || d.ajuste > 0;
+                    const rowBg = hasProblems ? 'background: rgba(239,68,68,0.03);' : '';
+                    const affectedRooms = [...new Set([...d.rooms_falla, ...d.rooms_ajuste])].sort().join(', ');
+                    
+                    html += `
+                            <tr style="${rowBg} border-bottom: 1px solid var(--border-color);">
+                                <td style="padding:5px 10px; color:var(--text-primary); ${hasProblems ? 'font-weight:600;' : ''}">${label}</td>
+                                <td style="text-align:center; padding:5px; color:#10b981; font-weight:600;">${d.ok || '-'}</td>
+                                <td style="text-align:center; padding:5px; ${d.falla > 0 ? 'color:#ef4444; font-weight:700; font-size:0.9rem;' : 'color:var(--text-muted);'}">${d.falla || '-'}</td>
+                                <td style="text-align:center; padding:5px; ${d.ajuste > 0 ? 'color:#f59e0b; font-weight:700;' : 'color:var(--text-muted);'}">${d.ajuste || '-'}</td>
+                                <td style="text-align:center; padding:5px; ${d.proceso > 0 ? 'color:#3b82f6; font-weight:700;' : 'color:var(--text-muted);'}">${d.proceso || '-'}</td>
+                                <td style="padding:5px 10px; font-size:0.7rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace;">${affectedRooms || '-'}</td>
+                            </tr>`;
+                });
+                
+                html += `</tbody></table></div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function exportMaintReportCSV() {
+            const rooms = Object.keys(auditData);
+            let csv = 'Sección,Item,OK,Falla,Ajuste,En Proceso,N/A,Habitaciones con Falla,Habitaciones con Ajuste\n';
+            
+            MAINT_SECTIONS.forEach(sid => {
+                const labels = MAINT_ITEM_LABELS[sid] || {};
+                const title = (labels._title || sid).replace(/[🚪🚿🛏️📺👔❄️]/g, '').trim();
+                
+                Object.keys(labels).forEach(itemId => {
+                    if (itemId === '_title') return;
+                    const label = labels[itemId];
+                    let ok=0, falla=0, ajuste=0, proceso=0, na=0;
+                    const roomsFalla = [], roomsAjuste = [];
+                    
+                    rooms.forEach(room => {
+                        const v = auditData[room]?.maintenance?.[sid]?.[itemId];
+                        if (!v) return;
+                        if (v === 'ok') ok++;
+                        else if (v === 'falla') { falla++; roomsFalla.push(room); }
+                        else if (v === 'ajuste') { ajuste++; roomsAjuste.push(room); }
+                        else if (v === 'proceso') proceso++;
+                        else if (v === 'na') na++;
+                    });
+                    
+                    csv += `"${title}","${label}",${ok},${falla},${ajuste},${proceso},${na},"${roomsFalla.join(' ')}","${roomsAjuste.join(' ')}"\n`;
+                });
+            });
+            
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_Mantenimiento_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Reporte CSV de mantenimiento exportado', 'success');
+        }
+        
         function filterByDepartment(dept) {
+            currentDeptFilter = dept;
+            
             // Update buttons
             document.querySelectorAll('.dept-filter-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.dept === dept);
@@ -6845,6 +7259,10 @@
                     updateMaintSummary();
                 }
             }
+            
+            // Refrescar colores del grid de habitaciones
+            generateRoomGrid(currentFloor);
+            updateFloorPendingCounts();
         }
 
         function previousRoom() { const idx = ALL_ROOMS.indexOf(parseInt(currentRoom)); if (idx > 0) loadRoom(ALL_ROOMS[idx - 1]); }
@@ -7032,6 +7450,9 @@
             
             // Generate All Failures Summary
             updateAllFailuresSummary();
+            
+            // Generate Maintenance Report
+            refreshMaintReport();
         }
 
         function generateWifiHeatmap() {
