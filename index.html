@@ -3422,7 +3422,10 @@
                         </div>
                         <div class="cloud-badge">☁️ En la Nube</div>
                     </div>
-                    <div class="date-display" id="currentDate"></div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="date-display" id="currentDate"></div>
+                        <div id="digitalClock" style="font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: 700; color: #22d3ee; background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.3); padding: 4px 12px; border-radius: 8px; letter-spacing: 2px; min-width: 110px; text-align: center;">--:--:--</div>
+                    </div>
                 </div>
                 <div class="header-inputs">
                     <div class="input-group">
@@ -5926,10 +5929,55 @@
             }
         }
 
+        // ============================================
+        // ZONA HORARIA — Chihuahua UTC-6 (UTC-7 DST)
+        // ============================================
+        
+        function getMXDate() {
+            // Chihuahua uses America/Chihuahua timezone
+            return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chihuahua' }));
+        }
+        
+        function getMXTimestamp() {
+            const d = getMXDate();
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        }
+        
+        function getMXFecha() {
+            const d = getMXDate();
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+        }
+        
+        function getMXFechaHora() {
+            const d = getMXDate();
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        }
+        
         function setCurrentDate() {
-            const now = new Date();
+            const now = getMXDate();
             document.getElementById('currentDate').textContent = now.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }
+        
+        function updateDigitalClock() {
+            const now = getMXDate();
+            const pad = (n) => String(n).padStart(2, '0');
+            const h = pad(now.getHours());
+            const m = pad(now.getMinutes());
+            const s = pad(now.getSeconds());
+            const clock = document.getElementById('digitalClock');
+            if (clock) {
+                clock.textContent = `${h}:${m}:${s}`;
+                // Parpadeo del separador
+                clock.innerHTML = `${h}<span style="opacity:${now.getSeconds() % 2 === 0 ? '1' : '0.3'}">:</span>${m}<span style="opacity:${now.getSeconds() % 2 === 0 ? '1' : '0.3'}">:</span>${s}`;
+            }
+        }
+        
+        // Iniciar reloj
+        setInterval(updateDigitalClock, 1000);
+        updateDigitalClock();
 
         function loadSavedSettings() {
             const auditorField = document.getElementById('auditorName');
@@ -6388,7 +6436,7 @@
                     isConnected = true;
                     statusDot.className = 'status-dot connected';
                     connectionText.textContent = 'Conectado a la nube';
-                    document.getElementById('lastSync').textContent = ` • Última sync: ${new Date().toLocaleTimeString('es-MX')}`;
+                    document.getElementById('lastSync').textContent = ` • Última sync: ${getMXDate().toLocaleTimeString('es-MX')}`;
                     
                     updateSummary();
                     updateProgress();
@@ -6877,6 +6925,8 @@
                 roomType: getRoomType(roomNum),
                 auditor: document.getElementById('auditorName').value,
                 shift: document.getElementById('shift').value,
+                fecha: getMXFecha(),
+                timestamp: getMXTimestamp(),
                 screen: { 
                     'screen-power': getStatus('screen-power'), 
                     'screen-remote': getStatus('screen-remote'), 
@@ -7442,7 +7492,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Reporte_Mantenimiento_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `Reporte_Mantenimiento_${getMXTimestamp().slice(0,10)}.csv`;
             a.click();
             URL.revokeObjectURL(url);
             showToast('Reporte CSV de mantenimiento exportado', 'success');
@@ -8182,7 +8232,7 @@
             });
             
             let text = `REPORTE DE FALLAS - ${typeInfo.name}\n`;
-            text += `Fecha: ${new Date().toLocaleDateString('es-MX')}\n`;
+            text += `Fecha: ${getMXDate().toLocaleDateString('es-MX')}\n`;
             text += `Total de habitaciones: ${failedRooms.length}\n`;
             text += `${'='.repeat(50)}\n\n`;
             
@@ -8237,7 +8287,7 @@
                 <body>
                     <h1>${typeInfo.icon} ${typeInfo.name}</h1>
                     <div class="info">
-                        <strong>Fecha:</strong> ${new Date().toLocaleDateString('es-MX')}<br>
+                        <strong>Fecha:</strong> ${getMXDate().toLocaleDateString('es-MX')}<br>
                         <strong>Total de habitaciones afectadas:</strong> ${failedRooms.length}
                     </div>
             `;
@@ -8259,7 +8309,7 @@
                     <div class="footer">
                         Hotel Sheraton Chihuahua Soberano<br>
                         Sistema de Auditoría de Sistemas<br>
-                        Generado el ${new Date().toLocaleString('es-MX')}
+                        Generado el ${getMXFechaHora()}
                     </div>
                 </body>
                 </html>
@@ -8282,14 +8332,14 @@
             
             failedRooms.forEach(room => {
                 const floor = Math.floor(parseInt(room) / 100);
-                csv += `${room},${floor},"${typeInfo.name}",${new Date().toLocaleDateString('es-MX')}\n`;
+                csv += `${room},${floor},"${typeInfo.name}",${getMXDate().toLocaleDateString('es-MX')}\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `reporte_fallas_${failureType}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `reporte_fallas_${failureType}_${getMXTimestamp().split('T')[0]}.csv`;
             a.click();
             URL.revokeObjectURL(url);
             
@@ -8397,7 +8447,7 @@
             const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `auditoria_sheraton_${new Date().toISOString().split('T')[0]}.csv`;
+            link.download = `auditoria_sheraton_${getMXTimestamp().split('T')[0]}.csv`;
             link.click();
             showToast('CSV exportado correctamente', 'success');
         }
@@ -8482,7 +8532,7 @@
                 
                 // Get room type
                 const roomType = auditData[roomNum]?.roomType || ROOM_TYPES[roomNum] || 'Sencilla';
-                const today = new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' });
+                const today = getMXDate().toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' });
                 
                 // Build the bitácora HTML
                 const SECTIONS_ORDER = [
@@ -8737,7 +8787,7 @@ ${sisInfo}
             const data = auditData[roomNum];
             const roomType = getRoomType(roomNum);
             const roomTypeLabel = getRoomTypeLabel(roomType);
-            const now = new Date();
+            const now = getMXDate();
 
             // Función helper para obtener estado
             const getStatusLabel = (status) => {
@@ -9098,7 +9148,7 @@ ${sisInfo}
             }
 
             const sortedRooms = Array.from(selectedRooms).sort((a, b) => a - b);
-            const now = new Date();
+            const now = getMXDate();
 
             // Generar contenido de cada habitación
             let roomsHTML = '';
@@ -9937,7 +9987,7 @@ ${sisInfo}
                 body,
                 type,
                 room: roomNum,
-                time: new Date().toISOString(),
+                time: getMXTimestamp(),
                 read: false
             };
             notifItems.unshift(notif);
@@ -10276,7 +10326,7 @@ ${sisInfo}
                     
                     // Aplicar filtro de período
                     const periodo = document.getElementById('historialPeriodo')?.value || '30';
-                    const ahora = new Date();
+                    const ahora = getMXDate();
                     
                     let filtrados = cerrados;
                     if (periodo !== 'all') {
@@ -10461,7 +10511,7 @@ ${sisInfo}
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `historial_tickets_${new Date().toISOString().split('T')[0]}.csv`;
+            link.download = `historial_tickets_${getMXTimestamp().split('T')[0]}.csv`;
             link.click();
             URL.revokeObjectURL(url);
             
@@ -10905,7 +10955,7 @@ ${sisInfo}
                     faultDept: faultDept,
                     description: description || 'Sin descripción',
                     reporter: reporter,
-                    timestamp: new Date().toISOString()
+                    timestamp: getMXTimestamp()
                 });
                 
                 const response = await fetch(`${API_URL}?${params.toString()}`);
@@ -10951,7 +11001,7 @@ ${sisInfo}
                 const result = await response.json();
                 
                 if (result.success && result.incidents) {
-                    const today = new Date().toDateString();
+                    const today = getMXDate().toDateString();
                     // Mostrar TODOS los reportes de hoy (de cualquier agente)
                     const todayReports = result.incidents
                         .filter(inc => {
@@ -11071,7 +11121,7 @@ ${sisInfo}
         }
         
         function updateMaintenanceStats() {
-            const today = new Date().toDateString();
+            const today = getMXDate().toDateString();
             
             const pending = allMaintenanceIncidents.filter(i => i.status === 'pendiente').length;
             const inProgress = allMaintenanceIncidents.filter(i => i.status === 'en_revision').length;
