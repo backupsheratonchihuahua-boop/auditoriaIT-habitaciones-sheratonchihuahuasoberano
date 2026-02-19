@@ -3430,7 +3430,8 @@
         <div class="main-tabs no-print">
             <button class="main-tab active" onclick="switchTab('audit')" id="auditTabBtn">📋 <span>Auditoría</span></button>
             <button class="main-tab" onclick="switchTab('maintenance')" id="maintenanceTabBtn" style="display: none;">🔧 <span>Mantenimiento</span><span class="notification-badge" id="maintBadge" style="display: none;">0</span></button>
-            <button class="main-tab" onclick="switchTab('reports')" id="reportsTabBtn">📊 <span>Reportes</span><span class="notification-badge" id="reportsBadge" style="display: none;">0</span></button>
+            <button class="main-tab" onclick="switchTab('reportsIT')" id="reportsITTabBtn">💻 <span>Reportes IT</span><span class="notification-badge" id="reportsBadge" style="display: none;">0</span></button>
+            <button class="main-tab" onclick="switchTab('reportsMtto')" id="reportsMttoTabBtn">🔧 <span>Reportes Mtto</span><span class="notification-badge" id="reportsMttoBadge" style="display: none;">0</span></button>
             <button class="main-tab" onclick="switchTab('users')" data-permission="admin" id="usersTabBtn">👥 <span>Usuarios</span></button>
         </div>
 
@@ -4016,7 +4017,7 @@
 
             <div class="action-bar">
                 <button class="btn btn-primary" onclick="exportToCSV()">📥 Exportar CSV</button>
-                <button class="btn btn-info" onclick="switchTab('reports')">📊 Ver Reportes</button>
+                <button class="btn btn-info" onclick="switchTab('reportsIT')">📊 Ver Reportes</button>
                 <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
                 <button class="btn btn-danger" onclick="clearAllData()" data-permission="clearAll">🗑️ Limpiar Todo</button>
             </div>
@@ -4114,9 +4115,9 @@
         </div>
 
         <!-- TAB 2: REPORTES -->
-        <div id="reports-tab" class="tab-content">
+        <div id="reportsIT-tab" class="tab-content">
             <div class="dashboard-header">
-                <h2>📊 Dashboard de Reportes</h2>
+                <h2>💻 Dashboard de Reportes IT</h2>
                 <div class="dashboard-actions no-print">
                     <button class="btn" onclick="refreshCharts()">🔄 Actualizar</button>
                     <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir Reporte</button>
@@ -4439,7 +4440,7 @@
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3>🔔 Incidencias Reportadas</h3>
+                    <h3>🔔 Incidencias IT / Sistemas</h3>
                     <div class="filter-buttons">
                         <button class="filter-btn active" onclick="filterIncidents('all')">Todas</button>
                         <button class="filter-btn" onclick="filterIncidents('pendiente')">⏳ Pendientes</button>
@@ -4457,7 +4458,7 @@
             <!-- Historial de Tickets Atendidos -->
             <div class="data-table-container" style="margin-top: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3>📜 Historial de Tickets Atendidos</h3>
+                    <h3>📜 Historial de Tickets IT</h3>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <select id="historialPeriodo" onchange="loadHistorial()" style="padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
                             <option value="7">Últimos 7 días</option>
@@ -4498,10 +4499,46 @@
                 </div>
             </div>
 
-            <!-- ========== REPORTE DE MANTENIMIENTO ========== -->
+        </div>
+
+        <!-- TAB: REPORTES MANTENIMIENTO -->
+        <div id="reportsMtto-tab" class="tab-content">
+            <div class="dashboard-header">
+                <h2>🔧 Dashboard de Reportes Mantenimiento</h2>
+                <div class="dashboard-actions no-print">
+                    <button class="btn" onclick="refreshMttoTab()">🔄 Actualizar</button>
+                    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir Reporte</button>
+                </div>
+            </div>
+
+            <!-- KPIs de Mantenimiento -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 24px;">
+                <div style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05)); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 20px; text-align: center;">
+                    <div style="font-size: 2.2rem; font-weight: bold; color: #10b981;" id="mttoKpiOk">0</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">✅ Items OK</div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05)); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 20px; text-align: center;">
+                    <div style="font-size: 2.2rem; font-weight: bold; color: #ef4444;" id="mttoKpiFalla">0</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">❌ Fallas</div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05)); border: 1px solid rgba(245,158,11,0.3); border-radius: 12px; padding: 20px; text-align: center;">
+                    <div style="font-size: 2.2rem; font-weight: bold; color: #f59e0b;" id="mttoKpiAjuste">0</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">⚠️ Ajustes</div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.05)); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 20px; text-align: center;">
+                    <div style="font-size: 2.2rem; font-weight: bold; color: #3b82f6;" id="mttoKpiProceso">0</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">🔄 En Proceso</div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(139,92,246,0.05)); border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 20px; text-align: center;">
+                    <div style="font-size: 2.2rem; font-weight: bold; color: #a78bfa;" id="mttoKpiAuditadas">0</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">🏨 Habs. Auditadas</div>
+                </div>
+            </div>
+
+            <!-- Reporte de Mantenimiento — Desglose por Tipo de Falla -->
             <div class="data-table-container" id="maintReportSection">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
-                    <h3 style="margin: 0;">🔧 Reporte de Mantenimiento — Desglose por Tipo de Falla</h3>
+                    <h3 style="margin: 0;">🔧 Desglose por Sección de Auditoría</h3>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn" onclick="refreshMaintReport()">🔄 Actualizar</button>
                         <button class="btn btn-primary" onclick="exportMaintReportCSV()">📥 Exportar CSV</button>
@@ -4513,9 +4550,63 @@
                     </p>
                 </div>
             </div>
+
+            <!-- Incidencias de Mantenimiento -->
+            <div class="data-table-container" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin: 0;">🔔 Incidencias de Mantenimiento</h3>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="filterMttoIncidents('all')">Todas</button>
+                        <button class="filter-btn" onclick="filterMttoIncidents('pendiente')">⏳ Pendientes</button>
+                        <button class="filter-btn" onclick="filterMttoIncidents('resuelto_mant')">✅ Resueltas Mtto</button>
+                        <button class="filter-btn" onclick="filterMttoIncidents('escalado')">🔺 Escaladas</button>
+                    </div>
+                </div>
+                <div id="mttoIncidentsTableContainer">
+                    <p style="color: var(--text-muted); text-align: center; padding: 20px;">Cargando incidencias...</p>
+                </div>
+            </div>
+
+            <!-- Historial de Tickets Mantenimiento -->
+            <div class="data-table-container" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin: 0;">📜 Historial de Tickets Mantenimiento</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <select id="mttoHistorialPeriodo" onchange="loadMttoHistorial()" style="padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                            <option value="7">Últimos 7 días</option>
+                            <option value="30" selected>Últimos 30 días</option>
+                            <option value="90">Últimos 90 días</option>
+                            <option value="all">Todo el historial</option>
+                        </select>
+                        <button class="btn" onclick="loadMttoHistorial()">🔄 Actualizar</button>
+                        <button class="btn" onclick="exportMttoHistorial()">📥 Exportar</button>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #10b981;" id="mttoHistTotal">0</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">✅ Tickets Atendidos</div>
+                    </div>
+                    <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #3b82f6;" id="mttoHistPromedio">--</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">⏱️ Tiempo Promedio</div>
+                    </div>
+                    <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #f59e0b;" id="mttoHistMin">--</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">🚀 Más Rápido</div>
+                    </div>
+                    <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #ef4444;" id="mttoHistMax">--</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">🐢 Más Lento</div>
+                    </div>
+                </div>
+                <div id="mttoHistorialContainer" style="max-height: 400px; overflow-y: auto;">
+                    <p style="color: var(--text-muted); text-align: center; padding: 30px;">Clic en "🔄 Actualizar" para cargar el historial</p>
+                </div>
+            </div>
         </div>
 
-        <!-- TAB 3: GESTIÓN DE USUARIOS (Solo Admin) -->
+        <!-- TAB: GESTIÓN DE USUARIOS (Solo Admin) -->
         <div id="users-tab" class="tab-content" data-permission="admin">
             <div class="dashboard-header">
                 <h2>👥 Gestión de Usuarios</h2>
@@ -4740,12 +4831,67 @@
                 </div>
 
                 <!-- 5. Eliminar incidencias -->
-                <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; border: 1px solid var(--border-color);">
+                <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color);">
                     <h4 style="margin: 0 0 10px; color: var(--text-primary);">📋 Historial de Incidencias</h4>
                     <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Administra el historial de reportes de incidencias.</p>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button class="btn" onclick="saClearResolvedIncidents()" style="font-size: 0.85rem; border-color: #10b981; color: #34d399;">✅ Limpiar Resueltas</button>
                         <button class="btn btn-danger" onclick="saClearAllIncidents()" style="font-size: 0.85rem;">🗑️ Limpiar Todas las Incidencias</button>
+                    </div>
+                </div>
+
+                <!-- 6. Editor de Permisos por Rol -->
+                <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 2px solid rgba(6,182,212,0.4);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <h4 style="margin: 0; color: #06b6d4;">🔐 Editor de Permisos por Rol</h4>
+                        <span style="font-size: 0.7rem; background: rgba(6,182,212,0.2); color: #06b6d4; padding: 2px 8px; border-radius: 10px;">Dinámico</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">Configura qué puede hacer y ver cada perfil. Los cambios se aplican inmediatamente y se envía un reporte por correo.</p>
+                    
+                    <!-- Selector de rol -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px;">Seleccionar Perfil:</label>
+                        <div id="saPermRoleTabs" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                    </div>
+                    
+                    <!-- Editor del rol seleccionado -->
+                    <div id="saPermEditor" style="display: none;">
+                        <!-- Tabs de Acceso -->
+                        <div style="background: var(--bg-primary); border-radius: 8px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border-color);">
+                            <h5 style="margin: 0 0 10px; color: var(--text-primary); font-size: 0.9rem;">📑 Pestañas Visibles</h5>
+                            <div id="saPermTabs" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px;"></div>
+                        </div>
+                        
+                        <!-- Permisos de Acción -->
+                        <div style="background: var(--bg-primary); border-radius: 8px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border-color);">
+                            <h5 style="margin: 0 0 10px; color: var(--text-primary); font-size: 0.9rem;">⚙️ Permisos de Acción</h5>
+                            <div id="saPermActions" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;"></div>
+                        </div>
+                        
+                        <!-- Permisos Especiales -->
+                        <div style="background: var(--bg-primary); border-radius: 8px; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                            <h5 style="margin: 0 0 10px; color: var(--text-primary); font-size: 0.9rem;">🏷️ Flags Especiales</h5>
+                            <div id="saPermFlags" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px;"></div>
+                        </div>
+                        
+                        <!-- Indicador de cambios vs original -->
+                        <div id="saPermDiff" style="display: none; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                            <div style="font-size: 0.85rem; font-weight: 600; color: #f59e0b; margin-bottom: 6px;">⚠️ Cambios detectados vs configuración original:</div>
+                            <div id="saPermDiffList" style="font-size: 0.8rem; color: var(--text-secondary);"></div>
+                        </div>
+                        
+                        <!-- Nota obligatoria del cambio -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">📝 Motivo del cambio (obligatorio):</label>
+                            <textarea id="saPermChangeNote" placeholder="Ej: Se agrega acceso a Reportes IT para que Ama de Llaves pueda monitorear incidencias de sistemas..." style="width: 100%; padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); min-height: 60px; resize: vertical; box-sizing: border-box;"></textarea>
+                        </div>
+                        
+                        <!-- Botones -->
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="saApplyPermissions()" style="font-size: 0.85rem;">💾 Guardar y Notificar por Email</button>
+                            <button class="btn" onclick="saRestoreRolePermissions()" style="font-size: 0.85rem; border-color: #f59e0b; color: #fbbf24;">🔄 Restaurar Original de este Rol</button>
+                            <button class="btn btn-danger" onclick="saRestoreAllPermissions()" style="font-size: 0.85rem;">🔄 Restaurar TODOS los Permisos</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -4884,70 +5030,75 @@
         // ============================================
         
         // Niveles de usuario
-        const USER_LEVELS = {
+        // Permisos ORIGINALES (nunca se modifican - sirven para restaurar)
+        const DEFAULT_USER_LEVELS = {
             'admin': { 
                 name: 'Super Admin', 
-                canDelete: true, 
-                canClearAll: true, 
-                canEditAny: true,
-                canAudit: true,
-                canExport: true,
-                canReport: true,
-                canManageIncidents: true
+                canDelete: true, canClearAll: true, canEditAny: true,
+                canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
+                tabAudit: true, tabReportsIT: true, tabReportsMtto: true, tabMaintenance: false
             },
             'advanced': { 
                 name: 'Auditor Avanzado', 
-                canDelete: false, 
-                canClearAll: false, 
-                canEditAny: true,
-                canAudit: true,
-                canExport: true,
-                canReport: true,
-                canManageIncidents: true
+                canDelete: false, canClearAll: false, canEditAny: true,
+                canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
+                tabAudit: true, tabReportsIT: true, tabReportsMtto: true, tabMaintenance: false
             },
             'basic': { 
                 name: 'Auditor', 
-                canDelete: false, 
-                canClearAll: false, 
-                canEditAny: false,
-                canAudit: true,
-                canExport: true,
-                canReport: true,
-                canManageIncidents: true
+                canDelete: false, canClearAll: false, canEditAny: false,
+                canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
+                tabAudit: true, tabReportsIT: true, tabReportsMtto: true, tabMaintenance: false
             },
             'mantenimiento': { 
                 name: 'Mantenimiento', 
-                canDelete: false, 
-                canClearAll: false, 
-                canEditAny: false,
-                canAudit: false,
-                canExport: false,
-                canReport: false,
-                canManageIncidents: true,  // Puede gestionar incidencias asignadas
-                onlyOwnIncidents: true      // Solo ve incidencias de mantenimiento
+                canDelete: false, canClearAll: false, canEditAny: false,
+                canAudit: false, canExport: false, canReport: false, canManageIncidents: true,
+                onlyOwnIncidents: true,
+                tabAudit: false, tabReportsIT: false, tabReportsMtto: true, tabMaintenance: true
             },
             'agente': { 
                 name: 'Agente', 
-                canDelete: false, 
-                canClearAll: false, 
-                canEditAny: false,
-                canAudit: false,
-                canExport: false,
-                canReport: true,
-                canManageIncidents: false
+                canDelete: false, canClearAll: false, canEditAny: false,
+                canAudit: false, canExport: false, canReport: true, canManageIncidents: false,
+                tabAudit: true, tabReportsIT: false, tabReportsMtto: false, tabMaintenance: false
             },
             'amaDeLlaves': { 
                 name: 'Ama de Llaves', 
-                canDelete: false, 
-                canClearAll: false, 
-                canEditAny: false,
-                canAudit: true,
-                canExport: true,
-                canReport: true,
-                canManageIncidents: false,
-                maintenanceOnly: true
+                canDelete: false, canClearAll: false, canEditAny: false,
+                canAudit: true, canExport: true, canReport: true, canManageIncidents: false,
+                maintenanceOnly: true,
+                tabAudit: true, tabReportsIT: false, tabReportsMtto: true, tabMaintenance: false
             }
         };
+        
+        // Permisos ACTIVOS (pueden ser modificados por Super Admin)
+        let USER_LEVELS = JSON.parse(JSON.stringify(DEFAULT_USER_LEVELS));
+        
+        // Cargar permisos personalizados del localStorage
+        function loadCustomPermissions() {
+            const saved = localStorage.getItem('audit_custom_permissions');
+            if (saved) {
+                try {
+                    const custom = JSON.parse(saved);
+                    // Merge: mantener estructura base, sobrescribir con custom
+                    Object.keys(custom).forEach(level => {
+                        if (USER_LEVELS[level]) {
+                            Object.assign(USER_LEVELS[level], custom[level]);
+                        }
+                    });
+                } catch(e) { console.error('Error cargando permisos personalizados:', e); }
+            }
+        }
+        
+        function saveCustomPermissions() {
+            localStorage.setItem('audit_custom_permissions', JSON.stringify(USER_LEVELS));
+        }
+        
+        function resetPermissionsToDefault() {
+            USER_LEVELS = JSON.parse(JSON.stringify(DEFAULT_USER_LEVELS));
+            localStorage.removeItem('audit_custom_permissions');
+        }
         
         // Sesión actual
         let currentUser = null;
@@ -4987,6 +5138,7 @@
             
             // ===== INICIALIZAR CHECKLIST DE MANTENIMIENTO =====
             // Cargar config personalizada desde localStorage y generar secciones
+            loadCustomPermissions();
             loadCustomMaintConfig();
             buildMaintenanceChecklist();
             
@@ -5807,18 +5959,22 @@
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.querySelector(`[onclick="switchTab('${tabName}')"]`)?.classList.add('active');
             document.getElementById(`${tabName}-tab`)?.classList.add('active');
-            if (tabName === 'reports') {
+            if (tabName === 'reportsIT') {
                 refreshCharts();
-                loadIncidents(); // Cargar incidencias al entrar a reportes
-                loadHistorial(); // Cargar historial de tickets
+                loadIncidents(); // Cargar incidencias IT
+                loadHistorial(); // Cargar historial de tickets IT
+            }
+            if (tabName === 'reportsMtto') {
+                refreshMttoTab();
             }
             if (tabName === 'users') {
                 loadUsersList();
-                loadCustomMaintConfig(); // Cargar config personalizada de mantenimiento
-                buildMaintenanceChecklist(); // Generar checklist dinámicamente
-                loadHorariosConfig(); // Cargar configuración de horarios
-                saLoadSectionConfig(); // Cargar configuración de secciones
-                applyNotesPermissions(); // Aplicar permisos de notas
+                loadCustomMaintConfig();
+                buildMaintenanceChecklist();
+                loadHorariosConfig();
+                saLoadSectionConfig();
+                applyNotesPermissions();
+                saInitPermEditor(); // Inicializar editor de permisos
             }
             if (tabName === 'maintenance') loadMaintenanceIncidents();
         }
@@ -6685,6 +6841,240 @@
             MAINT_SECTIONS.forEach(sid => {
                 updateMaintSectionStatus(sid);
             });
+        }
+        
+        // ============================================
+        // REPORTES MANTENIMIENTO TAB
+        // ============================================
+        
+        let mttoIncidents = [];
+        let mttoHistorialData = [];
+        
+        function refreshMttoTab() {
+            loadMttoKPIs();
+            refreshMaintReport();
+            loadMttoIncidents();
+            loadMttoHistorial();
+        }
+        
+        function loadMttoKPIs() {
+            let totalOk = 0, totalFalla = 0, totalAjuste = 0, totalProceso = 0, habsAuditadas = 0;
+            
+            Object.keys(auditData).forEach(room => {
+                const maint = auditData[room]?.maintenance;
+                if (!maint || typeof maint !== 'object') return;
+                
+                let hasMaintData = false;
+                MAINT_SECTIONS.forEach(sid => {
+                    const section = maint[sid];
+                    if (!section) return;
+                    Object.keys(section).forEach(key => {
+                        if (key.startsWith('_')) return;
+                        hasMaintData = true;
+                        const val = section[key];
+                        if (val === 'ok') totalOk++;
+                        else if (val === 'falla') totalFalla++;
+                        else if (val === 'ajuste') totalAjuste++;
+                        else if (val === 'proceso') totalProceso++;
+                    });
+                });
+                if (hasMaintData) habsAuditadas++;
+            });
+            
+            const el = (id) => document.getElementById(id);
+            if (el('mttoKpiOk')) el('mttoKpiOk').textContent = totalOk;
+            if (el('mttoKpiFalla')) el('mttoKpiFalla').textContent = totalFalla;
+            if (el('mttoKpiAjuste')) el('mttoKpiAjuste').textContent = totalAjuste;
+            if (el('mttoKpiProceso')) el('mttoKpiProceso').textContent = totalProceso;
+            if (el('mttoKpiAuditadas')) el('mttoKpiAuditadas').textContent = habsAuditadas;
+        }
+        
+        async function loadMttoIncidents() {
+            try {
+                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const result = await response.json();
+                if (result.success) {
+                    // Filtrar solo incidencias asignadas a mantenimiento
+                    mttoIncidents = (result.incidents || []).filter(inc => inc.asignadoA === 'mantenimiento');
+                    renderMttoIncidents(mttoIncidents);
+                }
+            } catch (error) {
+                console.error('Error cargando incidencias mtto:', error);
+            }
+        }
+        
+        function renderMttoIncidents(incidents) {
+            const container = document.getElementById('mttoIncidentsTableContainer');
+            if (!container) return;
+            
+            // Only show non-closed ones by default
+            const active = incidents.filter(inc => inc.status !== 'atendido');
+            
+            if (active.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 30px;">✅ No hay incidencias de mantenimiento activas</p>';
+                return;
+            }
+            
+            const statusLabels = {
+                'pendiente': '<span style="color:#f59e0b">⏳ Pendiente</span>',
+                'en_revision': '<span style="color:#3b82f6">👁️ En Revisión</span>',
+                'resuelto_mant': '<span style="color:#10b981">✅ Resuelto Mtto</span>',
+                'escalado': '<span style="color:#ef4444">🔺 Escalado</span>',
+                'atendido': '<span style="color:#6b7280">✅ Cerrado</span>'
+            };
+            
+            const faultLabels = {
+                'telefono': '📞', 'tv': '📺', 'internet': '📶', 'router': '📡', 'ac': '❄️',
+                'plomeria': '🔧', 'electricidad': '⚡', 'puerta': '🚪', 'mobiliario': '🪑',
+                'bano': '🚿', 'pintura': '🎨', 'cerrajeria': '🔐', 'carpinteria': '🪚',
+                'cristaleria': '🪩', 'cortinas': '🪝', 'limpieza-profunda': '🧹', 'otro': '⚠️'
+            };
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+            active.forEach(inc => {
+                const icon = faultLabels[inc.faultType] || '📋';
+                html += `
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 1.4rem;">${icon}</span>
+                            <div>
+                                <div style="font-weight: 600; color: var(--text-primary);">Hab. ${inc.room} — ${inc.faultType}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">${inc.description || 'Sin descripción'}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">📤 ${inc.reporter} · ${inc.timestamp || ''}</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            ${statusLabels[inc.status] || inc.status}
+                            ${inc.notasMant ? '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">📝 ' + inc.notasMant + '</div>' : ''}
+                        </div>
+                    </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function filterMttoIncidents(status) {
+            // Update active button
+            document.querySelectorAll('#reportsMtto-tab .filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target?.classList.add('active');
+            
+            if (status === 'all') {
+                renderMttoIncidents(mttoIncidents);
+            } else {
+                renderMttoIncidents(mttoIncidents.filter(inc => inc.status === status));
+            }
+        }
+        
+        async function loadMttoHistorial() {
+            const container = document.getElementById('mttoHistorialContainer');
+            if (!container) return;
+            
+            container.innerHTML = '<p style="text-align: center; padding: 30px;">⏳ Cargando historial...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const result = await response.json();
+                
+                if (result.success && result.incidents) {
+                    // Filtrar tickets cerrados de mantenimiento
+                    const cerrados = result.incidents.filter(inc => 
+                        inc.asignadoA === 'mantenimiento' && 
+                        (inc.status === 'atendido' || inc.status === 'resuelto_mant')
+                    );
+                    
+                    const periodo = document.getElementById('mttoHistorialPeriodo')?.value || '30';
+                    const ahora = getMXDate();
+                    
+                    let filtrados = cerrados;
+                    if (periodo !== 'all') {
+                        const dias = parseInt(periodo);
+                        const fechaLimite = new Date(ahora.getTime() - (dias * 24 * 60 * 60 * 1000));
+                        filtrados = cerrados.filter(inc => new Date(inc.timestamp) >= fechaLimite);
+                    }
+                    
+                    mttoHistorialData = filtrados;
+                    renderMttoHistorial(filtrados);
+                    updateMttoHistorialStats(filtrados);
+                } else {
+                    container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 30px;">No se pudo cargar el historial</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p style="color: #ef4444; text-align: center; padding: 30px;">Error de conexión</p>';
+            }
+        }
+        
+        function renderMttoHistorial(incidents) {
+            const container = document.getElementById('mttoHistorialContainer');
+            if (!container) return;
+            
+            if (incidents.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 30px;">No hay tickets de mantenimiento cerrados en este período</p>';
+                return;
+            }
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            incidents.sort((a, b) => new Date(b.fechaResolucion || b.timestamp) - new Date(a.fechaResolucion || a.timestamp));
+            
+            incidents.forEach(inc => {
+                const tiempo = calcularTiempoAtencion(inc.timestamp, inc.fechaResolucion);
+                const tiempoStr = tiempo ? formatTiempoAtencion(tiempo) : '--';
+                const statusIcon = inc.status === 'resuelto_mant' ? '🔧' : '✅';
+                
+                html += `
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <span style="font-weight: 600; color: var(--text-primary);">${statusIcon} Hab. ${inc.room}</span>
+                            <span style="color: var(--text-muted); font-size: 0.85rem;"> — ${inc.faultType}</span>
+                            ${inc.atendidoPor ? '<span style="color: var(--text-muted); font-size: 0.8rem;"> · 👤 ' + inc.atendidoPor + '</span>' : ''}
+                        </div>
+                        <div style="text-align: right; font-size: 0.8rem;">
+                            <div style="color: var(--text-muted);">⏱️ ${tiempoStr}</div>
+                            ${inc.notasMant ? '<div style="color: var(--text-muted);">📝 ' + inc.notasMant + '</div>' : ''}
+                        </div>
+                    </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function updateMttoHistorialStats(incidents) {
+            const tiempos = incidents.map(inc => calcularTiempoAtencion(inc.timestamp, inc.fechaResolucion)).filter(t => t !== null);
+            
+            const el = (id) => document.getElementById(id);
+            if (el('mttoHistTotal')) el('mttoHistTotal').textContent = incidents.length;
+            
+            if (tiempos.length > 0) {
+                const avg = tiempos.reduce((a, b) => a + b, 0) / tiempos.length;
+                const min = Math.min(...tiempos);
+                const max = Math.max(...tiempos);
+                if (el('mttoHistPromedio')) el('mttoHistPromedio').textContent = formatTiempoAtencion(avg);
+                if (el('mttoHistMin')) el('mttoHistMin').textContent = formatTiempoAtencion(min);
+                if (el('mttoHistMax')) el('mttoHistMax').textContent = formatTiempoAtencion(max);
+            } else {
+                if (el('mttoHistPromedio')) el('mttoHistPromedio').textContent = '--';
+                if (el('mttoHistMin')) el('mttoHistMin').textContent = '--';
+                if (el('mttoHistMax')) el('mttoHistMax').textContent = '--';
+            }
+        }
+        
+        function exportMttoHistorial() {
+            if (!mttoHistorialData || mttoHistorialData.length === 0) {
+                showToast('No hay datos para exportar', 'warning');
+                return;
+            }
+            
+            let csv = 'Habitacion,Tipo,Reportado Por,Estado,Atendido Por,Notas Mtto,Fecha Reporte,Fecha Resolucion,Tiempo\n';
+            mttoHistorialData.forEach(inc => {
+                const tiempo = calcularTiempoAtencion(inc.timestamp, inc.fechaResolucion);
+                csv += `${inc.room},"${inc.faultType}","${inc.reporter || ''}","${inc.status}","${inc.atendidoPor || ''}","${(inc.notasMant || '').replace(/"/g, '""')}","${inc.timestamp || ''}","${inc.fechaResolucion || ''}","${tiempo ? formatTiempoAtencion(tiempo) : ''}"\n`;
+            });
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `historial_mtto_${getMXFecha().replace(/\//g, '-')}.csv`;
+            link.click();
+            showToast('📥 Historial de mantenimiento exportado', 'success');
         }
         
         // ============================================
@@ -9644,6 +10034,260 @@ ${sisInfo}
             showToast('✅ Checklist actualizado y guardado. Cambios aplicados a todas las secciones.', 'success');
         }
         
+        // ============================================
+        // EDITOR DINÁMICO DE PERMISOS POR ROL
+        // ============================================
+        
+        let saPermSelectedRole = null;
+        
+        const PERM_LABELS = {
+            // Tabs
+            tabAudit: { label: '📋 Auditoría', group: 'tab', desc: 'Pestaña principal de auditoría' },
+            tabReportsIT: { label: '💻 Reportes IT', group: 'tab', desc: 'Dashboard y reportes de Sistemas' },
+            tabReportsMtto: { label: '🔧 Reportes Mtto', group: 'tab', desc: 'Dashboard y reportes de Mantenimiento' },
+            tabMaintenance: { label: '🛠️ Panel Mantenimiento', group: 'tab', desc: 'Panel operativo de incidencias (rol mantenimiento)' },
+            // Actions
+            canAudit: { label: '📝 Auditar', group: 'action', desc: 'Puede realizar auditorías de habitaciones' },
+            canEditAny: { label: '✏️ Editar Auditorías', group: 'action', desc: 'Puede editar auditorías de otros usuarios' },
+            canDelete: { label: '🗑️ Eliminar', group: 'action', desc: 'Puede eliminar auditorías individuales' },
+            canClearAll: { label: '⚠️ Limpiar Todo', group: 'action', desc: 'Puede borrar toda la base de datos' },
+            canExport: { label: '📥 Exportar', group: 'action', desc: 'Puede exportar datos a CSV' },
+            canReport: { label: '📢 Reportar Incidencias', group: 'action', desc: 'Puede crear reportes de incidencias' },
+            canManageIncidents: { label: '🔧 Gestionar Incidencias', group: 'action', desc: 'Puede cambiar estado de incidencias' },
+            // Flags
+            maintenanceOnly: { label: '🏨 Solo Mantenimiento', group: 'flag', desc: 'En auditoría solo ve secciones de mantenimiento' },
+            onlyOwnIncidents: { label: '📋 Solo sus Incidencias', group: 'flag', desc: 'Solo ve incidencias asignadas a su departamento' }
+        };
+        
+        const ROLE_COLORS = {
+            'admin': '#a78bfa', 'advanced': '#06b6d4', 'basic': '#10b981',
+            'mantenimiento': '#f59e0b', 'agente': '#f87171', 'amaDeLlaves': '#ec4899'
+        };
+        
+        function saInitPermEditor() {
+            const container = document.getElementById('saPermRoleTabs');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            Object.keys(USER_LEVELS).forEach(level => {
+                if (level === 'admin') return; // Admin no se puede editar
+                const role = USER_LEVELS[level];
+                const color = ROLE_COLORS[level] || '#94a3b8';
+                const isCustom = saRoleHasCustomPerms(level);
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.style.cssText = `font-size: 0.85rem; border-color: ${color}; color: ${color}; position: relative;`;
+                btn.innerHTML = `${role.name}${isCustom ? ' <span style="font-size:0.65rem; background:rgba(245,158,11,0.3); color:#fbbf24; padding:1px 5px; border-radius:6px; margin-left:4px;">Modificado</span>' : ''}`;
+                btn.onclick = () => saSelectRole(level);
+                if (saPermSelectedRole === level) {
+                    btn.style.background = color;
+                    btn.style.color = '#fff';
+                }
+                container.appendChild(btn);
+            });
+        }
+        
+        function saRoleHasCustomPerms(level) {
+            const current = USER_LEVELS[level];
+            const original = DEFAULT_USER_LEVELS[level];
+            if (!current || !original) return false;
+            return Object.keys(PERM_LABELS).some(key => current[key] !== original[key]);
+        }
+        
+        function saSelectRole(level) {
+            saPermSelectedRole = level;
+            saInitPermEditor(); // Refresh tabs highlight
+            document.getElementById('saPermEditor').style.display = 'block';
+            saRenderPermToggles();
+            saUpdatePermDiff();
+            document.getElementById('saPermChangeNote').value = '';
+        }
+        
+        function saRenderPermToggles() {
+            const role = USER_LEVELS[saPermSelectedRole];
+            if (!role) return;
+            
+            const original = DEFAULT_USER_LEVELS[saPermSelectedRole];
+            const color = ROLE_COLORS[saPermSelectedRole] || '#94a3b8';
+            
+            ['tab', 'action', 'flag'].forEach(group => {
+                const containerId = group === 'tab' ? 'saPermTabs' : group === 'action' ? 'saPermActions' : 'saPermFlags';
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                
+                Object.keys(PERM_LABELS).filter(k => PERM_LABELS[k].group === group).forEach(key => {
+                    const info = PERM_LABELS[key];
+                    const isOn = !!role[key];
+                    const wasOriginal = !!original[key];
+                    const changed = isOn !== wasOriginal;
+                    
+                    const div = document.createElement('div');
+                    div.style.cssText = `display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: ${changed ? 'rgba(245,158,11,0.08)' : 'var(--bg-secondary)'}; border: 1px solid ${changed ? 'rgba(245,158,11,0.4)' : 'var(--border-color)'}; border-radius: 8px; cursor: pointer; transition: all 0.2s;`;
+                    div.title = info.desc;
+                    div.innerHTML = `
+                        <div style="width: 36px; height: 20px; border-radius: 10px; background: ${isOn ? color : '#4b5563'}; position: relative; transition: background 0.2s; flex-shrink: 0;">
+                            <div style="width: 16px; height: 16px; border-radius: 50%; background: white; position: absolute; top: 2px; ${isOn ? 'right: 2px;' : 'left: 2px;'} transition: all 0.2s;"></div>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.82rem; color: var(--text-primary); font-weight: ${isOn ? '600' : '400'};">${info.label}</div>
+                            ${changed ? '<div style="font-size: 0.65rem; color: #f59e0b;">⚠️ Diferente al original (' + (wasOriginal ? 'Activado' : 'Desactivado') + ')</div>' : ''}
+                        </div>`;
+                    div.onclick = () => {
+                        role[key] = !role[key];
+                        saRenderPermToggles();
+                        saUpdatePermDiff();
+                    };
+                    container.appendChild(div);
+                });
+            });
+        }
+        
+        function saUpdatePermDiff() {
+            const role = USER_LEVELS[saPermSelectedRole];
+            const original = DEFAULT_USER_LEVELS[saPermSelectedRole];
+            if (!role || !original) return;
+            
+            const changes = [];
+            Object.keys(PERM_LABELS).forEach(key => {
+                if (role[key] !== original[key]) {
+                    const info = PERM_LABELS[key];
+                    const arrow = role[key] ? '❌ → ✅' : '✅ → ❌';
+                    changes.push(`<div style="padding: 3px 0;">${info.label}: ${arrow}</div>`);
+                }
+            });
+            
+            const diffContainer = document.getElementById('saPermDiff');
+            const diffList = document.getElementById('saPermDiffList');
+            if (changes.length > 0) {
+                diffContainer.style.display = 'block';
+                diffList.innerHTML = changes.join('');
+            } else {
+                diffContainer.style.display = 'none';
+            }
+        }
+        
+        function saGetPermChangesText(level) {
+            const role = USER_LEVELS[level];
+            const original = DEFAULT_USER_LEVELS[level];
+            const changes = [];
+            Object.keys(PERM_LABELS).forEach(key => {
+                if (role[key] !== original[key]) {
+                    const info = PERM_LABELS[key];
+                    changes.push(`${info.label}: ${original[key] ? 'Activado' : 'Desactivado'} → ${role[key] ? 'Activado' : 'Desactivado'}`);
+                }
+            });
+            return changes;
+        }
+        
+        async function saApplyPermissions() {
+            if (currentUser?.level !== 'admin') { showToast('Solo Super Admin', 'error'); return; }
+            if (!saPermSelectedRole) { showToast('Selecciona un rol', 'warning'); return; }
+            
+            const note = document.getElementById('saPermChangeNote')?.value?.trim();
+            if (!note) { showToast('Es obligatorio escribir el motivo del cambio', 'warning'); return; }
+            
+            const changes = saGetPermChangesText(saPermSelectedRole);
+            if (changes.length === 0) { showToast('No hay cambios que guardar', 'info'); return; }
+            
+            const roleName = USER_LEVELS[saPermSelectedRole]?.name || saPermSelectedRole;
+            const changesPreview = changes.map(c => '• ' + c).join('\n');
+            
+            if (!confirm(`⚠️ CONFIRMACIÓN DE CAMBIO DE PERMISOS\n\nRol: ${roleName}\n\nCambios:\n${changesPreview}\n\nMotivo: ${note}\n\n¿Deseas aplicar estos cambios?\nSe enviará un reporte por email.`)) return;
+            
+            // Guardar en localStorage
+            saveCustomPermissions();
+            
+            // Aplicar permisos inmediatamente
+            applyPermissions();
+            
+            // Enviar notificación por email
+            const changesHtml = changes.map(c => `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">• ${c}</div>`).join('');
+            
+            try {
+                showToast('⏳ Guardando y enviando notificación...', 'info');
+                const response = await fetch(`${API_URL}?action=sendPermissionChangeEmail&adminUser=${encodeURIComponent(currentUser.username)}&roleName=${encodeURIComponent(roleName)}&changes=${encodeURIComponent(changesHtml)}&reason=${encodeURIComponent(note)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`✅ Permisos de "${roleName}" actualizados. Email enviado.`, 'success');
+                } else {
+                    showToast(`✅ Permisos guardados. ⚠️ ${result.message}`, 'warning');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('✅ Permisos guardados localmente. ⚠️ No se pudo enviar email.', 'warning');
+            }
+            
+            // Refresh editor
+            saInitPermEditor();
+            saRenderPermToggles();
+            saUpdatePermDiff();
+            document.getElementById('saPermChangeNote').value = '';
+        }
+        
+        function saRestoreRolePermissions() {
+            if (!saPermSelectedRole) { showToast('Selecciona un rol', 'warning'); return; }
+            
+            const roleName = USER_LEVELS[saPermSelectedRole]?.name || saPermSelectedRole;
+            
+            if (!saRoleHasCustomPerms(saPermSelectedRole)) {
+                showToast(`${roleName} ya tiene los permisos originales`, 'info');
+                return;
+            }
+            
+            saConfirm(`Restaurar permisos de ${roleName}`, [
+                'Se restaurarán los permisos originales de este rol',
+                'Cualquier personalización se perderá',
+                'Se enviará notificación por email'
+            ], 'RESTAURAR', async () => {
+                // Restaurar del DEFAULT
+                USER_LEVELS[saPermSelectedRole] = JSON.parse(JSON.stringify(DEFAULT_USER_LEVELS[saPermSelectedRole]));
+                saveCustomPermissions();
+                applyPermissions();
+                
+                // Notificar por email
+                try {
+                    await fetch(`${API_URL}?action=sendPermissionChangeEmail&adminUser=${encodeURIComponent(currentUser.username)}&roleName=${encodeURIComponent(roleName)}&changes=${encodeURIComponent('🔄 Todos los permisos restaurados a configuración original')}&reason=${encodeURIComponent('Restauración de permisos originales del rol')}`);
+                } catch(e) { /* silencioso */ }
+                
+                showToast(`✅ Permisos de "${roleName}" restaurados al original`, 'success');
+                saInitPermEditor();
+                saRenderPermToggles();
+                saUpdatePermDiff();
+            });
+        }
+        
+        function saRestoreAllPermissions() {
+            const customRoles = Object.keys(USER_LEVELS).filter(l => l !== 'admin' && saRoleHasCustomPerms(l));
+            
+            if (customRoles.length === 0) {
+                showToast('Todos los roles ya tienen permisos originales', 'info');
+                return;
+            }
+            
+            const roleNames = customRoles.map(l => USER_LEVELS[l]?.name).join(', ');
+            
+            saConfirm('Restaurar TODOS los permisos', [
+                `Roles con cambios: ${roleNames}`,
+                'Se restaurarán TODOS los permisos a su configuración original',
+                'Esta acción no se puede deshacer',
+                'Se enviará notificación por email'
+            ], 'RESTAURAR TODO', async () => {
+                resetPermissionsToDefault();
+                applyPermissions();
+                
+                try {
+                    await fetch(`${API_URL}?action=sendPermissionChangeEmail&adminUser=${encodeURIComponent(currentUser.username)}&roleName=${encodeURIComponent('TODOS LOS ROLES')}&changes=${encodeURIComponent('🔄 Todos los roles restaurados: ' + roleNames)}&reason=${encodeURIComponent('Restauración masiva de permisos originales')}`);
+                } catch(e) { /* silencioso */ }
+                
+                showToast('✅ Todos los permisos restaurados', 'success');
+                saPermSelectedRole = null;
+                document.getElementById('saPermEditor').style.display = 'none';
+                saInitPermEditor();
+            });
+        }
+        
         function saResetChecklist() {
             saConfirm('Restaurar checklist original', [
                 'Se restaurarán TODAS las secciones y items al estado original',
@@ -9954,7 +10598,7 @@ ${sisInfo}
                     loadRoom(notif.room);
                     switchTab('audit');
                 } else {
-                    switchTab('reports');
+                    switchTab('reportsIT');
                 }
                 toggleNotifCenter();
             }
@@ -9999,7 +10643,7 @@ ${sisInfo}
                         loadRoom(event.data.room);
                         switchTab('audit');
                     } else {
-                        switchTab('reports');
+                        switchTab('reportsIT');
                     }
                 }
             });
@@ -10016,14 +10660,31 @@ ${sisInfo}
                     const pendingIncidents = allIncs.filter(i => i.status === 'pendiente');
                     const pendingCount = pendingIncidents.length;
                     
-                    // Actualizar badge en pestaña Reportes
-                    const badge = document.getElementById('reportsBadge');
-                    if (badge) {
-                        if (pendingCount > 0) {
-                            badge.textContent = pendingCount > 99 ? '99+' : pendingCount;
-                            badge.style.display = 'inline-block';
+                    // Separar pendientes por departamento
+                    const pendingIT = pendingIncidents.filter(i => i.asignadoA === 'sistemas');
+                    const pendingMtto = pendingIncidents.filter(i => i.asignadoA === 'mantenimiento');
+                    const escalados = allIncs.filter(i => i.status === 'escalado');
+                    
+                    // Badge en pestaña Reportes IT (pendientes IT + escalados a IT)
+                    const badgeIT = document.getElementById('reportsBadge');
+                    const countIT = pendingIT.length + escalados.length;
+                    if (badgeIT) {
+                        if (countIT > 0) {
+                            badgeIT.textContent = countIT > 99 ? '99+' : countIT;
+                            badgeIT.style.display = 'inline-block';
                         } else {
-                            badge.style.display = 'none';
+                            badgeIT.style.display = 'none';
+                        }
+                    }
+                    
+                    // Badge en pestaña Reportes Mtto (pendientes mantenimiento)
+                    const badgeMtto = document.getElementById('reportsMttoBadge');
+                    if (badgeMtto) {
+                        if (pendingMtto.length > 0) {
+                            badgeMtto.textContent = pendingMtto.length > 99 ? '99+' : pendingMtto.length;
+                            badgeMtto.style.display = 'inline-block';
+                        } else {
+                            badgeMtto.style.display = 'none';
                         }
                     }
                     
@@ -10135,7 +10796,7 @@ ${sisInfo}
                     ${recentList}
                     ${count > 3 ? `<div style="padding-top: 6px; color: #06b6d4;">... y ${count - 3} más</div>` : ''}
                 </div>
-                <button onclick="switchTab('reports'); this.parentElement.remove();" 
+                <button onclick="switchTab('reportsIT'); this.parentElement.remove();" 
                         style="margin-top: 12px; width: 100%; padding: 8px; background: #06b6d4; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
                     Ver Reportes
                 </button>
@@ -10158,7 +10819,13 @@ ${sisInfo}
                 const result = await response.json();
                 
                 if (result.success) {
-                    allIncidents = result.incidents || [];
+                    // Filtrar solo incidencias relevantes para IT:
+                    // - Asignadas a sistemas
+                    // - Escaladas de mantenimiento a sistemas
+                    const allRaw = result.incidents || [];
+                    allIncidents = allRaw.filter(inc => 
+                        inc.asignadoA === 'sistemas' || inc.status === 'escalado'
+                    );
                     renderIncidentsTable(allIncidents);
                     updateEscaladosCount();
                     
@@ -10209,9 +10876,10 @@ ${sisInfo}
                 const result = await response.json();
                 
                 if (result.success && result.incidents) {
-                    // Filtrar solo tickets cerrados (atendido o resuelto_mant)
+                    // Filtrar solo tickets IT cerrados (asignados a sistemas)
                     const cerrados = result.incidents.filter(inc => 
-                        inc.status === 'atendido' || inc.status === 'resuelto_mant'
+                        (inc.status === 'atendido' || inc.status === 'resuelto_mant') &&
+                        (inc.asignadoA === 'sistemas')
                     );
                     
                     // Aplicar filtro de período
@@ -11370,29 +12038,22 @@ ${sisInfo}
                 }
             }
             
-            // Mostrar/ocultar tabs según rol
+            // Mostrar/ocultar tabs según permisos dinámicos del rol
             const auditTabBtn = document.getElementById('auditTabBtn');
             const maintenanceTabBtn = document.getElementById('maintenanceTabBtn');
-            const reportsTabBtn = document.getElementById('reportsTabBtn');
+            const reportsITTabBtn = document.getElementById('reportsITTabBtn');
+            const reportsMttoTabBtn = document.getElementById('reportsMttoTabBtn');
             
-            if (currentUser.level === 'mantenimiento') {
-                // Usuario de mantenimiento: solo ve tab de mantenimiento
-                if (auditTabBtn) auditTabBtn.style.display = 'none';
-                if (maintenanceTabBtn) maintenanceTabBtn.style.display = 'flex';
-                if (reportsTabBtn) reportsTabBtn.style.display = 'none';
-                
-                // Activar el tab de mantenimiento automáticamente
+            const rolePerms = USER_LEVELS[currentUser.level] || USER_LEVELS['basic'];
+            
+            if (auditTabBtn) auditTabBtn.style.display = rolePerms.tabAudit ? 'flex' : 'none';
+            if (maintenanceTabBtn) maintenanceTabBtn.style.display = rolePerms.tabMaintenance ? 'flex' : 'none';
+            if (reportsITTabBtn) reportsITTabBtn.style.display = rolePerms.tabReportsIT ? 'flex' : 'none';
+            if (reportsMttoTabBtn) reportsMttoTabBtn.style.display = rolePerms.tabReportsMtto ? 'flex' : 'none';
+            
+            // Si el tab actual no esta visible, cambiar al primero disponible
+            if (rolePerms.tabMaintenance && !rolePerms.tabAudit) {
                 switchTab('maintenance');
-            } else if (currentUser.level === 'agente') {
-                // Agente: solo ve auditoría (su panel de reporte)
-                if (auditTabBtn) auditTabBtn.style.display = 'flex';
-                if (maintenanceTabBtn) maintenanceTabBtn.style.display = 'none';
-                if (reportsTabBtn) reportsTabBtn.style.display = 'none';
-            } else {
-                // Auditores y admin: ven auditoría y reportes
-                if (auditTabBtn) auditTabBtn.style.display = 'flex';
-                if (maintenanceTabBtn) maintenanceTabBtn.style.display = 'none';
-                if (reportsTabBtn) reportsTabBtn.style.display = 'flex';
             }
             
             // Cargar incidencias para roles que pueden auditar
