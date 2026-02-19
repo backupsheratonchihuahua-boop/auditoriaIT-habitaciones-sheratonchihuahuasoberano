@@ -4710,7 +4710,36 @@
                     </div>
                 </div>
 
-                <!-- 4. Eliminar incidencias -->
+                <!-- 4. Restablecer Contraseña de Usuario -->
+                <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                    <h4 style="margin: 0 0 10px; color: var(--text-primary);">🔑 Restablecer Contraseña</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Restablece la contraseña de un usuario sin necesidad de conocer la actual. Solo disponible para Super Admin.</p>
+                    <div style="display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">👤 Usuario</label>
+                            <select id="saResetPwdUser" style="width: 100%; padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                                <option value="">-- Seleccionar usuario --</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">🔒 Nueva Contraseña</label>
+                            <div style="position: relative;">
+                                <input type="password" id="saResetPwdNew" placeholder="Nueva contraseña" style="width: 100%; padding: 8px 36px 8px 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); box-sizing: border-box;">
+                                <button onclick="togglePwdVisibility('saResetPwdNew', this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1rem; padding: 4px;">👁️</button>
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">🔒 Confirmar Contraseña</label>
+                            <div style="position: relative;">
+                                <input type="password" id="saResetPwdConfirm" placeholder="Confirmar contraseña" style="width: 100%; padding: 8px 36px 8px 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); box-sizing: border-box;">
+                                <button onclick="togglePwdVisibility('saResetPwdConfirm', this)" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1rem; padding: 4px;">👁️</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="saResetUserPassword()" style="font-size: 0.85rem; white-space: nowrap;">🔑 Restablecer</button>
+                    </div>
+                </div>
+
+                <!-- 5. Eliminar incidencias -->
                 <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; border: 1px solid var(--border-color);">
                     <h4 style="margin: 0 0 10px; color: var(--text-primary);">📋 Historial de Incidencias</h4>
                     <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Administra el historial de reportes de incidencias.</p>
@@ -4955,6 +4984,11 @@
             updateUserBadge();
             applyPermissions();
             loadSavedSettings();
+            
+            // ===== INICIALIZAR CHECKLIST DE MANTENIMIENTO =====
+            // Cargar config personalizada desde localStorage y generar secciones
+            loadCustomMaintConfig();
+            buildMaintenanceChecklist();
             
             // Si es amaDeLlaves, filtrar solo mantenimiento
             if (currentUser && currentUser.level === 'amaDeLlaves') {
@@ -8968,6 +9002,8 @@ ${sisInfo}
                 
                 if (result.success && result.users) {
                     renderUsersTable(result.users);
+                    // Poblar dropdown de restablecer contraseña
+                    saPopulateResetPwdDropdown(result.users);
                 } else {
                     container.innerHTML = '<p style="color: var(--accent-danger); text-align: center; padding: 20px;">Error al cargar usuarios</p>';
                 }
@@ -9267,6 +9303,72 @@ ${sisInfo}
             }
         }
         
+        // ============================================
+        // RESTABLECER CONTRASEÑA DE USUARIO
+        // ============================================
+        
+        function saPopulateResetPwdDropdown(users) {
+            const select = document.getElementById('saResetPwdUser');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Seleccionar usuario --</option>';
+            users.forEach(u => {
+                if (u.username === currentUser?.username) return; // No mostrar al admin actual
+                const label = u.displayName ? `${u.username} (${u.displayName})` : u.username;
+                const status = u.active ? '' : ' [INACTIVO]';
+                select.innerHTML += `<option value="${u.username}">${label}${status}</option>`;
+            });
+        }
+        
+        function togglePwdVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🔒';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+        
+        async function saResetUserPassword() {
+            if (currentUser?.level !== 'admin') { 
+                showToast('Solo Super Admin puede restablecer contraseñas', 'error'); 
+                return; 
+            }
+            
+            const username = document.getElementById('saResetPwdUser')?.value;
+            const newPwd = document.getElementById('saResetPwdNew')?.value;
+            const confirmPwd = document.getElementById('saResetPwdConfirm')?.value;
+            
+            if (!username) { showToast('Selecciona un usuario', 'warning'); return; }
+            if (!newPwd) { showToast('Ingresa la nueva contraseña', 'warning'); return; }
+            if (newPwd.length < 4) { showToast('La contraseña debe tener al menos 4 caracteres', 'warning'); return; }
+            if (newPwd !== confirmPwd) { showToast('Las contraseñas no coinciden', 'error'); return; }
+            
+            const displayName = document.getElementById('saResetPwdUser').selectedOptions[0]?.text || username;
+            
+            if (!confirm(`¿Restablecer la contraseña de "${displayName}"?\n\nEsta acción no se puede deshacer.`)) return;
+            
+            try {
+                showToast('⏳ Restableciendo contraseña...', 'info');
+                const response = await fetch(`${API_URL}?action=adminResetPassword&username=${encodeURIComponent(username)}&newPassword=${encodeURIComponent(newPwd)}&adminUser=${encodeURIComponent(currentUser.username)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`✅ Contraseña de "${displayName}" restablecida correctamente`, 'success');
+                    // Limpiar campos
+                    document.getElementById('saResetPwdNew').value = '';
+                    document.getElementById('saResetPwdConfirm').value = '';
+                    document.getElementById('saResetPwdUser').value = '';
+                } else {
+                    showToast('❌ ' + (result.message || 'Error al restablecer'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('❌ Error de conexión', 'error');
+            }
+        }
+
         // Delete room history
         async function saDeleteRoomHistory() {
             if (currentUser?.level !== 'admin') { showToast('Solo Super Admin', 'error'); return; }
