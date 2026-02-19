@@ -252,6 +252,30 @@
             color: var(--text-secondary);
             padding: 4px 0;
         }
+        .sa-section-toggle {
+            display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-secondary);
+            padding: 6px 10px; background: var(--bg-input); border-radius: 6px; cursor: pointer; transition: all 0.2s;
+        }
+        .sa-section-toggle:hover { background: rgba(139,92,246,0.1); }
+        .sa-section-toggle input { width: 16px; height: 16px; accent-color: #8b5cf6; }
+        .sa-confirm-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .sa-confirm-box {
+            background: var(--bg-secondary); border-radius: 16px; max-width: 480px; width: 100%;
+            border: 2px solid rgba(239,68,68,0.4); overflow: hidden;
+        }
+        .sa-confirm-header { padding: 20px; border-bottom: 1px solid var(--border-color); }
+        .sa-confirm-header h3 { margin: 0; color: #ef4444; }
+        .sa-confirm-body { padding: 20px; }
+        .sa-confirm-body .warning-box { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 12px; margin: 10px 0; }
+        .sa-confirm-body .warning-item { font-size: 0.85rem; color: var(--text-secondary); padding: 3px 0; }
+        .sa-confirm-footer { padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; }
+        .sa-confirm-footer button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+        .sa-btn-cancel { background: var(--bg-input); color: var(--text-primary); }
+        .sa-btn-danger { background: #ef4444; color: white; }
+        .sa-confirm-input { width: 100%; padding: 10px; margin-top: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.9rem; }
         
         /* Modal para usuarios */
         .modal-overlay {
@@ -3964,875 +3988,29 @@
                 </div>
             </section>
 
-            <!-- ========== SECCIONES DE MANTENIMIENTO ========== -->
+            <!-- ========== SECCIONES DE MANTENIMIENTO (DINÁMICO) ========== -->
+            <div id="maintChecklistContainer"></div>
 
-            <section class="audit-section" data-dept="mantenimiento">
-                <div class="section-header" onclick="toggleSection('maint-door')">
-                    <div class="section-icon maint-door">🚪</div>
-                    <div class="section-title">6. Puerta Principal</div>
-                    <div class="section-status" id="maint-door-status">Pendiente</div>
-                </div>
-                <div class="section-content" id="maint-door-content">
-                    <div class="maint-section-summary" id="maint-door-summary">
-                        <span style="color:#10b981">OK: 0</span>
-                        <span style="color:#ef4444">Falla: 0</span>
-                        <span style="color:#f59e0b">Ajuste: 0</span>
-                        <span style="color:#3b82f6">EP: 0</span>
-                        <span style="color:#64748b">N/A: 0</span>
-                    </div>
-                    <div class="maint-check-grid">
-                        <div class="maint-check-item" id="maint-door-puerta" data-section="maint-door" data-item="puerta">
-                            <div class="maint-label">Puerta</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-door','puerta','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-door','puerta','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-door','puerta','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-door','puerta','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-door','puerta','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-door-bisagra" data-section="maint-door" data-item="bisagra">
-                            <div class="maint-label">Bisagra</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-door','bisagra','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-door','bisagra','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-door','bisagra','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-door','bisagra','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-door','bisagra','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-door-chapa" data-section="maint-door" data-item="chapa">
-                            <div class="maint-label">Chapa</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-door','chapa','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-door','chapa','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-door','chapa','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-door','chapa','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-door','chapa','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-door-seguro" data-section="maint-door" data-item="seguro">
-                            <div class="maint-label">Seguro / Pasador</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-door','seguro','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-door','seguro','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-door','seguro','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-door','seguro','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-door','seguro','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-door-mirilla" data-section="maint-door" data-item="mirilla">
-                            <div class="maint-label">Mirilla</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-door','mirilla','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-door','mirilla','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-door','mirilla','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-door','mirilla','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-door','mirilla','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-door-evacuacion" data-section="maint-door" data-item="evacuacion">
-                            <div class="maint-label">Cuadro de Evacuación</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-door','evacuacion','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-door','evacuacion','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-door','evacuacion','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-door','evacuacion','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-door','evacuacion','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-door-tope" data-section="maint-door" data-item="tope">
-                            <div class="maint-label">Tope de Puerta</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-door','tope','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-door','tope','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-door','tope','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-door','tope','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-door','tope','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-door-marco" data-section="maint-door" data-item="marco">
-                            <div class="maint-label">Marco de Puerta</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-door','marco','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-door','marco','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-door','marco','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-door','marco','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-door','marco','na')">N/A</button>
-                            </div>
-                        </div>
-                    </div>
-                    <textarea class="maint-notes-area" id="maint-door-notes" placeholder="Notas de puerta principal..."></textarea>
-                </div>
-            </section>
 
-            <section class="audit-section" data-dept="mantenimiento">
-                <div class="section-header" onclick="toggleSection('maint-bath')">
-                    <div class="section-icon maint-bath">🚿</div>
-                    <div class="section-title">7. Baño</div>
-                    <div class="section-status" id="maint-bath-status">Pendiente</div>
+            <section class="audit-section">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">💻</div>
+                    <div class="section-title">Observaciones de Sistemas</div>
                 </div>
-                <div class="section-content" id="maint-bath-content">
-                    <div class="maint-section-summary" id="maint-bath-summary">
-                        <span style="color:#10b981">OK: 0</span>
-                        <span style="color:#ef4444">Falla: 0</span>
-                        <span style="color:#f59e0b">Ajuste: 0</span>
-                        <span style="color:#3b82f6">EP: 0</span>
-                        <span style="color:#64748b">N/A: 0</span>
-                    </div>
-                    <div class="maint-check-grid">
-                        <div class="maint-check-item" id="maint-bath-puerta-marco" data-section="maint-bath" data-item="puerta-marco">
-                            <div class="maint-label">Puerta y Marco</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','puerta-marco','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','puerta-marco','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','puerta-marco','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','puerta-marco','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','puerta-marco','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-mangueras" data-section="maint-bath" data-item="mangueras">
-                            <div class="maint-label">Mangueras</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','mangueras','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','mangueras','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','mangueras','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','mangueras','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','mangueras','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-llaves-paso" data-section="maint-bath" data-item="llaves-paso">
-                            <div class="maint-label">Llaves de Paso</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','llaves-paso','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','llaves-paso','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','llaves-paso','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','llaves-paso','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','llaves-paso','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-chapa" data-section="maint-bath" data-item="chapa">
-                            <div class="maint-label">Chapa</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','chapa','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','chapa','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','chapa','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','chapa','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','chapa','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-bisagra" data-section="maint-bath" data-item="bisagra">
-                            <div class="maint-label">Bisagra</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','bisagra','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','bisagra','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','bisagra','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','bisagra','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','bisagra','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-ducha" data-section="maint-bath" data-item="ducha">
-                            <div class="maint-label">Ducha</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','ducha','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','ducha','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','ducha','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','ducha','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','ducha','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-monomando" data-section="maint-bath" data-item="monomando">
-                            <div class="maint-label">Monomando</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','monomando','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','monomando','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','monomando','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','monomando','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','monomando','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-lavamanos" data-section="maint-bath" data-item="lavamanos">
-                            <div class="maint-label">Lavamanos</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','lavamanos','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','lavamanos','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','lavamanos','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','lavamanos','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','lavamanos','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-tapon" data-section="maint-bath" data-item="tapon">
-                            <div class="maint-label">Tapón de Lavabo</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','tapon','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','tapon','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','tapon','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','tapon','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','tapon','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-ceramica" data-section="maint-bath" data-item="ceramica">
-                            <div class="maint-label">Cerámica y Boquilla</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','ceramica','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','ceramica','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','ceramica','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','ceramica','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','ceramica','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-lamparas" data-section="maint-bath" data-item="lamparas">
-                            <div class="maint-label">Lámparas</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','lamparas','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','lamparas','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','lamparas','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','lamparas','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','lamparas','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-apagador" data-section="maint-bath" data-item="apagador">
-                            <div class="maint-label">Apagador</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','apagador','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','apagador','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','apagador','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','apagador','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','apagador','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-tina" data-section="maint-bath" data-item="tina">
-                            <div class="maint-label">Tina</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','tina','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','tina','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','tina','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','tina','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','tina','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-toalleros" data-section="maint-bath" data-item="toalleros">
-                            <div class="maint-label">Toalleros</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','toalleros','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','toalleros','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','toalleros','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','toalleros','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','toalleros','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-porta-papel" data-section="maint-bath" data-item="porta-papel">
-                            <div class="maint-label">Porta Papel</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','porta-papel','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','porta-papel','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','porta-papel','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','porta-papel','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','porta-papel','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-contactos" data-section="maint-bath" data-item="contactos">
-                            <div class="maint-label">Contactos</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','contactos','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','contactos','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','contactos','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','contactos','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','contactos','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-apagadores" data-section="maint-bath" data-item="apagadores">
-                            <div class="maint-label">Apagadores</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','apagadores','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','apagadores','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','apagadores','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','apagadores','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','apagadores','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-accesorios" data-section="maint-bath" data-item="accesorios">
-                            <div class="maint-label">Accesorios</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','accesorios','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','accesorios','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','accesorios','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','accesorios','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','accesorios','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-marco-espejo" data-section="maint-bath" data-item="marco-espejo">
-                            <div class="maint-label">Marco Espejo</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','marco-espejo','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','marco-espejo','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','marco-espejo','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','marco-espejo','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','marco-espejo','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-rejilla" data-section="maint-bath" data-item="rejilla">
-                            <div class="maint-label">Rejilla de Extracción</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','rejilla','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','rejilla','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','rejilla','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','rejilla','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','rejilla','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-plafon" data-section="maint-bath" data-item="plafon">
-                            <div class="maint-label">Plafón</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','plafon','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','plafon','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','plafon','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','plafon','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','plafon','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-jabonera" data-section="maint-bath" data-item="jabonera">
-                            <div class="maint-label">Jabonera</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','jabonera','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','jabonera','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','jabonera','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','jabonera','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','jabonera','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-coladera" data-section="maint-bath" data-item="coladera">
-                            <div class="maint-label">Coladera</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','coladera','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','coladera','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','coladera','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','coladera','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','coladera','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-wc" data-section="maint-bath" data-item="wc">
-                            <div class="maint-label">W.C.</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','wc','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','wc','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','wc','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','wc','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','wc','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-secadora" data-section="maint-bath" data-item="secadora">
-                            <div class="maint-label">Secadora</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','secadora','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','secadora','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','secadora','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','secadora','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','secadora','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-bath-espejo-vanity" data-section="maint-bath" data-item="espejo-vanity">
-                            <div class="maint-label">Espejo y Vanity</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-bath','espejo-vanity','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-bath','espejo-vanity','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-bath','espejo-vanity','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-bath','espejo-vanity','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-bath','espejo-vanity','na')">N/A</button>
-                            </div>
-                        </div>
-                    </div>
-                    <textarea class="maint-notes-area" id="maint-bath-notes" placeholder="Notas de baño..."></textarea>
-                </div>
-            </section>
-
-            <section class="audit-section" data-dept="mantenimiento">
-                <div class="section-header" onclick="toggleSection('maint-connect')">
-                    <div class="section-icon maint-connect">🚪</div>
-                    <div class="section-title">8. Puertas Comunicadas</div>
-                    <div class="section-status" id="maint-connect-status">Pendiente</div>
-                </div>
-                <div class="section-content" id="maint-connect-content">
-                    <div class="maint-section-summary" id="maint-connect-summary">
-                        <span style="color:#10b981">OK: 0</span>
-                        <span style="color:#ef4444">Falla: 0</span>
-                        <span style="color:#f59e0b">Ajuste: 0</span>
-                        <span style="color:#3b82f6">EP: 0</span>
-                        <span style="color:#64748b">N/A: 0</span>
-                    </div>
-                    <div class="maint-check-grid">
-                        <div class="maint-check-item" id="maint-connect-chapa-contra" data-section="maint-connect" data-item="chapa-contra">
-                            <div class="maint-label">Chapa y Contrachapa</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-connect','chapa-contra','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-connect','chapa-contra','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-connect','chapa-contra','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-connect','chapa-contra','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-connect','chapa-contra','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-connect-bisagras" data-section="maint-connect" data-item="bisagras">
-                            <div class="maint-label">Bisagras</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-connect','bisagras','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-connect','bisagras','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-connect','bisagras','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-connect','bisagras','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-connect','bisagras','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-connect-marco" data-section="maint-connect" data-item="marco">
-                            <div class="maint-label">Marco</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-connect','marco','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-connect','marco','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-connect','marco','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-connect','marco','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-connect','marco','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-connect-tope" data-section="maint-connect" data-item="tope">
-                            <div class="maint-label">Tope de Puerta</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-connect','tope','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-connect','tope','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-connect','tope','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-connect','tope','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-connect','tope','na')">N/A</button>
-                            </div>
-                        </div>
-                    </div>
-                    <textarea class="maint-notes-area" id="maint-connect-notes" placeholder="Notas de puertas comunicadas..."></textarea>
-                </div>
-            </section>
-
-            <section class="audit-section" data-dept="mantenimiento">
-                <div class="section-header" onclick="toggleSection('maint-room')">
-                    <div class="section-icon maint-room">🛏️</div>
-                    <div class="section-title">9. Habitación / Mobiliario</div>
-                    <div class="section-status" id="maint-room-status">Pendiente</div>
-                </div>
-                <div class="section-content" id="maint-room-content">
-                    <div class="maint-section-summary" id="maint-room-summary">
-                        <span style="color:#10b981">OK: 0</span>
-                        <span style="color:#ef4444">Falla: 0</span>
-                        <span style="color:#f59e0b">Ajuste: 0</span>
-                        <span style="color:#3b82f6">EP: 0</span>
-                        <span style="color:#64748b">N/A: 0</span>
-                    </div>
-                    <div class="maint-check-grid">
-                        <div class="maint-check-item" id="maint-room-base-colchon" data-section="maint-room" data-item="base-colchon">
-                            <div class="maint-label">Base y Colchón</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','base-colchon','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','base-colchon','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','base-colchon','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','base-colchon','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','base-colchon','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-cabecera" data-section="maint-room" data-item="cabecera">
-                            <div class="maint-label">Cabecera</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','cabecera','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','cabecera','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','cabecera','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','cabecera','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','cabecera','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-buros" data-section="maint-room" data-item="buros">
-                            <div class="maint-label">Buros</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','buros','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','buros','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','buros','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','buros','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','buros','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-lampara-buro" data-section="maint-room" data-item="lampara-buro">
-                            <div class="maint-label">Lámparas de Buro</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','lampara-buro','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','lampara-buro','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','lampara-buro','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','lampara-buro','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','lampara-buro','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-lampara-escritorio" data-section="maint-room" data-item="lampara-escritorio">
-                            <div class="maint-label">Lámpara de Escritorio</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','lampara-escritorio','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','lampara-escritorio','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','lampara-escritorio','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','lampara-escritorio','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','lampara-escritorio','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-radio-reloj" data-section="maint-room" data-item="radio-reloj">
-                            <div class="maint-label">Radio / Reloj</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','radio-reloj','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','radio-reloj','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','radio-reloj','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','radio-reloj','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','radio-reloj','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-telefono" data-section="maint-room" data-item="telefono">
-                            <div class="maint-label">Teléfono</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','telefono','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','telefono','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','telefono','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','telefono','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','telefono','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-silla" data-section="maint-room" data-item="silla">
-                            <div class="maint-label">Silla</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','silla','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','silla','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','silla','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','silla','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','silla','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-cortinero" data-section="maint-room" data-item="cortinero">
-                            <div class="maint-label">Cortinero</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','cortinero','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','cortinero','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','cortinero','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','cortinero','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','cortinero','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-ventana" data-section="maint-room" data-item="ventana">
-                            <div class="maint-label">Ventana</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','ventana','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','ventana','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','ventana','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','ventana','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','ventana','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-rociador" data-section="maint-room" data-item="rociador">
-                            <div class="maint-label">Rociador</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','rociador','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','rociador','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','rociador','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','rociador','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','rociador','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-detector-humo" data-section="maint-room" data-item="detector-humo">
-                            <div class="maint-label">Detector de Humo</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','detector-humo','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','detector-humo','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','detector-humo','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','detector-humo','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','detector-humo','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-tapa-contacto" data-section="maint-room" data-item="tapa-contacto">
-                            <div class="maint-label">Tapa Cont. y Apag.</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','tapa-contacto','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','tapa-contacto','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','tapa-contacto','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','tapa-contacto','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','tapa-contacto','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-resane-pintura" data-section="maint-room" data-item="resane-pintura">
-                            <div class="maint-label">Resane y Pintura Plafón</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','resane-pintura','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','resane-pintura','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','resane-pintura','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','resane-pintura','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','resane-pintura','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-cuadro" data-section="maint-room" data-item="cuadro">
-                            <div class="maint-label">Cuadro Decorativo</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','cuadro','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','cuadro','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','cuadro','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','cuadro','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','cuadro','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-zoclo" data-section="maint-room" data-item="zoclo">
-                            <div class="maint-label">Zoclo</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','zoclo','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','zoclo','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','zoclo','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','zoclo','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','zoclo','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-sillon" data-section="maint-room" data-item="sillon">
-                            <div class="maint-label">Sillón</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','sillon','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','sillon','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','sillon','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','sillon','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','sillon','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-escritorio" data-section="maint-room" data-item="escritorio">
-                            <div class="maint-label">Escritorio</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','escritorio','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','escritorio','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','escritorio','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','escritorio','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','escritorio','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-maletero" data-section="maint-room" data-item="maletero">
-                            <div class="maint-label">Maletero</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','maletero','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','maletero','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','maletero','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','maletero','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','maletero','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-room-mueble-frigo" data-section="maint-room" data-item="mueble-frigo">
-                            <div class="maint-label">Mueble y Espejo Frigobar</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-room','mueble-frigo','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-room','mueble-frigo','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-room','mueble-frigo','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-room','mueble-frigo','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-room','mueble-frigo','na')">N/A</button>
-                            </div>
-                        </div>
-                    </div>
-                    <textarea class="maint-notes-area" id="maint-room-notes" placeholder="Notas de habitación / mobiliario..."></textarea>
-                </div>
-            </section>
-
-            <section class="audit-section" data-dept="mantenimiento">
-                <div class="section-header" onclick="toggleSection('maint-tv')">
-                    <div class="section-icon maint-tv">📺</div>
-                    <div class="section-title">10. Televisión (Estado Físico)</div>
-                    <div class="section-status" id="maint-tv-status">Pendiente</div>
-                </div>
-                <div class="section-content" id="maint-tv-content">
-                    <div class="maint-section-summary" id="maint-tv-summary">
-                        <span style="color:#10b981">OK: 0</span>
-                        <span style="color:#ef4444">Falla: 0</span>
-                        <span style="color:#f59e0b">Ajuste: 0</span>
-                        <span style="color:#3b82f6">EP: 0</span>
-                        <span style="color:#64748b">N/A: 0</span>
-                    </div>
-                    <div class="maint-check-grid">
-                        <div class="maint-check-item" id="maint-tv-calidad-img" data-section="maint-tv" data-item="calidad-img">
-                            <div class="maint-label">Calidad de Imagen y Sonido</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-tv','calidad-img','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-tv','calidad-img','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-tv','calidad-img','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-tv','calidad-img','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-tv','calidad-img','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-tv-progr-estandar" data-section="maint-tv" data-item="progr-estandar">
-                            <div class="maint-label">Programación por Estándar</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-tv','progr-estandar','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-tv','progr-estandar','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-tv','progr-estandar','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-tv','progr-estandar','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-tv','progr-estandar','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-tv-control" data-section="maint-tv" data-item="control">
-                            <div class="maint-label">Control Remoto</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-tv','control','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-tv','control','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-tv','control','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-tv','control','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-tv','control','na')">N/A</button>
-                            </div>
-                        </div>
-                    </div>
-                    <textarea class="maint-notes-area" id="maint-tv-notes" placeholder="Notas de televisión (estado físico)..."></textarea>
-                </div>
-            </section>
-
-            <section class="audit-section" data-dept="mantenimiento">
-                <div class="section-header" onclick="toggleSection('maint-closet')">
-                    <div class="section-icon maint-closet">👔</div>
-                    <div class="section-title">11. Closet</div>
-                    <div class="section-status" id="maint-closet-status">Pendiente</div>
-                </div>
-                <div class="section-content" id="maint-closet-content">
-                    <div class="maint-section-summary" id="maint-closet-summary">
-                        <span style="color:#10b981">OK: 0</span>
-                        <span style="color:#ef4444">Falla: 0</span>
-                        <span style="color:#f59e0b">Ajuste: 0</span>
-                        <span style="color:#3b82f6">EP: 0</span>
-                        <span style="color:#64748b">N/A: 0</span>
-                    </div>
-                    <div class="maint-check-grid">
-                        <div class="maint-check-item" id="maint-closet-tabla-planchar" data-section="maint-closet" data-item="tabla-planchar">
-                            <div class="maint-label">Tabla de Planchar</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-closet','tabla-planchar','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-closet','tabla-planchar','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-closet','tabla-planchar','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-closet','tabla-planchar','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-closet','tabla-planchar','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-closet-plancha" data-section="maint-closet" data-item="plancha">
-                            <div class="maint-label">Plancha</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-closet','plancha','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-closet','plancha','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-closet','plancha','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-closet','plancha','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-closet','plancha','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-closet-ganchos" data-section="maint-closet" data-item="ganchos">
-                            <div class="maint-label">Ganchos</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-closet','ganchos','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-closet','ganchos','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-closet','ganchos','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-closet','ganchos','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-closet','ganchos','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-closet-resane-pintura" data-section="maint-closet" data-item="resane-pintura">
-                            <div class="maint-label">Resane y Pintura Plafón</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-closet','resane-pintura','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-closet','resane-pintura','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-closet','resane-pintura','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-closet','resane-pintura','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-closet','resane-pintura','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-closet-luz" data-section="maint-closet" data-item="luz">
-                            <div class="maint-label">Luz</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-closet','luz','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-closet','luz','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-closet','luz','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-closet','luz','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-closet','luz','na')">N/A</button>
-                            </div>
-                        </div>
-                    </div>
-                    <textarea class="maint-notes-area" id="maint-closet-notes" placeholder="Notas de closet..."></textarea>
-                </div>
-            </section>
-
-            <section class="audit-section" data-dept="mantenimiento">
-                <div class="section-header" onclick="toggleSection('maint-ac')">
-                    <div class="section-icon maint-ac">❄️</div>
-                    <div class="section-title">12. Aire Acondicionado</div>
-                    <div class="section-status" id="maint-ac-status">Pendiente</div>
-                </div>
-                <div class="section-content" id="maint-ac-content">
-                    <div class="maint-section-summary" id="maint-ac-summary">
-                        <span style="color:#10b981">OK: 0</span>
-                        <span style="color:#ef4444">Falla: 0</span>
-                        <span style="color:#f59e0b">Ajuste: 0</span>
-                        <span style="color:#3b82f6">EP: 0</span>
-                        <span style="color:#64748b">N/A: 0</span>
-                    </div>
-                    <div class="maint-check-grid">
-                        <div class="maint-check-item" id="maint-ac-funcion" data-section="maint-ac" data-item="funcion">
-                            <div class="maint-label">Función Frío / Calor</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-ac','funcion','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-ac','funcion','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-ac','funcion','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-ac','funcion','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-ac','funcion','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-ac-limpieza" data-section="maint-ac" data-item="limpieza">
-                            <div class="maint-label">Limpieza General</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-ac','limpieza','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-ac','limpieza','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-ac','limpieza','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-ac','limpieza','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-ac','limpieza','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-ac-termostato" data-section="maint-ac" data-item="termostato">
-                            <div class="maint-label">Termostato</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-ac','termostato','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-ac','termostato','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-ac','termostato','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-ac','termostato','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-ac','termostato','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-ac-valvula" data-section="maint-ac" data-item="valvula">
-                            <div class="maint-label">Válvula 3 Vías</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-ac','valvula','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-ac','valvula','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-ac','valvula','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-ac','valvula','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-ac','valvula','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-ac-drenaje" data-section="maint-ac" data-item="drenaje">
-                            <div class="maint-label">Drenaje y Limpieza</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-ac','drenaje','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-ac','drenaje','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-ac','drenaje','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-ac','drenaje','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-ac','drenaje','na')">N/A</button>
-                            </div>
-                        </div>
-                        <div class="maint-check-item" id="maint-ac-conexion" data-section="maint-ac" data-item="conexion">
-                            <div class="maint-label">Conexión Eléctrica</div>
-                            <div class="maint-status-group">
-                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('maint-ac','conexion','ok')">OK</button>
-                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('maint-ac','conexion','falla')">Falla</button>
-                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('maint-ac','conexion','ajuste')">Ajuste</button>
-                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('maint-ac','conexion','proceso')">EP</button>
-                                <button class="maint-status-btn s-na" onclick="setMaintCheck('maint-ac','conexion','na')">N/A</button>
-                            </div>
-                        </div>
-                    </div>
-                    <textarea class="maint-notes-area" id="maint-ac-notes" placeholder="Notas de aire acondicionado..."></textarea>
+                <div class="section-content">
+                    <textarea class="notes-area" id="systemNotes" placeholder="Observaciones del departamento de Sistemas..." data-dept="sistemas"></textarea>
+                    <small id="systemNotesInfo" style="display:none; color:#f59e0b; font-size:0.75rem; margin-top:4px;">🔒 Solo Super Admin puede editar notas de otro departamento</small>
                 </div>
             </section>
 
             <section class="audit-section">
                 <div class="section-header">
-                    <div class="section-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">📝</div>
-                    <div class="section-title">Observaciones de la Habitación</div>
+                    <div class="section-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">🔧</div>
+                    <div class="section-title">Observaciones de Mantenimiento</div>
                 </div>
                 <div class="section-content">
-                    <textarea class="notes-area" id="generalNotes" placeholder="Escribir observaciones adicionales..."></textarea>
+                    <textarea class="notes-area" id="maintenanceNotes" placeholder="Observaciones del departamento de Mantenimiento..." data-dept="mantenimiento"></textarea>
+                    <small id="maintenanceNotesInfo" style="display:none; color:#f59e0b; font-size:0.75rem; margin-top:4px;">🔒 Solo Super Admin puede editar notas de otro departamento</small>
                 </div>
             </section>
 
@@ -5363,14 +4541,15 @@
                 <h3>📖 Documentación de Roles</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 16px;">
                     <div class="role-card admin">
-                        <h4>🔑 Admin</h4>
+                        <h4>🛡️ Super Admin</h4>
                         <ul>
                             <li>✅ Auditar habitaciones</li>
                             <li>✅ Editar cualquier auditoría</li>
-                            <li>✅ Eliminar auditorías</li>
+                            <li>✅ Editar notas de AMBOS departamentos</li>
+                            <li>✅ Eliminar auditorías individuales</li>
                             <li>✅ Limpiar base de datos</li>
-                            <li>✅ Exportar datos</li>
-                            <li>✅ Gestionar usuarios</li>
+                            <li>✅ Gestionar secciones y usuarios</li>
+                            <li>✅ Herramientas avanzadas</li>
                         </ul>
                     </div>
                     <div class="role-card advanced">
@@ -5479,6 +4658,66 @@
                 <div style="margin-top: 20px; display: flex; gap: 12px;">
                     <button class="btn btn-primary" onclick="saveHorariosConfig()">💾 Guardar Horarios</button>
                     <button class="btn" onclick="loadHorariosConfig()">🔄 Recargar</button>
+                </div>
+            </div>
+
+            <!-- ======================================== -->
+            <!-- SUPER ADMIN TOOLS -->
+            <!-- ======================================== -->
+            <div class="users-section" style="margin-top: 20px; border: 2px solid rgba(139,92,246,0.4); border-radius: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                    <span style="font-size: 1.5rem;">🛡️</span>
+                    <h3 style="margin: 0; color: #a78bfa;">Herramientas Super Admin</h3>
+                    <span style="font-size: 0.7rem; background: rgba(139,92,246,0.2); color: #a78bfa; padding: 2px 8px; border-radius: 10px;">Solo Admin</span>
+                </div>
+
+                <!-- 1. Eliminar historial por habitación -->
+                <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                    <h4 style="margin: 0 0 10px; color: var(--text-primary);">🗑️ Eliminar Historial por Habitación</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Elimina todos los datos de auditoría de una habitación específica (sistemas y mantenimiento). El historial en la nube también se borrará.</p>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="number" id="saDeleteRoom" placeholder="Ej: 105" min="101" max="520" style="width: 100px; padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);">
+                        <button class="btn btn-danger" onclick="saDeleteRoomHistory()" style="font-size: 0.85rem;">🗑️ Eliminar Habitación</button>
+                        <button class="btn btn-danger" onclick="saDeleteFloorHistory()" style="font-size: 0.85rem;">🏢 Eliminar Piso Completo</button>
+                    </div>
+                </div>
+
+                <!-- 2. Limpiar datos selectivamente -->
+                <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                    <h4 style="margin: 0 0 10px; color: var(--text-primary);">🧹 Limpieza Selectiva de Datos</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Elimina datos por departamento sin afectar al otro.</p>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn" onclick="saClearDeptData('sistemas')" style="font-size: 0.85rem; border-color: #3b82f6; color: #60a5fa;">💻 Solo Datos Sistemas</button>
+                        <button class="btn" onclick="saClearDeptData('mantenimiento')" style="font-size: 0.85rem; border-color: #f59e0b; color: #fbbf24;">🔧 Solo Datos Mantenimiento</button>
+                        <button class="btn btn-danger" onclick="saClearAllWithConfirm()" style="font-size: 0.85rem;">⚠️ TODO (Nuclear)</button>
+                    </div>
+                </div>
+
+                <!-- 3. Editor Dinámico de Checklist Mantenimiento -->
+                <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <h4 style="margin: 0; color: var(--text-primary);">📋 Editor de Checklist Mantenimiento</h4>
+                        <span style="font-size: 0.7rem; background: rgba(16,185,129,0.2); color: #34d399; padding: 2px 8px; border-radius: 10px;">Editable</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Agrega, elimina o renombra items y secciones del checklist de mantenimiento. Los cambios se aplican inmediatamente.</p>
+                    
+                    <div id="saChecklistEditor" style="margin-bottom: 12px;"></div>
+                    
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                        <button class="btn btn-primary" onclick="saAddSection()" style="font-size: 0.85rem;">➕ Nueva Sección</button>
+                        <button class="btn" onclick="saApplyChecklistChanges()" style="font-size: 0.85rem; border-color: #10b981; color: #34d399;">💾 Guardar y Aplicar</button>
+                        <button class="btn" onclick="saResetChecklist()" style="font-size: 0.85rem; border-color: #ef4444; color: #f87171;">🔄 Restaurar Original</button>
+                    </div>
+                </div>
+
+                <!-- 4. Eliminar incidencias -->
+                <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; border: 1px solid var(--border-color);">
+                    <h4 style="margin: 0 0 10px; color: var(--text-primary);">📋 Historial de Incidencias</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Administra el historial de reportes de incidencias.</p>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn" onclick="saClearResolvedIncidents()" style="font-size: 0.85rem; border-color: #10b981; color: #34d399;">✅ Limpiar Resueltas</button>
+                        <button class="btn btn-danger" onclick="saClearAllIncidents()" style="font-size: 0.85rem;">🗑️ Limpiar Todas las Incidencias</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -6541,7 +5780,11 @@
             }
             if (tabName === 'users') {
                 loadUsersList();
+                loadCustomMaintConfig(); // Cargar config personalizada de mantenimiento
+                buildMaintenanceChecklist(); // Generar checklist dinámicamente
                 loadHorariosConfig(); // Cargar configuración de horarios
+                saLoadSectionConfig(); // Cargar configuración de secciones
+                applyNotesPermissions(); // Aplicar permisos de notas
             }
             if (tabName === 'maintenance') loadMaintenanceIncidents();
         }
@@ -6945,7 +6188,9 @@
                 },
                 network: { 'network-wall': getStatus('network-wall'), 'network-connection': getStatus('network-connection'), 'network-speed': getStatus('network-speed'), 'wifi-coverage': getStatus('wifi-coverage') },
                 issueCount,
-                notes: document.getElementById('generalNotes').value
+                notes: document.getElementById('systemNotes').value,
+                systemNotes: document.getElementById('systemNotes').value,
+                maintenanceNotes: document.getElementById('maintenanceNotes').value
             };
             
             // Agregar datos de segunda TV si aplica
@@ -7028,7 +6273,9 @@
             
             const data = auditData[roomNum];
             if (data) {
-                document.getElementById('generalNotes').value = data.notes || '';
+                document.getElementById('systemNotes').value = data.systemNotes || data.notes || '';
+                document.getElementById('maintenanceNotes').value = data.maintenanceNotes || '';
+                applyNotesPermissions();
                 
                 // Cargar checks de TV principal
                 Object.keys(data.screen || {}).forEach(id => { 
@@ -7100,7 +6347,8 @@
                 item.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
             });
             document.querySelectorAll('.channel-btn').forEach(btn => btn.classList.remove('checked', 'failed'));
-            document.getElementById('generalNotes').value = '';
+            document.getElementById('systemNotes').value = '';
+            document.getElementById('maintenanceNotes').value = '';
             
             // Limpiar especificaciones de TV
             document.getElementById('tv1-inches').value = '';
@@ -7124,10 +6372,113 @@
         // MANTENIMIENTO - FUNCIONES
         // ============================================
         
-        // Estado de mantenimiento por habitación
-        let maintData = {};
+        // ============================================
+        // CONFIGURACIÓN DINÁMICA DE MANTENIMIENTO
+        // ============================================
         
-        const MAINT_SECTIONS = ['maint-door','maint-bath','maint-connect','maint-room','maint-tv','maint-closet','maint-ac'];
+        const DEFAULT_MAINT_CONFIG = {
+            'maint-door': { _title: '🚪 Puerta Principal', _num: 6, _icon: '🚪', puerta:'Puerta',bisagra:'Bisagra',chapa:'Chapa',seguro:'Seguro/Pasador',mirilla:'Mirilla',evacuacion:'Cuadro Evacuación',tope:'Tope de Puerta',marco:'Marco de Puerta' },
+            'maint-bath': { _title: '🚿 Baño', _num: 7, _icon: '🚿', 'puerta-marco':'Puerta y Marco',mangueras:'Mangueras','llaves-paso':'Llaves de Paso',chapa:'Chapa',bisagra:'Bisagra',ducha:'Ducha',monomando:'Monomando',lavamanos:'Lavamanos',tapon:'Tapón de Lavabo',ceramica:'Cerámica y Boquilla',lamparas:'Lámparas',apagador:'Apagador',tina:'Tina',toalleros:'Toalleros','porta-papel':'Porta Papel',contactos:'Contactos',apagadores:'Apagadores',accesorios:'Accesorios','marco-espejo':'Marco Espejo',rejilla:'Rejilla de Extracción',plafon:'Plafón',jabonera:'Jabonera',coladera:'Coladera',wc:'W.C.',secadora:'Secadora','espejo-vanity':'Espejo y Vanity' },
+            'maint-connect': { _title: '🚪 Puertas Comunicadas', _num: 8, _icon: '🚪', 'chapa-contra':'Chapa y Contrachapa',bisagras:'Bisagras',marco:'Marco',tope:'Tope de Puerta' },
+            'maint-room': { _title: '🛏️ Habitación / Mobiliario', _num: 9, _icon: '🛏️', 'base-colchon':'Base y Colchón',cabecera:'Cabecera',buros:'Buros','lampara-buro':'Lámparas de Buro','lampara-escritorio':'Lámpara de Escritorio','radio-reloj':'Radio/Reloj',telefono:'Teléfono',silla:'Silla',cortinero:'Cortinero',ventana:'Ventana',rociador:'Rociador','detector-humo':'Detector de Humo','tapa-contacto':'Tapa Cont. y Apag.','resane-pintura':'Resane y Pintura Plafón',cuadro:'Cuadro Decorativo',zoclo:'Zoclo',sillon:'Sillón',escritorio:'Escritorio',maletero:'Maletero','mueble-frigo':'Mueble y Espejo Frigobar' },
+            'maint-tv': { _title: '📺 Televisión (Físico)', _num: 10, _icon: '📺', 'calidad-img':'Calidad de Imagen y Sonido','progr-estandar':'Programación Estándar',control:'Control Remoto' },
+            'maint-closet': { _title: '👔 Closet', _num: 11, _icon: '👔', 'tabla-planchar':'Tabla de Planchar',plancha:'Plancha',ganchos:'Ganchos','resane-pintura':'Resane y Pintura Plafón',luz:'Luz' },
+            'maint-ac': { _title: '❄️ Aire Acondicionado', _num: 12, _icon: '❄️', funcion:'Función Frío/Calor',limpieza:'Limpieza General',termostato:'Termostato',valvula:'Válvula 3 Vías',drenaje:'Drenaje y Limpieza',conexion:'Conexión Eléctrica' }
+        };
+        
+        // Mutable config — starts from default, can be customized
+        let MAINT_ITEM_LABELS = JSON.parse(JSON.stringify(DEFAULT_MAINT_CONFIG));
+        
+        function getMaintSections() {
+            return Object.keys(MAINT_ITEM_LABELS);
+        }
+        // Alias for backward compatibility
+        let MAINT_SECTIONS = getMaintSections();
+        
+        function loadCustomMaintConfig() {
+            const saved = localStorage.getItem('audit_maint_config');
+            if (saved) {
+                try {
+                    MAINT_ITEM_LABELS = JSON.parse(saved);
+                    MAINT_SECTIONS = getMaintSections();
+                } catch(e) { /* use default */ }
+            }
+        }
+        
+        function saveMaintConfig() {
+            localStorage.setItem('audit_maint_config', JSON.stringify(MAINT_ITEM_LABELS));
+            MAINT_SECTIONS = getMaintSections();
+        }
+        
+        function resetMaintConfig() {
+            MAINT_ITEM_LABELS = JSON.parse(JSON.stringify(DEFAULT_MAINT_CONFIG));
+            MAINT_SECTIONS = getMaintSections();
+            localStorage.removeItem('audit_maint_config');
+        }
+        
+        // ============================================
+        // GENERADOR DINÁMICO DE CHECKLIST
+        // ============================================
+        
+        function buildMaintenanceChecklist() {
+            const container = document.getElementById('maintChecklistContainer');
+            if (!container) return;
+            
+            let html = '';
+            const sections = getMaintSections();
+            
+            sections.forEach(sectionId => {
+                const config = MAINT_ITEM_LABELS[sectionId];
+                if (!config) return;
+                
+                const title = config._title || sectionId;
+                const num = config._num || '';
+                const icon = config._icon || '📋';
+                
+                // Get item keys (exclude _meta fields)
+                const items = Object.keys(config).filter(k => !k.startsWith('_'));
+                
+                html += `
+            <section class="audit-section" data-dept="mantenimiento" data-maint-section="${sectionId}">
+                <div class="section-header" onclick="toggleSection('${sectionId}')">
+                    <div class="section-icon ${sectionId}">${icon}</div>
+                    <div class="section-title">${num ? num + '. ' : ''}${title.replace(/^[^\s]+\s/, '')}</div>
+                    <div class="section-status" id="${sectionId}-status">Pendiente</div>
+                </div>
+                <div class="section-content" id="${sectionId}-content">
+                    <div class="maint-section-summary" id="${sectionId}-summary">
+                        <span style="color:#10b981">OK: 0</span>
+                        <span style="color:#ef4444">Falla: 0</span>
+                        <span style="color:#f59e0b">Ajuste: 0</span>
+                        <span style="color:#3b82f6">EP: 0</span>
+                        <span style="color:#64748b">N/A: 0</span>
+                    </div>
+                    <div class="maint-check-grid">`;
+                
+                items.forEach(itemId => {
+                    const label = config[itemId];
+                    html += `
+                        <div class="maint-check-item" id="${sectionId}-${itemId}" data-section="${sectionId}" data-item="${itemId}">
+                            <div class="maint-label">${label}</div>
+                            <div class="maint-status-group">
+                                <button class="maint-status-btn s-ok" onclick="setMaintCheck('${sectionId}','${itemId}','ok')">OK</button>
+                                <button class="maint-status-btn s-falla" onclick="setMaintCheck('${sectionId}','${itemId}','falla')">Falla</button>
+                                <button class="maint-status-btn s-ajuste" onclick="setMaintCheck('${sectionId}','${itemId}','ajuste')">Ajuste</button>
+                                <button class="maint-status-btn s-proceso" onclick="setMaintCheck('${sectionId}','${itemId}','proceso')">EP</button>
+                                <button class="maint-status-btn s-na" onclick="setMaintCheck('${sectionId}','${itemId}','na')">N/A</button>
+                            </div>
+                        </div>`;
+                });
+                
+                html += `
+                    </div>
+                    <textarea class="maint-notes-area" id="${sectionId}-notes" placeholder="Notas de ${title.replace(/^[^\s]+\s/, '')}..."></textarea>
+                </div>
+            </section>`;
+            });
+            
+            container.innerHTML = html;
+        }
         let currentDeptFilter = 'todas';
         
         const FAULT_LABELS = {
@@ -7306,15 +6657,7 @@
         // REPORTE DE MANTENIMIENTO
         // ============================================
         
-        const MAINT_ITEM_LABELS = {
-            'maint-door': { _title: '🚪 Puerta Principal', puerta:'Puerta',bisagra:'Bisagra',chapa:'Chapa',seguro:'Seguro/Pasador',mirilla:'Mirilla',evacuacion:'Cuadro Evacuación',tope:'Tope de Puerta',marco:'Marco de Puerta' },
-            'maint-bath': { _title: '🚿 Baño', 'puerta-marco':'Puerta y Marco',mangueras:'Mangueras','llaves-paso':'Llaves de Paso',chapa:'Chapa',bisagra:'Bisagra',ducha:'Ducha',monomando:'Monomando',lavamanos:'Lavamanos',tapon:'Tapón de Lavabo',ceramica:'Cerámica y Boquilla',lamparas:'Lámparas',apagador:'Apagador',tina:'Tina',toalleros:'Toalleros','porta-papel':'Porta Papel',contactos:'Contactos',apagadores:'Apagadores',accesorios:'Accesorios','marco-espejo':'Marco Espejo',rejilla:'Rejilla de Extracción',plafon:'Plafón',jabonera:'Jabonera',coladera:'Coladera',wc:'W.C.',secadora:'Secadora','espejo-vanity':'Espejo y Vanity' },
-            'maint-connect': { _title: '🚪 Puertas Comunicadas', 'chapa-contra':'Chapa y Contrachapa',bisagras:'Bisagras',marco:'Marco',tope:'Tope de Puerta' },
-            'maint-room': { _title: '🛏️ Habitación / Mobiliario', 'base-colchon':'Base y Colchón',cabecera:'Cabecera',buros:'Buros','lampara-buro':'Lámparas de Buro','lampara-escritorio':'Lámpara de Escritorio','radio-reloj':'Radio/Reloj',telefono:'Teléfono',silla:'Silla',cortinero:'Cortinero',ventana:'Ventana',rociador:'Rociador','detector-humo':'Detector de Humo','tapa-contacto':'Tapa Cont. y Apag.','resane-pintura':'Resane y Pintura Plafón',cuadro:'Cuadro Decorativo',zoclo:'Zoclo',sillon:'Sillón',escritorio:'Escritorio',maletero:'Maletero','mueble-frigo':'Mueble y Espejo Frigobar' },
-            'maint-tv': { _title: '📺 Televisión (Físico)', 'calidad-img':'Calidad de Imagen y Sonido','progr-estandar':'Programación Estándar',control:'Control Remoto' },
-            'maint-closet': { _title: '👔 Closet', 'tabla-planchar':'Tabla de Planchar',plancha:'Plancha',ganchos:'Ganchos','resane-pintura':'Resane y Pintura Plafón',luz:'Luz' },
-            'maint-ac': { _title: '❄️ Aire Acondicionado', funcion:'Función Frío/Calor',limpieza:'Limpieza General',termostato:'Termostato',valvula:'Válvula 3 Vías',drenaje:'Drenaje y Limpieza',conexion:'Conexión Eléctrica' }
-        };
+        // MAINT_ITEM_LABELS ahora es dinámico — definido en CONFIGURACIÓN DINÁMICA DE MANTENIMIENTO
         
         function refreshMaintReport() {
             const rooms = Object.keys(auditData);
@@ -8406,7 +7749,7 @@
             const rooms = Object.keys(auditData);
             if (rooms.length === 0) { showToast('No hay datos para exportar', 'warning'); return; }
             
-            let csv = 'Habitacion,Tipo,Auditor,Turno,Fecha,TV1_Pulgadas,TV1_SoportaHD,TV1_Enciende,TV1_Control,TV1_Imagen,TV2_Pulgadas,TV2_SoportaHD,TV2_Enciende,TV2_Control,TV2_Imagen,CanalInicio,CanalesFallidos,TelEscritorio,TelBuro,BateriaAuriculares,CondicionTel,TelPanasonic,NodoPared,ConexionRed,VelocidadRed,CoberturaWiFi,TotalIncidencias,Notas\n';
+            let csv = 'Habitacion,Tipo,Auditor,Turno,Fecha,TV1_Pulgadas,TV1_SoportaHD,TV1_Enciende,TV1_Control,TV1_Imagen,TV2_Pulgadas,TV2_SoportaHD,TV2_Enciende,TV2_Control,TV2_Imagen,CanalInicio,CanalesFallidos,TelEscritorio,TelBuro,BateriaAuriculares,CondicionTel,TelPanasonic,NodoPared,ConexionRed,VelocidadRed,CoberturaWiFi,TotalIncidencias,NotasSistemas,NotasMantenimiento\n';
             
             rooms.sort((a,b) => parseInt(a) - parseInt(b)).forEach(room => {
                 const d = auditData[room];
@@ -8438,7 +7781,8 @@
                     d.network?.['network-speed'],
                     d.network?.['wifi-coverage'] || 'N/A',
                     d.issueCount, 
-                    (d.notes||'').replace(/,/g,';')
+                    (d.systemNotes || d.notes||'').replace(/,/g,';'),
+                    (d.maintenanceNotes||'').replace(/,/g,';')
                 ].map(v => `"${v||''}"`).join(',') + '\n';
             });
             
@@ -8972,10 +8316,16 @@ ${sisInfo}
                             </div>
                         </div>
 
-                        ${data.notes ? `
+                        ${(data.systemNotes || data.notes) ? `
                             <div class="report-notes">
-                                <h4>📝 Observaciones</h4>
-                                <p>${data.notes}</p>
+                                <h4>💻 Observaciones de Sistemas</h4>
+                                <p>${data.systemNotes || data.notes}</p>
+                            </div>
+                        ` : ''}
+                        ${data.maintenanceNotes ? `
+                            <div class="report-notes">
+                                <h4>🔧 Observaciones de Mantenimiento</h4>
+                                <p>${data.maintenanceNotes}</p>
                             </div>
                         ` : ''}
 
@@ -9268,9 +8618,14 @@ ${sisInfo}
                                     </div>
                                 </div>
                             </div>
-                            ${data.notes ? `
+                            ${(data.systemNotes || data.notes) ? `
                                 <div style="background: #fffbeb; border-top: 1px solid #fcd34d; padding: 8px 16px; font-size: 0.8rem;">
-                                    <strong style="color: #92400e;">📝 Notas:</strong> <span style="color: #78350f;">${data.notes}</span>
+                                    <strong style="color: #92400e;">💻 Sistemas:</strong> <span style="color: #78350f;">${data.systemNotes || data.notes}</span>
+                                </div>
+                            ` : ''}
+                            ${data.maintenanceNotes ? `
+                                <div style="background: #fef3c7; border-top: 1px solid #fcd34d; padding: 8px 16px; font-size: 0.8rem;">
+                                    <strong style="color: #92400e;">🔧 Mantenimiento:</strong> <span style="color: #78350f;">${data.maintenanceNotes}</span>
                                 </div>
                             ` : ''}
                         ` : `
@@ -9863,6 +9218,439 @@ ${sisInfo}
         let lastKnownPendingIds = null;
         let notifItems = JSON.parse(localStorage.getItem('audit_notifications') || '[]');
         let notifSoundEnabled = localStorage.getItem('audit_notif_sound') !== 'false';
+        
+        // ============================================
+        // SUPER ADMIN TOOLS
+        // ============================================
+        
+        function saConfirm(title, warnings, confirmText, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'sa-confirm-modal';
+            modal.innerHTML = `
+                <div class="sa-confirm-box">
+                    <div class="sa-confirm-header"><h3>⚠️ ${title}</h3></div>
+                    <div class="sa-confirm-body">
+                        <div class="warning-box">
+                            ${warnings.map(w => `<div class="warning-item">⚠️ ${w}</div>`).join('')}
+                        </div>
+                        <p style="margin-top: 12px; font-size: 0.85rem; color: var(--text-muted);">
+                            Para confirmar, escribe: <strong style="color: #ef4444;">${confirmText}</strong>
+                        </p>
+                        <input class="sa-confirm-input" id="saConfirmInput" placeholder="Escribe aquí para confirmar..." autocomplete="off">
+                    </div>
+                    <div class="sa-confirm-footer">
+                        <button class="sa-btn-cancel" onclick="this.closest('.sa-confirm-modal').remove()">Cancelar</button>
+                        <button class="sa-btn-danger" id="saConfirmBtn" disabled onclick="saExecuteConfirm()">Confirmar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            const input = document.getElementById('saConfirmInput');
+            const btn = document.getElementById('saConfirmBtn');
+            
+            input.addEventListener('input', () => {
+                btn.disabled = input.value !== confirmText;
+                btn.style.opacity = btn.disabled ? '0.5' : '1';
+            });
+            input.focus();
+            
+            window._saOnConfirm = onConfirm;
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        }
+        
+        function saExecuteConfirm() {
+            document.querySelector('.sa-confirm-modal')?.remove();
+            if (window._saOnConfirm) {
+                window._saOnConfirm();
+                window._saOnConfirm = null;
+            }
+        }
+        
+        // Delete room history
+        async function saDeleteRoomHistory() {
+            if (currentUser?.level !== 'admin') { showToast('Solo Super Admin', 'error'); return; }
+            const room = document.getElementById('saDeleteRoom')?.value;
+            if (!room || !ALL_ROOMS.includes(parseInt(room))) { showToast('Habitación inválida', 'warning'); return; }
+            
+            const data = auditData[room];
+            const items = [];
+            items.push(`Se eliminará toda la auditoría de la habitación ${room}`);
+            if (data) {
+                items.push(`Auditor: ${data.auditor || 'N/A'} | Fecha: ${data.fecha || 'N/A'}`);
+                if (data.issueCount > 0) items.push(`Tiene ${data.issueCount} incidencias de sistemas registradas`);
+                if (data.maintenance) items.push('Tiene datos de mantenimiento que se perderán');
+            }
+            items.push('El historial en la nube también se borrará');
+            items.push('Esta acción NO se puede deshacer');
+            
+            saConfirm(`Eliminar Habitación ${room}`, items, room, async () => {
+                try {
+                    const params = new URLSearchParams({ action: 'deleteRoom', room: room });
+                    const response = await fetch(`${API_URL}?${params.toString()}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        delete auditData[room];
+                        updateSummary();
+                        updateProgress();
+                        updateFloorPendingCounts();
+                        generateRoomGrid(currentFloor);
+                        clearRoomState();
+                        showToast(`✅ Habitación ${room} eliminada correctamente`, 'success');
+                    } else {
+                        showToast(result.error || 'Error al eliminar', 'error');
+                    }
+                } catch(e) { showToast('Error de conexión', 'error'); }
+            });
+        }
+        
+        // Delete floor history
+        async function saDeleteFloorHistory() {
+            if (currentUser?.level !== 'admin') { showToast('Solo Super Admin', 'error'); return; }
+            const room = document.getElementById('saDeleteRoom')?.value;
+            const floor = room ? Math.floor(parseInt(room) / 100) : 0;
+            if (floor < 1 || floor > 5) { showToast('Ingresa una habitación para determinar el piso', 'warning'); return; }
+            
+            const roomsOnFloor = ALL_ROOMS.filter(r => Math.floor(r / 100) === floor);
+            const auditedOnFloor = roomsOnFloor.filter(r => auditData[r]);
+            
+            saConfirm(`Eliminar TODO el Piso ${floor}`, [
+                `Se eliminarán TODAS las habitaciones del piso ${floor}`,
+                `Total de habitaciones en piso: ${roomsOnFloor.length}`,
+                `Habitaciones con datos: ${auditedOnFloor.length}`,
+                'Se borrarán datos de sistemas y mantenimiento',
+                'El historial en la nube también se borrará',
+                'Esta acción NO se puede deshacer'
+            ], `PISO${floor}`, async () => {
+                let deleted = 0;
+                for (const r of auditedOnFloor) {
+                    try {
+                        const params = new URLSearchParams({ action: 'deleteRoom', room: String(r) });
+                        await fetch(`${API_URL}?${params.toString()}`);
+                        delete auditData[r];
+                        deleted++;
+                    } catch(e) { /* continue */ }
+                }
+                updateSummary(); updateProgress(); updateFloorPendingCounts();
+                generateRoomGrid(currentFloor); clearRoomState();
+                showToast(`✅ ${deleted} habitaciones del piso ${floor} eliminadas`, 'success');
+            });
+        }
+        
+        // Clear department data
+        async function saClearDeptData(dept) {
+            if (currentUser?.level !== 'admin') { showToast('Solo Super Admin', 'error'); return; }
+            
+            const rooms = Object.keys(auditData);
+            let affected = 0;
+            
+            if (dept === 'sistemas') {
+                rooms.forEach(r => { if (auditData[r]?.screen || auditData[r]?.phone || auditData[r]?.network) affected++; });
+            } else {
+                rooms.forEach(r => { if (auditData[r]?.maintenance) affected++; });
+            }
+            
+            const deptLabel = dept === 'sistemas' ? '💻 Sistemas' : '🔧 Mantenimiento';
+            
+            saConfirm(`Limpiar datos de ${deptLabel}`, [
+                `Se eliminarán SOLO los datos de ${deptLabel}`,
+                `Habitaciones con datos de ${dept}: ${affected}`,
+                dept === 'sistemas' ? 'Se borrarán: TV, Canales, Teléfono, Red/WiFi, Notas de Sistemas' : 'Se borrarán: Todas las secciones de mantenimiento y Notas de Mantenimiento',
+                `Los datos de ${dept === 'sistemas' ? 'Mantenimiento' : 'Sistemas'} NO se afectan`,
+                'El historial en la nube se actualizará'
+            ], dept.toUpperCase(), async () => {
+                let cleaned = 0;
+                for (const room of rooms) {
+                    const d = auditData[room];
+                    if (!d) continue;
+                    
+                    if (dept === 'sistemas') {
+                        delete d.screen; delete d.screen2; delete d.channels; delete d.failedChannels;
+                        delete d.phone; delete d.network; delete d.systemNotes;
+                        d.issueCount = 0; d.notes = '';
+                    } else {
+                        delete d.maintenance; delete d.maintenanceNotes;
+                    }
+                    
+                    // Save to cloud
+                    try { await saveToCloud(d); cleaned++; } catch(e) { /* continue */ }
+                }
+                
+                updateSummary(); updateProgress(); generateRoomGrid(currentFloor);
+                showToast(`✅ Datos de ${deptLabel} limpiados en ${cleaned} habitaciones`, 'success');
+            });
+        }
+        
+        // Clear ALL with triple confirmation
+        function saClearAllWithConfirm() {
+            if (currentUser?.level !== 'admin') { showToast('Solo Super Admin', 'error'); return; }
+            
+            const totalAudited = Object.keys(auditData).length;
+            
+            saConfirm('⚠️ ELIMINAR ABSOLUTAMENTE TODO', [
+                `Se eliminarán ${totalAudited} habitaciones auditadas`,
+                'Se borrarán TODOS los datos de Sistemas',
+                'Se borrarán TODOS los datos de Mantenimiento',
+                'Se borrarán TODAS las notas y observaciones',
+                'El historial en la nube se borrará COMPLETAMENTE',
+                '⚠️ ESTA ACCIÓN ES IRREVERSIBLE ⚠️'
+            ], 'ELIMINAR TODO', async () => {
+                try {
+                    const response = await fetch(`${API_URL}?action=clearAll`);
+                    const result = await response.json();
+                    if (result.success) {
+                        auditData = {};
+                        clearRoomState();
+                        updateSummary(); updateProgress(); updateFloorPendingCounts();
+                        generateRoomGrid(currentFloor);
+                        showToast('✅ TODOS los datos han sido eliminados', 'success');
+                    } else { showToast('Error al eliminar', 'error'); }
+                } catch(e) { showToast('Error de conexión', 'error'); }
+            });
+        }
+        
+        // ============================================
+        // EDITOR DINÁMICO DE CHECKLIST (SUPER ADMIN)
+        // ============================================
+        
+        function saRenderChecklistEditor() {
+            const container = document.getElementById('saChecklistEditor');
+            if (!container) return;
+            
+            let html = '';
+            const sections = getMaintSections();
+            
+            sections.forEach((sectionId, idx) => {
+                const config = MAINT_ITEM_LABELS[sectionId];
+                const title = config._title || sectionId;
+                const icon = config._icon || '📋';
+                const num = config._num || (idx + 6);
+                const items = Object.keys(config).filter(k => !k.startsWith('_'));
+                
+                html += `
+                <div class="sa-editor-section" data-sid="${sectionId}" style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; overflow: hidden;">
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: rgba(139,92,246,0.08); cursor: pointer;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                        <span style="font-size: 1.1rem;">${icon}</span>
+                        <strong style="flex: 1; font-size: 0.85rem; color: var(--text-primary);">${num}. ${title.replace(/^[^\s]+\s/, '')}</strong>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">${items.length} items</span>
+                        <button onclick="event.stopPropagation(); saDeleteSection('${sectionId}')" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">🗑️</button>
+                    </div>
+                    <div style="display: none; padding: 10px 12px;">
+                        <div style="display: grid; grid-template-columns: 60px 1fr 60px; gap: 4px; margin-bottom: 6px; font-size: 0.7rem; color: var(--text-muted); padding: 0 4px;">
+                            <span>ID</span><span>Nombre visible</span><span></span>
+                        </div>`;
+                
+                items.forEach(itemId => {
+                    const label = config[itemId];
+                    html += `
+                        <div class="sa-item-row" data-item-id="${itemId}" style="display: grid; grid-template-columns: 60px 1fr 60px; gap: 4px; margin-bottom: 3px; align-items: center;">
+                            <span style="font-size: 0.7rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis;" title="${itemId}">${itemId.substring(0,8)}</span>
+                            <input type="text" value="${label}" data-sid="${sectionId}" data-iid="${itemId}" class="sa-item-input" style="padding: 5px 8px; font-size: 0.82rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
+                            <button onclick="saDeleteItem('${sectionId}','${itemId}')" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">✕</button>
+                        </div>`;
+                });
+                
+                html += `
+                        <div style="display: flex; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+                            <input type="text" id="saNewItemId-${sectionId}" placeholder="ID (ej: bandeja)" style="flex: 0.4; padding: 5px 8px; font-size: 0.8rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
+                            <input type="text" id="saNewItemLabel-${sectionId}" placeholder="Nombre (ej: Bandeja de Drenaje)" style="flex: 1; padding: 5px 8px; font-size: 0.8rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary);">
+                            <button onclick="saAddItem('${sectionId}')" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; white-space: nowrap;">➕ Agregar</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function saAddItem(sectionId) {
+            const idInput = document.getElementById(`saNewItemId-${sectionId}`);
+            const labelInput = document.getElementById(`saNewItemLabel-${sectionId}`);
+            const newId = idInput.value.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            const newLabel = labelInput.value.trim();
+            
+            if (!newId || !newLabel) { showToast('Ingresa ID y nombre del item', 'warning'); return; }
+            if (MAINT_ITEM_LABELS[sectionId][newId]) { showToast('Ya existe un item con ese ID', 'warning'); return; }
+            
+            MAINT_ITEM_LABELS[sectionId][newId] = newLabel;
+            idInput.value = '';
+            labelInput.value = '';
+            saRenderChecklistEditor();
+            showToast(`✅ "${newLabel}" agregado a ${MAINT_ITEM_LABELS[sectionId]._title}`, 'success');
+        }
+        
+        function saDeleteItem(sectionId, itemId) {
+            const label = MAINT_ITEM_LABELS[sectionId][itemId];
+            if (!confirm(`¿Eliminar "${label}" de ${MAINT_ITEM_LABELS[sectionId]._title}?\n\n⚠️ Los datos ya auditados con este item no se pierden en la nube, pero ya no aparecerán en el checklist.`)) return;
+            
+            delete MAINT_ITEM_LABELS[sectionId][itemId];
+            saRenderChecklistEditor();
+            showToast(`🗑️ "${label}" eliminado`, 'success');
+        }
+        
+        function saDeleteSection(sectionId) {
+            const title = MAINT_ITEM_LABELS[sectionId]?._title || sectionId;
+            const items = Object.keys(MAINT_ITEM_LABELS[sectionId] || {}).filter(k => !k.startsWith('_'));
+            
+            if (!confirm(`¿Eliminar la sección completa "${title}"?\n\nContiene ${items.length} items.\n⚠️ Los datos ya auditados se conservan en la nube, pero esta sección desaparecerá del checklist.`)) return;
+            
+            delete MAINT_ITEM_LABELS[sectionId];
+            MAINT_SECTIONS = getMaintSections();
+            saRenderChecklistEditor();
+            showToast(`🗑️ Sección "${title}" eliminada`, 'success');
+        }
+        
+        function saAddSection() {
+            const id = prompt('ID de la sección (ej: maint-plomeria):');
+            if (!id) return;
+            const cleanId = id.trim().toLowerCase().replace(/\s+/g, '-');
+            if (MAINT_ITEM_LABELS[cleanId]) { showToast('Ya existe una sección con ese ID', 'warning'); return; }
+            
+            const title = prompt('Título visible (ej: Plomería General):');
+            if (!title) return;
+            
+            const icon = prompt('Emoji/icono (ej: 🔧):') || '📋';
+            const num = prompt('Número de sección (ej: 13):') || '';
+            
+            MAINT_ITEM_LABELS[cleanId] = { _title: `${icon} ${title}`, _num: parseInt(num) || '', _icon: icon };
+            MAINT_SECTIONS = getMaintSections();
+            saRenderChecklistEditor();
+            showToast(`✅ Sección "${title}" creada. Agrega items dentro.`, 'success');
+        }
+        
+        function saApplyChecklistChanges() {
+            // Collect renamed items from inputs
+            document.querySelectorAll('.sa-item-input').forEach(input => {
+                const sid = input.dataset.sid;
+                const iid = input.dataset.iid;
+                if (MAINT_ITEM_LABELS[sid] && MAINT_ITEM_LABELS[sid][iid] !== undefined) {
+                    MAINT_ITEM_LABELS[sid][iid] = input.value.trim();
+                }
+            });
+            
+            saveMaintConfig();
+            MAINT_SECTIONS = getMaintSections();
+            buildMaintenanceChecklist();
+            
+            // Reload room data if one is selected
+            const roomNum = document.getElementById('roomNumber')?.value;
+            if (roomNum && auditData[roomNum]?.maintenance) {
+                loadMaintenanceData(auditData[roomNum].maintenance);
+            }
+            
+            showToast('✅ Checklist actualizado y guardado. Cambios aplicados a todas las secciones.', 'success');
+        }
+        
+        function saResetChecklist() {
+            saConfirm('Restaurar checklist original', [
+                'Se restaurarán TODAS las secciones y items al estado original',
+                'Las personalizaciones que hayas hecho se perderán',
+                'Los datos auditados NO se pierden'
+            ], 'RESTAURAR', () => {
+                resetMaintConfig();
+                buildMaintenanceChecklist();
+                saRenderChecklistEditor();
+                showToast('✅ Checklist restaurado al original', 'success');
+            });
+        }
+        
+        // Legacy compatibility
+        function saToggleSection() {}
+        function saSaveSectionConfig() { saApplyChecklistChanges(); }
+        function saLoadSectionConfig() {
+            // Now handled by loadCustomMaintConfig + buildMaintenanceChecklist
+            // Render editor if admin
+            setTimeout(() => { if (currentUser?.level === 'admin') saRenderChecklistEditor(); }, 500);
+        }
+        
+        // Clear resolved incidents
+        async function saClearResolvedIncidents() {
+            if (currentUser?.level !== 'admin') { showToast('Solo Super Admin', 'error'); return; }
+            
+            const resolved = (allIncidents || []).filter(i => i.status === 'atendido' || i.status === 'resuelto_mant');
+            
+            saConfirm('Limpiar incidencias resueltas', [
+                `Se eliminarán ${resolved.length} incidencias ya resueltas`,
+                'Las incidencias pendientes y en revisión NO se afectan',
+                'Esto limpia el historial para mejor rendimiento'
+            ], 'LIMPIAR', async () => {
+                let cleaned = 0;
+                for (const inc of resolved) {
+                    try {
+                        const params = new URLSearchParams({ action: 'deleteIncident', id: inc.id || inc.timestamp });
+                        await fetch(`${API_URL}?${params.toString()}`);
+                        cleaned++;
+                    } catch(e) { /* continue */ }
+                }
+                loadIncidents();
+                showToast(`✅ ${cleaned} incidencias resueltas eliminadas`, 'success');
+            });
+        }
+        
+        // Clear ALL incidents
+        async function saClearAllIncidents() {
+            if (currentUser?.level !== 'admin') { showToast('Solo Super Admin', 'error'); return; }
+            
+            const total = (allIncidents || []).length;
+            const pending = (allIncidents || []).filter(i => i.status === 'pendiente').length;
+            
+            saConfirm('Eliminar TODAS las incidencias', [
+                `Se eliminarán ${total} incidencias en total`,
+                `Incluye ${pending} incidencias PENDIENTES sin atender`,
+                'Se perderá todo el historial de reportes',
+                'Esta acción NO se puede deshacer'
+            ], 'ELIMINAR INCIDENCIAS', async () => {
+                try {
+                    const params = new URLSearchParams({ action: 'clearAllIncidents' });
+                    const response = await fetch(`${API_URL}?${params.toString()}`);
+                    const result = await response.json();
+                    if (result.success) {
+                        allIncidents = [];
+                        loadIncidents();
+                        showToast('✅ Todas las incidencias eliminadas', 'success');
+                    }
+                } catch(e) { showToast('Error de conexión', 'error'); }
+            });
+        }
+        
+        // ============================================
+        // PERMISOS DE NOTAS POR DEPARTAMENTO
+        // ============================================
+        
+        function applyNotesPermissions() {
+            const level = currentUser?.level;
+            const isSuperAdmin = level === 'admin';
+            const isMaintUser = level === 'mantenimiento' || level === 'amaDeLlaves';
+            const isSisUser = level === 'advanced' || level === 'basic';
+            
+            const sysNotes = document.getElementById('systemNotes');
+            const maintNotes = document.getElementById('maintenanceNotes');
+            const sysInfo = document.getElementById('systemNotesInfo');
+            const maintInfo = document.getElementById('maintenanceNotesInfo');
+            
+            if (isSuperAdmin) {
+                // Super Admin puede editar todo
+                sysNotes.readOnly = false;
+                maintNotes.readOnly = false;
+                sysInfo.style.display = 'none';
+                maintInfo.style.display = 'none';
+            } else if (isMaintUser) {
+                // Mantenimiento: puede editar notas de mant, no de sistemas
+                sysNotes.readOnly = true;
+                sysNotes.style.opacity = '0.6';
+                maintNotes.readOnly = false;
+                sysInfo.style.display = sysNotes.value ? 'block' : 'none';
+                maintInfo.style.display = 'none';
+            } else {
+                // Sistemas/Auditor: puede editar notas de sistemas, no de mant
+                sysNotes.readOnly = false;
+                maintNotes.readOnly = true;
+                maintNotes.style.opacity = '0.6';
+                sysInfo.style.display = 'none';
+                maintInfo.style.display = maintNotes.value ? 'block' : 'none';
+            }
+        }
         
         // ============================================
         // SISTEMA DE NOTIFICACIONES
