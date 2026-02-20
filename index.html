@@ -10670,12 +10670,14 @@ ${sisInfo}
                 localStorage.setItem('audit_notifications', JSON.stringify(notifItems));
                 renderNotifCenter();
                 updateNotifBadge();
-                // Navigate to relevant room/tab
-                if (notif.room) {
+                // Navigate to relevant tab based on user role
+                if (notif.type === 'incident' || notif.type === 'resolved') {
+                    goToReportsAndScroll();
+                } else if (notif.room) {
                     loadRoom(notif.room);
                     switchTab('audit');
                 } else {
-                    switchTab('reportsIT');
+                    goToReportsAndScroll();
                 }
                 toggleNotifCenter();
             }
@@ -10767,7 +10769,24 @@ ${sisInfo}
                     
                     // Mostrar notificación de bienvenida si es el login inicial
                     if (showWelcome && pendingCount > 0) {
-                        showWelcomeNotification(pendingCount, pendingIncidents.slice(0, 3));
+                        // Filtrar incidencias según rol del usuario
+                        let relevantPending = pendingIncidents;
+                        if (currentUser) {
+                            const level = currentUser.level;
+                            const isMaintRole = ['mantenimiento', 'supervisorMtto', 'gerenteMtto', 'tecnicoMtto'].includes(level);
+                            const isITRole = ['admin', 'advanced', 'basic'].includes(level);
+                            
+                            if (isMaintRole) {
+                                relevantPending = pendingIncidents.filter(i => i.asignadoA === 'mantenimiento');
+                            } else if (isITRole) {
+                                relevantPending = pendingIncidents.filter(i => i.asignadoA === 'sistemas' || i.status === 'escalado');
+                            }
+                            // amaDeLlaves y agente ven todo
+                        }
+                        
+                        if (relevantPending.length > 0) {
+                            showWelcomeNotification(relevantPending.length, relevantPending.slice(0, 3));
+                        }
                         // Inicializar IDs conocidos para no re-notificar al inicio
                         allIncs.forEach(inc => {
                             const id = inc.id || inc.timestamp || (inc.room + inc.faultType + inc.reporter);
@@ -10849,6 +10868,34 @@ ${sisInfo}
         }
         
         // Mostrar notificación de bienvenida con resumen de incidencias
+        // Determinar a qué tab de reportes ir según el rol del usuario
+        function getReportsTabForUser() {
+            if (!currentUser) return 'reportsIT';
+            const level = currentUser.level;
+            const perms = USER_LEVELS[level] || {};
+            // Si tiene tab de reportes IT, ir ahí
+            if (perms.tabReportsIT) return 'reportsIT';
+            // Si tiene tab de reportes Mtto, ir ahí
+            if (perms.tabReportsMtto) return 'reportsMtto';
+            // Si tiene tab de mantenimiento, ir ahí
+            if (perms.tabMaintenance) return 'maintenance';
+            return 'reportsIT';
+        }
+        
+        function goToReportsAndScroll(targetSection) {
+            const tab = getReportsTabForUser();
+            switchTab(tab);
+            // Scroll al contenedor de incidencias después de cambiar de tab
+            setTimeout(() => {
+                const section = document.getElementById(targetSection || 'incidentsSection') || 
+                                document.getElementById('mttoIncidentsTableContainer') ||
+                                document.getElementById('maintenanceIncidentsList');
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 300);
+        }
+        
         function showWelcomeNotification(count, recentIncidents) {
             // Remover notificación anterior si existe
             const existing = document.querySelector('.welcome-notification');
@@ -10873,7 +10920,7 @@ ${sisInfo}
                     ${recentList}
                     ${count > 3 ? `<div style="padding-top: 6px; color: #06b6d4;">... y ${count - 3} más</div>` : ''}
                 </div>
-                <button onclick="switchTab('reportsIT'); this.parentElement.remove();" 
+                <button onclick="goToReportsAndScroll(); this.parentElement.remove();" 
                         style="margin-top: 12px; width: 100%; padding: 8px; background: #06b6d4; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
                     Ver Reportes
                 </button>
