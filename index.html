@@ -12060,9 +12060,16 @@ ${sisInfo}
                     <button class="maint-btn" style="background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid #8b5cf6;font-weight:bold;" onclick="wfReleaseTicket('${id}')">🏁 Liberar Ticket</button>
                 </div>`;
             } else if (context === 'waiting') {
-                actions = `<div class="maint-card-actions">
-                    <div style="font-size:0.85rem;color:#f97316;">🚫 ${inc.motivoNoReparable || 'Sin motivo'}</div>
-                    ${(level === 'supervisorMtto' || level === 'admin') ? `<button class="maint-btn maint-btn-review" onclick="wfResourceReceived('${id}')">📦 Recurso Recibido</button>` : ''}
+                const canManageWaiting = ['supervisorMtto', 'gerenteMtto', 'admin'].includes(level);
+                const techOptions2 = wfData.technicians.map(t => `<option value="${t.username}" data-name="${t.displayName}">${t.displayName}</option>`).join('');
+                actions = `<div class="maint-card-actions" style="flex-wrap:wrap;">
+                    <div style="font-size:0.85rem;color:#f97316;width:100%;margin-bottom:8px;">🚫 ${inc.motivoNoReparable || 'Sin motivo'}</div>
+                    ${canManageWaiting ? `
+                        <select id="techReassign_${id}" style="padding:8px 12px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.85rem;flex:1;min-width:150px;">
+                            <option value="">Mismo técnico (${inc.tecnicoAsignado || 'anterior'})</option>${techOptions2}
+                        </select>
+                        <button class="maint-btn maint-btn-review" onclick="wfResourceReceived('${id}')">📦 Recurso Recibido — Reasignar</button>
+                    ` : ''}
                 </div>`;
             } else if (context === 'legacy') {
                 const isPending = inc.status === 'pendiente';
@@ -12191,11 +12198,23 @@ ${sisInfo}
             }
         }
         
-        // Supervisor marca recurso recibido
+        // Supervisor/Gerente marca recurso recibido y reasigna
         function wfResourceReceived(id) {
             const detalle = prompt('¿Qué recurso se recibió?');
             if (!detalle) return;
-            wfTransition(id, 'asignado', 'Recurso recibido: ' + detalle.trim());
+            
+            const select = document.getElementById('techReassign_' + id);
+            const tecnico = select ? select.value : '';
+            const nombre = (select && tecnico) ? (select.options[select.selectedIndex].dataset.name || tecnico) : '';
+            
+            const extra = {};
+            if (tecnico) {
+                extra.tecnico = tecnico;
+                extra.tecnicoNombre = nombre;
+            }
+            extra.supervisor = currentUser?.displayName || currentUser?.username;
+            
+            wfTransition(id, 'asignado', 'Recurso recibido: ' + detalle.trim(), extra);
         }
         
         // Legacy: review (backwards compat)
