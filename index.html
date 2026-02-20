@@ -12344,97 +12344,75 @@ ${sisInfo}
         // ---- INSTRUCCIONES POR ROL ----
         // ---- CONFIG INLINE (desde panel Mantenimiento) ----
         async function renderWfInlineConfig(container) {
-            const DIAS = ['L','M','Mi','J','V','S','D'];
-            const DIAS_FULL = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+            var DIAS = ['L','M','Mi','J','V','S','D'];
+            var DIAS_FULL = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+            var turnoLabels = { 'matutino': '☀️ Matutino', 'vespertino': '🌅 Vespertino', 'nocturno': '🌙 Nocturno', 'nocturno_respaldo': '🌙 Respaldo' };
             
-            // Load current config
-            let cfg = wfData.config || {};
+            var defaultSup = {
+                matutino: { username: 'jlyanez', nombre: 'Jose Luis Yanez', inicio: '06:00', fin: '14:00', dias: [1,1,1,1,1,1,1] },
+                vespertino: { username: 'wmiramontes', nombre: 'Wethzel Miramontes', inicio: '14:00', fin: '22:00', dias: [1,1,1,1,1,1,1] },
+                nocturno: { username: 'jvaltierra', nombre: 'Javier Valtierra', inicio: '22:00', fin: '06:00', dias: [1,1,1,1,1,1,1] },
+                nocturno_respaldo: { username: 'evaltierra', nombre: 'Emmit Valtierra', inicio: '22:00', fin: '06:00', dias: [1,1,1,1,1,1,1] }
+            };
+            
+            function buildHtml(cfg, supervisores) {
+                var h = '<div style="background:var(--bg-secondary);border:2px solid rgba(245,158,11,0.4);border-radius:12px;padding:20px;">';
+                h += '<h3 style="margin:0 0 16px;color:#f59e0b;">⚙️ Configuración de Workflow</h3>';
+                h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;">';
+                h += '<div style="background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:12px;"><label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px;">⏱️ Delay Reparación</label><div style="display:flex;align-items:center;gap:6px;"><input type="number" id="wfInlineDelay" value="' + (cfg.delay_reparacion_min || 10) + '" min="0" max="120" style="width:70px;padding:6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:1rem;font-weight:bold;text-align:center;"><span style="font-size:0.8rem;color:var(--text-muted);">min</span></div></div>';
+                h += '<div style="background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:12px;"><label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px;">🎯 SLA Reparación</label><div style="display:flex;align-items:center;gap:6px;"><input type="number" id="wfInlineSla" value="' + (cfg.sla_objetivo_min || 60) + '" min="10" max="1440" style="width:70px;padding:6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:1rem;font-weight:bold;text-align:center;"><span style="font-size:0.8rem;color:var(--text-muted);">min</span></div></div>';
+                h += '<div style="background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:12px;"><label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px;">👷 SLA Asignación</label><div style="display:flex;align-items:center;gap:6px;"><input type="number" id="wfInlineSlaAssign" value="' + (cfg.sla_asignacion_min || 60) + '" min="5" max="480" style="width:70px;padding:6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:1rem;font-weight:bold;text-align:center;"><span style="font-size:0.8rem;color:var(--text-muted);">min</span></div></div>';
+                h += '</div>';
+                
+                h += '<h4 style="margin:0 0 10px;color:var(--text-secondary);">👷 Supervisores por Turno</h4>';
+                h += '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px 1fr;gap:6px;padding:4px 8px;margin-bottom:4px;"><span style="font-size:0.7rem;color:var(--text-muted);">Turno</span><span style="font-size:0.7rem;color:var(--text-muted);">Usuario</span><span style="font-size:0.7rem;color:var(--text-muted);">Nombre</span><span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Inicio</span><span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Fin</span><span style="font-size:0.7rem;color:var(--text-muted);">Días</span></div>';
+                
+                Object.keys(supervisores).forEach(function(key) {
+                    var t = supervisores[key] || {};
+                    var dias = t.dias || [1,1,1,1,1,1,1];
+                    var label = turnoLabels[key] || key;
+                    var diasHtml = '';
+                    for (var d = 0; d < 7; d++) {
+                        diasHtml += '<label style="display:inline-flex;flex-direction:column;align-items:center;cursor:pointer;margin-right:2px;" title="' + DIAS_FULL[d] + '"><input type="checkbox" class="wfil-dia-' + key + '" data-day="' + d + '" ' + (dias[d] ? 'checked' : '') + ' style="margin:0;accent-color:#f59e0b;width:14px;height:14px;"><span style="font-size:0.6rem;color:var(--text-muted);">' + DIAS[d] + '</span></label>';
+                    }
+                    h += '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px 1fr;gap:6px;align-items:center;background:var(--bg-input);padding:8px;border-radius:8px;border:1px solid var(--border-color);margin-bottom:6px;" data-ilturno="' + key + '">' +
+                        '<span style="font-size:0.78rem;color:var(--text-secondary);font-weight:bold;">' + label + '</span>' +
+                        '<input type="text" class="wfil-user" value="' + (t.username || '') + '" placeholder="username" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;">' +
+                        '<input type="text" class="wfil-name" value="' + (t.nombre || '') + '" placeholder="Nombre" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;">' +
+                        '<input type="text" class="wfil-inicio" value="' + (t.inicio || '') + '" placeholder="HH:MM" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;text-align:center;">' +
+                        '<input type="text" class="wfil-fin" value="' + (t.fin || '') + '" placeholder="HH:MM" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;text-align:center;">' +
+                        '<div style="display:flex;align-items:center;gap:1px;">' + diasHtml + '</div></div>';
+                });
+                
+                h += '<div style="display:flex;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--border-color);">' +
+                    '<button class="btn btn-primary" onclick="saveWfInlineConfig()" style="font-size:0.85rem;background:#f59e0b;border-color:#f59e0b;">💾 Guardar Cambios</button>' +
+                    '<button class="btn" onclick="wfSwitchSection(\'incoming\')" style="font-size:0.85rem;">← Volver a Tickets</button></div>';
+                h += '</div>';
+                return h;
+            }
+            
+            // 1) Render INMEDIATAMENTE con defaults
+            container.innerHTML = buildHtml({}, defaultSup);
+            
+            // 2) Luego cargar del API y re-render si hay datos
             try {
-                const res = await fetch(`${API_URL}?action=getWorkflowConfig`);
-                const r = await res.json();
-                if (r.success && r.config) cfg = r.config;
-            } catch(e) {}
-            
-            let supervisores = null;
-            if (cfg.supervisores_turno) {
-                if (typeof cfg.supervisores_turno === 'string') {
-                    try { supervisores = JSON.parse(cfg.supervisores_turno); } catch(e) {}
-                } else {
-                    supervisores = cfg.supervisores_turno;
+                var res = await fetch(API_URL + '?action=getWorkflowConfig');
+                var r = await res.json();
+                if (r.success && r.config) {
+                    var cfg = r.config;
+                    var sup = null;
+                    if (cfg.supervisores_turno) {
+                        if (typeof cfg.supervisores_turno === 'string') {
+                            try { sup = JSON.parse(cfg.supervisores_turno); } catch(e) {}
+                        } else if (typeof cfg.supervisores_turno === 'object') {
+                            sup = cfg.supervisores_turno;
+                        }
+                    }
+                    container.innerHTML = buildHtml(cfg, (sup && Object.keys(sup).length > 0) ? sup : defaultSup);
                 }
+            } catch(e) {
+                console.warn('Config API error:', e);
             }
-            if (!supervisores) {
-                supervisores = {
-                    matutino: { username: '', nombre: '', inicio: '06:00', fin: '14:00', dias: [1,1,1,1,1,1,1] },
-                    vespertino: { username: '', nombre: '', inicio: '14:00', fin: '22:00', dias: [1,1,1,1,1,1,1] },
-                    nocturno: { username: '', nombre: '', inicio: '22:00', fin: '06:00', dias: [1,1,1,1,1,1,1] },
-                    nocturno_respaldo: { username: '', nombre: '', inicio: '22:00', fin: '06:00', dias: [1,1,1,1,1,1,1] }
-                };
-            }
-            
-            const turnoLabels = { 'matutino': '☀️ Matutino', 'vespertino': '🌅 Vespertino', 'nocturno': '🌙 Nocturno', 'nocturno_respaldo': '🌙 Respaldo' };
-            
-            let html = '<div style="background:var(--bg-secondary);border:2px solid rgba(245,158,11,0.4);border-radius:12px;padding:20px;">';
-            html += '<h3 style="margin:0 0 16px;color:#f59e0b;">⚙️ Configuración de Workflow</h3>';
-            
-            // Tiempos
-            html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;">';
-            html += '<div style="background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:12px;">' +
-                '<label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px;">⏱️ Delay Reparación</label>' +
-                '<div style="display:flex;align-items:center;gap:6px;"><input type="number" id="wfInlineDelay" value="' + (cfg.delay_reparacion_min || 10) + '" min="0" max="120" style="width:70px;padding:6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:1rem;font-weight:bold;text-align:center;"><span style="font-size:0.8rem;color:var(--text-muted);">min</span></div></div>';
-            html += '<div style="background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:12px;">' +
-                '<label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px;">🎯 SLA Reparación</label>' +
-                '<div style="display:flex;align-items:center;gap:6px;"><input type="number" id="wfInlineSla" value="' + (cfg.sla_objetivo_min || 60) + '" min="10" max="1440" style="width:70px;padding:6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:1rem;font-weight:bold;text-align:center;"><span style="font-size:0.8rem;color:var(--text-muted);">min</span></div></div>';
-            html += '<div style="background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:12px;">' +
-                '<label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px;">👷 SLA Asignación</label>' +
-                '<div style="display:flex;align-items:center;gap:6px;"><input type="number" id="wfInlineSlaAssign" value="' + (cfg.sla_asignacion_min || 60) + '" min="5" max="480" style="width:70px;padding:6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:1rem;font-weight:bold;text-align:center;"><span style="font-size:0.8rem;color:var(--text-muted);">min</span></div></div>';
-            html += '</div>';
-            
-            // Supervisores con días
-            html += '<h4 style="margin:0 0 10px;color:var(--text-secondary);">👷 Supervisores por Turno</h4>';
-            
-            // Header
-            html += '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px 1fr;gap:6px;padding:4px 8px;margin-bottom:4px;">' +
-                '<span style="font-size:0.7rem;color:var(--text-muted);">Turno</span>' +
-                '<span style="font-size:0.7rem;color:var(--text-muted);">Usuario</span>' +
-                '<span style="font-size:0.7rem;color:var(--text-muted);">Nombre</span>' +
-                '<span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Inicio</span>' +
-                '<span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Fin</span>' +
-                '<span style="font-size:0.7rem;color:var(--text-muted);">Días</span>' +
-            '</div>';
-            
-            Object.keys(supervisores).forEach(function(key) {
-                var t = supervisores[key] || {};
-                var dias = t.dias || [1,1,1,1,1,1,1];
-                var label = turnoLabels[key] || key;
-                
-                var diasHtml = '';
-                for (var d = 0; d < 7; d++) {
-                    var checked = dias[d] ? 'checked' : '';
-                    var dayColor = dias[d] ? '#f59e0b' : 'var(--text-muted)';
-                    diasHtml += '<label style="display:inline-flex;flex-direction:column;align-items:center;cursor:pointer;margin-right:2px;" title="' + DIAS_FULL[d] + '">' +
-                        '<input type="checkbox" class="wfil-dia-' + key + '" data-day="' + d + '" ' + checked + ' style="margin:0;accent-color:#f59e0b;width:14px;height:14px;">' +
-                        '<span style="font-size:0.6rem;color:' + dayColor + ';">' + DIAS[d] + '</span></label>';
-                }
-                
-                html += '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px 1fr;gap:6px;align-items:center;background:var(--bg-input);padding:8px;border-radius:8px;border:1px solid var(--border-color);margin-bottom:6px;" data-ilturno="' + key + '">' +
-                    '<span style="font-size:0.78rem;color:var(--text-secondary);font-weight:bold;">' + label + '</span>' +
-                    '<input type="text" class="wfil-user" value="' + (t.username || '') + '" placeholder="username" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;">' +
-                    '<input type="text" class="wfil-name" value="' + (t.nombre || '') + '" placeholder="Nombre" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;">' +
-                    '<input type="text" class="wfil-inicio" value="' + (t.inicio || '') + '" placeholder="HH:MM" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;text-align:center;">' +
-                    '<input type="text" class="wfil-fin" value="' + (t.fin || '') + '" placeholder="HH:MM" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;text-align:center;">' +
-                    '<div style="display:flex;align-items:center;gap:1px;">' + diasHtml + '</div>' +
-                '</div>';
-            });
-            
-            // Save button
-            html += '<div style="display:flex;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--border-color);">' +
-                '<button class="btn btn-primary" onclick="saveWfInlineConfig()" style="font-size:0.85rem;background:#f59e0b;border-color:#f59e0b;">💾 Guardar Cambios</button>' +
-                '<button class="btn" onclick="wfSwitchSection(\'incoming\')" style="font-size:0.85rem;">← Volver a Tickets</button>' +
-            '</div>';
-            
-            html += '</div>';
-            container.innerHTML = html;
         }
         
         async function saveWfInlineConfig() {
