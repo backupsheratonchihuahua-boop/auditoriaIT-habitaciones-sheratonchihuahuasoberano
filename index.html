@@ -4865,6 +4865,46 @@
                     </div>
                 </div>
 
+                <!-- 5.5 Configuración de Workflow Mantenimiento -->
+                <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 2px solid rgba(245,158,11,0.4);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <h4 style="margin: 0; color: #f59e0b;">⚙️ Configuración de Workflow Mtto</h4>
+                        <span style="font-size: 0.7rem; background: rgba(245,158,11,0.2); color: #fbbf24; padding: 2px 8px; border-radius: 10px;">Editable</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">Configura tiempos del SLA, delay de reparación y supervisores por turno.</p>
+                    
+                    <!-- Tiempos -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 6px;">⏱️ Delay antes de "En Reparación"</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="number" id="wfCfgDelay" min="0" max="120" value="10" style="width: 80px; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 1.1rem; font-weight: bold; text-align: center;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">minutos</span>
+                            </div>
+                            <p style="font-size: 0.7rem; color: var(--text-muted); margin: 6px 0 0;">Tiempo que el técnico debe esperar después de aceptar antes de poder marcar "En Reparación"</p>
+                        </div>
+                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 6px;">🎯 Objetivo SLA</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="number" id="wfCfgSla" min="10" max="1440" value="60" style="width: 80px; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 1.1rem; font-weight: bold; text-align: center;">
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">minutos</span>
+                            </div>
+                            <p style="font-size: 0.7rem; color: var(--text-muted); margin: 6px 0 0;">Tiempo objetivo para resolver un ticket (la barra de progreso se basa en este valor)</p>
+                        </div>
+                    </div>
+
+                    <!-- Supervisores por Turno -->
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary); font-weight: bold; display: block; margin-bottom: 8px;">👷 Supervisores por Turno</label>
+                        <div id="wfCfgSupervisors" style="display: grid; gap: 8px;"></div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                        <button class="btn" onclick="saLoadWorkflowConfig()" style="font-size: 0.85rem; border-color: #3b82f6; color: #60a5fa;">🔄 Cargar Config Actual</button>
+                        <button class="btn btn-primary" onclick="saSaveWorkflowConfig()" style="font-size: 0.85rem; background: #f59e0b; border-color: #f59e0b;">💾 Guardar Cambios</button>
+                    </div>
+                </div>
+
                 <!-- 6. Editor de Permisos por Rol -->
                 <div style="background: var(--bg-secondary); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 2px solid rgba(6,182,212,0.4);">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
@@ -9958,6 +9998,90 @@ ${sisInfo}
                     } else { showToast('Error al eliminar', 'error'); }
                 } catch(e) { showToast('Error de conexión', 'error'); }
             });
+        }
+        
+        // ============================================
+        // CONFIGURACIÓN DE WORKFLOW MANTENIMIENTO
+        // ============================================
+        
+        async function saLoadWorkflowConfig() {
+            try {
+                const response = await fetch(`${API_URL}?action=getWorkflowConfig`);
+                const result = await response.json();
+                
+                if (result.success && result.config) {
+                    const cfg = result.config;
+                    
+                    // Tiempos
+                    const delayInput = document.getElementById('wfCfgDelay');
+                    const slaInput = document.getElementById('wfCfgSla');
+                    if (delayInput) delayInput.value = cfg.delay_reparacion_min || 10;
+                    if (slaInput) slaInput.value = cfg.sla_objetivo_min || 60;
+                    
+                    // Supervisores
+                    const container = document.getElementById('wfCfgSupervisors');
+                    if (container && cfg.supervisores_turno) {
+                        const turnos = cfg.supervisores_turno;
+                        const turnoLabels = {
+                            'matutino': '☀️ Matutino',
+                            'vespertino': '🌅 Vespertino',
+                            'nocturno': '🌙 Nocturno',
+                            'nocturno_respaldo': '🌙 Nocturno (Respaldo)'
+                        };
+                        
+                        container.innerHTML = Object.keys(turnos).map(key => {
+                            const t = turnos[key];
+                            return `
+                                <div style="display:grid;grid-template-columns:140px 1fr 1fr 80px 80px;gap:8px;align-items:center;background:var(--bg-input);padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);" data-turno="${key}">
+                                    <span style="font-size:0.8rem;color:var(--text-secondary);font-weight:bold;">${turnoLabels[key] || key}</span>
+                                    <input type="text" class="wfcfg-sup-user" value="${t.username || ''}" placeholder="Username" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;">
+                                    <input type="text" class="wfcfg-sup-name" value="${t.nombre || ''}" placeholder="Nombre completo" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;">
+                                    <input type="text" class="wfcfg-sup-inicio" value="${t.inicio || ''}" placeholder="HH:MM" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;text-align:center;">
+                                    <input type="text" class="wfcfg-sup-fin" value="${t.fin || ''}" placeholder="HH:MM" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;text-align:center;">
+                                </div>`;
+                        }).join('');
+                    }
+                    
+                    showToast('Configuración cargada', 'success');
+                }
+            } catch (error) {
+                showToast('Error al cargar configuración', 'error');
+            }
+        }
+        
+        async function saSaveWorkflowConfig() {
+            if (currentUser?.level !== 'admin') { showToast('Solo Super Admin', 'error'); return; }
+            
+            const delay = document.getElementById('wfCfgDelay')?.value;
+            const sla = document.getElementById('wfCfgSla')?.value;
+            
+            // Recopilar supervisores
+            const supRows = document.querySelectorAll('#wfCfgSupervisors [data-turno]');
+            const supervisores = {};
+            supRows.forEach(row => {
+                const turno = row.dataset.turno;
+                supervisores[turno] = {
+                    username: row.querySelector('.wfcfg-sup-user')?.value.trim() || '',
+                    nombre: row.querySelector('.wfcfg-sup-name')?.value.trim() || '',
+                    inicio: row.querySelector('.wfcfg-sup-inicio')?.value.trim() || '',
+                    fin: row.querySelector('.wfcfg-sup-fin')?.value.trim() || ''
+                };
+            });
+            
+            try {
+                // Guardar delay
+                await fetch(`${API_URL}?action=saveWorkflowConfig&key=delay_reparacion_min&value=${encodeURIComponent(delay)}`);
+                
+                // Guardar SLA
+                await fetch(`${API_URL}?action=saveWorkflowConfig&key=sla_objetivo_min&value=${encodeURIComponent(sla)}`);
+                
+                // Guardar supervisores
+                await fetch(`${API_URL}?action=saveWorkflowConfig&key=supervisores_turno&value=${encodeURIComponent(JSON.stringify(supervisores))}`);
+                
+                showToast(`Configuración guardada — Delay: ${delay} min, SLA: ${sla} min`, 'success');
+            } catch (error) {
+                showToast('Error al guardar', 'error');
+            }
         }
         
         // ============================================
