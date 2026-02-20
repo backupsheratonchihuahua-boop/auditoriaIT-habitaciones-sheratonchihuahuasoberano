@@ -226,6 +226,11 @@
         .users-table .level-badge.advanced { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
         .users-table .level-badge.basic { background: rgba(16, 185, 129, 0.2); color: #34d399; }
         .users-table .level-badge.agente { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+        .users-table .level-badge.mantenimiento { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+        .users-table .level-badge.amaDeLlaves { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+        .users-table .level-badge.supervisorMtto { background: rgba(20, 184, 166, 0.2); color: #2dd4bf; }
+        .users-table .level-badge.gerenteMtto { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+        .users-table .level-badge.tecnicoMtto { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
         
         /* Cards de roles */
         .role-card {
@@ -4687,6 +4692,39 @@
                             <li>❌ Gestionar usuarios</li>
                         </ul>
                     </div>
+                    <div class="role-card" style="border-left-color: #f97316;">
+                        <h4>🔧 Mantenimiento (Técnico)</h4>
+                        <ul>
+                            <li>✅ Ver tickets asignados</li>
+                            <li>✅ Aceptar/revisar tickets</li>
+                            <li>✅ Marcar reparaciones</li>
+                            <li>✅ Escalar a sistemas</li>
+                            <li>❌ Auditar habitaciones</li>
+                            <li>❌ Asignar tickets</li>
+                        </ul>
+                    </div>
+                    <div class="role-card" style="border-left-color: #14b8a6;">
+                        <h4>👷 Supervisor Mtto</h4>
+                        <ul>
+                            <li>✅ Recibir todos los tickets</li>
+                            <li>✅ Asignar a técnicos</li>
+                            <li>✅ Verificar reparaciones</li>
+                            <li>✅ Auditar mantenimiento</li>
+                            <li>✅ Ver reportes mtto</li>
+                            <li>❌ Auditar sistemas</li>
+                        </ul>
+                    </div>
+                    <div class="role-card" style="border-left-color: #8b5cf6;">
+                        <h4>🏗️ Gerente Mtto</h4>
+                        <ul>
+                            <li>✅ Aprobación final de tickets</li>
+                            <li>✅ Auditar mantenimiento</li>
+                            <li>✅ Dashboard mantenimiento</li>
+                            <li>✅ Reportes mantenimiento</li>
+                            <li>✅ Liberar tickets cerrados</li>
+                            <li>❌ Auditar sistemas</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             
@@ -4923,6 +4961,9 @@
                         <select id="newUserLevel">
                             <option value="agente">📢 Agente (solo reportar)</option>
                             <option value="mantenimiento">🔧 Mantenimiento (gestionar incidencias)</option>
+                            <option value="tecnicoMtto">🔧 Técnico Mtto (recibe tickets)</option>
+                            <option value="supervisorMtto">👷 Supervisor Mtto (asigna tickets)</option>
+                            <option value="gerenteMtto">🏗️ Gerente Mtto (aprobación final)</option>
                             <option value="amaDeLlaves">🏨 Ama de Llaves (checklist mantenimiento)</option>
                             <option value="basic">👤 Básico (auditor)</option>
                             <option value="advanced">⭐ Avanzado</option>
@@ -4983,6 +5024,9 @@
                         <select id="editUserLevel">
                             <option value="agente">📢 Agente</option>
                             <option value="mantenimiento">🔧 Mantenimiento</option>
+                            <option value="tecnicoMtto">🔧 Técnico Mtto</option>
+                            <option value="supervisorMtto">👷 Supervisor Mtto</option>
+                            <option value="gerenteMtto">🏗️ Gerente Mtto</option>
                             <option value="amaDeLlaves">🏨 Ama de Llaves</option>
                             <option value="basic">👤 Básico</option>
                             <option value="advanced">⭐ Avanzado</option>
@@ -5069,6 +5113,27 @@
                 canAudit: true, canExport: true, canReport: true, canManageIncidents: false,
                 maintenanceOnly: true,
                 tabAudit: true, tabReportsIT: false, tabReportsMtto: true, tabMaintenance: false
+            },
+            'supervisorMtto': {
+                name: 'Supervisor Mtto',
+                canDelete: false, canClearAll: false, canEditAny: false,
+                canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
+                maintenanceOnly: true, canAssignTickets: true, canVerifyRepairs: true,
+                tabAudit: true, tabReportsIT: false, tabReportsMtto: true, tabMaintenance: true
+            },
+            'gerenteMtto': {
+                name: 'Gerente Mtto',
+                canDelete: false, canClearAll: false, canEditAny: false,
+                canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
+                maintenanceOnly: true, canApproveTickets: true, canAssignTickets: true, canVerifyRepairs: true,
+                tabAudit: true, tabReportsIT: false, tabReportsMtto: true, tabMaintenance: true
+            },
+            'tecnicoMtto': {
+                name: 'Técnico Mtto',
+                canDelete: false, canClearAll: false, canEditAny: false,
+                canAudit: false, canExport: false, canReport: false, canManageIncidents: true,
+                onlyOwnIncidents: true, canAcceptTickets: true,
+                tabAudit: false, tabReportsIT: false, tabReportsMtto: false, tabMaintenance: true
             }
         };
         
@@ -5143,7 +5208,9 @@
             buildMaintenanceChecklist();
             
             // Si es amaDeLlaves, filtrar solo mantenimiento
-            if (currentUser && currentUser.level === 'amaDeLlaves') {
+            // Si es rol de mantenimiento, filtrar solo mantenimiento
+            const maintOnlyRoles = ['amaDeLlaves', 'supervisorMtto', 'gerenteMtto'];
+            if (currentUser && maintOnlyRoles.includes(currentUser.level)) {
                 setTimeout(() => {
                     filterByDepartment('mantenimiento');
                     const filterBar = document.getElementById('deptFilterBar');
@@ -5240,7 +5307,7 @@
                     syncData(); // Sincronizar al iniciar sesión
                     
                     // Si es amaDeLlaves, mostrar solo mantenimiento
-                    if (result.user.level === 'amaDeLlaves') {
+                    if (['amaDeLlaves', 'supervisorMtto', 'gerenteMtto'].includes(result.user.level)) {
                         setTimeout(() => filterByDepartment('mantenimiento'), 800);
                         const filterBar = document.getElementById('deptFilterBar');
                         if (filterBar) filterBar.style.display = 'none';
@@ -9417,7 +9484,11 @@ ${sisInfo}
                 'advanced': '⭐ Avanzado',
                 'basic': '👤 Básico',
                 'mantenimiento': '🔧 Mantenimiento',
-                'agente': '📢 Agente'
+                'agente': '📢 Agente',
+                'amaDeLlaves': '🏨 Ama de Llaves',
+                'supervisorMtto': '👷 Supervisor Mtto',
+                'gerenteMtto': '🏗️ Gerente Mtto',
+                'tecnicoMtto': '🔧 Técnico Mtto'
             };
             
             let html = `
@@ -10054,14 +10125,20 @@ ${sisInfo}
             canExport: { label: '📥 Exportar', group: 'action', desc: 'Puede exportar datos a CSV' },
             canReport: { label: '📢 Reportar Incidencias', group: 'action', desc: 'Puede crear reportes de incidencias' },
             canManageIncidents: { label: '🔧 Gestionar Incidencias', group: 'action', desc: 'Puede cambiar estado de incidencias' },
+            // Ticket workflow
+            canAssignTickets: { label: '📋 Asignar Tickets', group: 'action', desc: 'Puede asignar tickets a técnicos' },
+            canVerifyRepairs: { label: '✅ Verificar Reparaciones', group: 'action', desc: 'Puede verificar que una reparación fue completada' },
+            canApproveTickets: { label: '🏗️ Aprobación Final', group: 'action', desc: 'Puede dar liberación final de tickets (Gerente)' },
+            canAcceptTickets: { label: '🔧 Aceptar Tickets', group: 'action', desc: 'Puede aceptar tickets asignados para revisión' },
             // Flags
             maintenanceOnly: { label: '🏨 Solo Mantenimiento', group: 'flag', desc: 'En auditoría solo ve secciones de mantenimiento' },
-            onlyOwnIncidents: { label: '📋 Solo sus Incidencias', group: 'flag', desc: 'Solo ve incidencias asignadas a su departamento' }
+            onlyOwnIncidents: { label: '📋 Solo sus Incidencias', group: 'flag', desc: 'Solo ve incidencias asignadas a su departamento/persona' }
         };
         
         const ROLE_COLORS = {
             'admin': '#a78bfa', 'advanced': '#06b6d4', 'basic': '#10b981',
-            'mantenimiento': '#f59e0b', 'agente': '#f87171', 'amaDeLlaves': '#ec4899'
+            'mantenimiento': '#f97316', 'agente': '#f87171', 'amaDeLlaves': '#ec4899',
+            'supervisorMtto': '#14b8a6', 'gerenteMtto': '#8b5cf6', 'tecnicoMtto': '#f59e0b'
         };
         
         function saInitPermEditor() {
@@ -10367,7 +10444,7 @@ ${sisInfo}
         function applyNotesPermissions() {
             const level = currentUser?.level;
             const isSuperAdmin = level === 'admin';
-            const isMaintUser = level === 'mantenimiento' || level === 'amaDeLlaves';
+            const isMaintUser = level === 'mantenimiento' || level === 'amaDeLlaves' || level === 'supervisorMtto' || level === 'gerenteMtto' || level === 'tecnicoMtto';
             const isSisUser = level === 'advanced' || level === 'basic';
             
             const sysNotes = document.getElementById('systemNotes');
@@ -12026,7 +12103,8 @@ ${sisInfo}
             // Panel de agentes - mostrar para rol agente y amaDeLlaves
             const agentPanel = document.getElementById('agentReportPanel');
             if (agentPanel) {
-                if (currentUser.level === 'agente' || currentUser.level === 'amaDeLlaves') {
+                const showAgentPanel = ['agente', 'amaDeLlaves', 'supervisorMtto', 'gerenteMtto'].includes(currentUser.level);
+                if (showAgentPanel) {
                     agentPanel.classList.add('show');
                     const reporterField = document.getElementById('agentReporter');
                     if (reporterField) {
