@@ -12029,7 +12029,8 @@ ${sisInfo}
                     <button class="maint-btn maint-btn-review" onclick="wfAssignToTech('${id}')">👷 Asignar</button>
                     <button class="maint-btn maint-btn-escalate" onclick="showEscalateModal('${id}', '${inc.room}')">🔺 Escalar</button>
                 </div>`;
-            } else if (context === 'tech' || (context === 'assigned' && level !== 'tecnicoMtto')) {
+            } else if (context === 'tech') {
+                // TÉCNICO: acciones propias
                 if (inc.status === 'asignado') {
                     actions = `<div class="maint-card-actions"><button class="maint-btn maint-btn-review" onclick="wfAcceptTicket('${id}')">✋ Aceptar Ticket</button></div>`;
                 } else if (inc.status === 'en_revision') {
@@ -12050,6 +12051,19 @@ ${sisInfo}
                         <button class="maint-btn" style="background:rgba(239,68,68,0.2);color:#f87171;border:1px solid #ef4444;" onclick="wfMarkUnrepairable('${id}', '${inc.room}')">🚫 No Reparable</button>
                     </div>`;
                 }
+            } else if (context === 'assigned') {
+                // SUPERVISOR/GERENTE: monitoreo de tickets asignados
+                const statusInfo = {
+                    'asignado': '⏳ Esperando que el técnico acepte',
+                    'en_revision': '👁️ Técnico revisando en sitio',
+                    'en_reparacion': '🔨 Técnico reparando'
+                };
+                const techOptions3 = wfData.technicians.map(t => `<option value="${t.username}" data-name="${t.displayName}">${t.displayName}</option>`).join('');
+                actions = `<div class="maint-card-actions" style="flex-wrap:wrap;">
+                    <div style="font-size:0.85rem;color:var(--text-muted);width:100%;margin-bottom:6px;">${statusInfo[inc.status] || inc.status}</div>
+                    <button class="maint-btn" style="background:rgba(59,130,246,0.2);color:#60a5fa;border:1px solid #3b82f6;font-size:0.8rem;" onclick="wfReassignFromSupervisor('${id}', '${inc.room}')">🔄 Reasignar Técnico</button>
+                    <button class="maint-btn maint-btn-escalate" style="font-size:0.8rem;" onclick="showEscalateModal('${id}', '${inc.room}')">🔺 Escalar</button>
+                </div>`;
             } else if (context === 'verify') {
                 actions = `<div class="maint-card-actions">
                     <button class="maint-btn maint-btn-resolve" onclick="wfVerifyRepair('${id}')">✅ Verificar Reparación</button>
@@ -12215,6 +12229,20 @@ ${sisInfo}
             extra.supervisor = currentUser?.displayName || currentUser?.username;
             
             wfTransition(id, 'asignado', 'Recurso recibido: ' + detalle.trim(), extra);
+        }
+        
+        // Supervisor reasigna ticket en progreso a otro técnico
+        function wfReassignFromSupervisor(id, room) {
+            const techList = wfData.technicians.map((t, i) => `${i+1}. ${t.displayName}`).join('\n');
+            const choice = prompt(`Reasignar ticket Hab. ${room}\n\nTécnicos disponibles:\n${techList}\n\nEscribe el número:`);
+            if (!choice) return;
+            const idx = parseInt(choice) - 1;
+            if (idx < 0 || idx >= wfData.technicians.length) { showToast('Número inválido', 'warning'); return; }
+            const tech = wfData.technicians[idx];
+            wfTransition(id, 'asignado', 'Reasignado por supervisor', {
+                tecnico: tech.username, tecnicoNombre: tech.displayName,
+                supervisor: currentUser?.displayName || currentUser?.username
+            });
         }
         
         // Legacy: review (backwards compat)
