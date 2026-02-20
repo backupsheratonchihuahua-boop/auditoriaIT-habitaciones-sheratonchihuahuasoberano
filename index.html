@@ -4052,70 +4052,57 @@
             <div class="dashboard-header">
                 <h2>🔧 Panel de Mantenimiento</h2>
                 <div class="dashboard-actions no-print">
-                    <button class="btn" onclick="loadMaintenanceIncidents()">🔄 Actualizar</button>
+                    <span id="wfShiftInfo" style="font-size: 0.8rem; color: var(--text-muted); margin-right: 10px;"></span>
+                    <button class="btn" onclick="loadWorkflowPanel()">🔄 Actualizar</button>
                 </div>
             </div>
             
             <div style="padding: 20px;">
-                <!-- Bienvenida -->
-                <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <!-- Bienvenida adaptativa -->
+                <div id="wfWelcomeBox" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <span style="font-size: 2.5rem;">🔧</span>
                         <div>
-                            <h3 style="margin: 0; color: #f59e0b;">Bienvenido al Panel de Mantenimiento</h3>
-                            <p style="margin: 5px 0 0; color: var(--text-muted);">Aquí puedes gestionar las incidencias que han sido asignadas a tu equipo</p>
+                            <h3 style="margin: 0; color: #f59e0b;" id="wfWelcomeTitle">Panel de Mantenimiento</h3>
+                            <p style="margin: 5px 0 0; color: var(--text-muted);" id="wfWelcomeSubtitle">Cargando...</p>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Estadísticas rápidas -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                    <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 20px; text-align: center;">
-                        <div style="font-size: 2.2rem; font-weight: bold; color: #f59e0b;" id="maintPendingCount">0</div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted);">⏳ Pendientes</div>
-                    </div>
-                    <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 20px; text-align: center;">
-                        <div style="font-size: 2.2rem; font-weight: bold; color: #3b82f6;" id="maintInProgressCount">0</div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted);">👁️ En Revisión</div>
-                    </div>
-                    <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 20px; text-align: center;">
-                        <div style="font-size: 2.2rem; font-weight: bold; color: #10b981;" id="maintResolvedCount">0</div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted);">✅ Resueltos Hoy</div>
-                    </div>
-                    <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 20px; text-align: center;">
-                        <div style="font-size: 2.2rem; font-weight: bold; color: #ef4444;" id="maintEscaladosCount">0</div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted);">🔺 Escalados</div>
+                <!-- Estadísticas -->
+                <div id="wfStatsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 25px;"></div>
+                
+                <!-- Sub-tabs del workflow (Supervisor/Gerente) -->
+                <div id="wfSubTabs" style="display: none; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="filter-btn active" onclick="wfSwitchSection('incoming')" data-wfsection="incoming">📥 Entrantes</button>
+                        <button class="filter-btn" onclick="wfSwitchSection('assigned')" data-wfsection="assigned">👷 Asignados</button>
+                        <button class="filter-btn" onclick="wfSwitchSection('verify')" data-wfsection="verify">✅ Verificar</button>
+                        <button class="filter-btn" onclick="wfSwitchSection('approve')" data-wfsection="approve" id="wfApproveTab" style="display:none;">🏗️ Liberar</button>
+                        <button class="filter-btn" onclick="wfSwitchSection('waiting')" data-wfsection="waiting">⏳ En Espera</button>
+                        <button class="filter-btn" onclick="wfSwitchSection('history')" data-wfsection="history">📜 Historial</button>
                     </div>
                 </div>
                 
-                <!-- Contenedor de incidencias -->
-                <div class="data-table-container">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                        <h3 style="margin: 0;">📋 Incidencias Asignadas</h3>
-                        <div class="filter-buttons" id="maintFilterButtons">
-                            <button class="filter-btn active" onclick="filterMaintenanceIncidents('all')" data-filter="all">Todas</button>
-                            <button class="filter-btn" onclick="filterMaintenanceIncidents('pendiente')" data-filter="pendiente">⏳ Pendientes</button>
-                            <button class="filter-btn" onclick="filterMaintenanceIncidents('en_revision')" data-filter="en_revision">👁️ En Revisión</button>
-                            <button class="filter-btn" onclick="filterMaintenanceIncidents('resuelto_mant')" data-filter="resuelto_mant">✅ Resueltos</button>
-                            <button class="filter-btn" onclick="filterMaintenanceIncidents('escalado')" data-filter="escalado">🔺 Escalados</button>
-                        </div>
+                <!-- Filtros para técnicos -->
+                <div id="wfTechFilters" style="display: none; margin-bottom: 20px;">
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="wfFilterTech('all')" data-wftf="all">Todos</button>
+                        <button class="filter-btn" onclick="wfFilterTech('asignado')" data-wftf="asignado">📥 Nuevos</button>
+                        <button class="filter-btn" onclick="wfFilterTech('en_revision')" data-wftf="en_revision">👁️ En Revisión</button>
+                        <button class="filter-btn" onclick="wfFilterTech('en_reparacion')" data-wftf="en_reparacion">🔨 Reparando</button>
                     </div>
-                    
-                    <!-- Lista de incidencias -->
-                    <div id="maintenanceIncidentsList">
-                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">Cargando incidencias...</p>
+                </div>
+                
+                <!-- Contenido principal del workflow -->
+                <div id="wfContent" class="data-table-container">
+                    <div id="wfIncidentsList">
+                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">⏳ Cargando panel...</p>
                     </div>
                 </div>
                 
                 <!-- Instrucciones -->
-                <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-top: 20px;">
-                    <h4 style="margin: 0 0 12px; color: var(--text-primary);">📌 Instrucciones</h4>
-                    <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); line-height: 1.8;">
-                        <li><strong>👁️ Revisar:</strong> Marca que estás revisando la incidencia</li>
-                        <li><strong>✅ Resuelto:</strong> Si pudiste resolver el problema, marca como resuelto y agrega notas opcionales</li>
-                        <li><strong>🔺 Escalar:</strong> Si NO puedes resolver, escala a Sistemas indicando el motivo</li>
-                    </ul>
-                </div>
+                <div id="wfInstructions" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-top: 20px;"></div>
             </div>
         </div>
 
@@ -11782,168 +11769,449 @@ ${sisInfo}
         // ============================================
         
         let allMaintenanceIncidents = [];
+        let wfData = { incidents: [], config: {}, currentSupervisor: {}, technicians: [] };
+        let wfCurrentSection = 'incoming';
+        let wfTechFilter = 'all';
         
-        async function loadMaintenanceIncidents() {
+        // ---- CARGAR PANEL DE WORKFLOW ----
+        async function loadWorkflowPanel() {
             try {
-                const response = await fetch(`${API_URL}?action=getIncidents`);
-                const result = await response.json();
+                const [wfRes, techRes] = await Promise.all([
+                    fetch(`${API_URL}?action=getWorkflowIncidents`).then(r => r.json()),
+                    fetch(`${API_URL}?action=getTechnicians`).then(r => r.json())
+                ]);
                 
-                if (result.success) {
-                    // Filtrar solo incidencias asignadas a mantenimiento
-                    allMaintenanceIncidents = (result.incidents || []).filter(inc => 
-                        inc.asignadoA === 'mantenimiento'
-                    );
-                    
-                    updateMaintenanceStats();
-                    renderMaintenanceIncidents(allMaintenanceIncidents);
+                if (wfRes.success) {
+                    wfData.incidents = (wfRes.incidents || []).filter(i => i.asignadoA === 'mantenimiento');
+                    wfData.config = wfRes.config || {};
+                    wfData.currentSupervisor = wfRes.currentSupervisor || {};
+                    allMaintenanceIncidents = wfData.incidents;
                 }
+                if (techRes.success) {
+                    wfData.technicians = techRes.technicians || [];
+                }
+                
+                renderWorkflowPanel();
             } catch (error) {
-                console.error('Error cargando incidencias:', error);
+                console.error('Error loading workflow:', error);
+                document.getElementById('wfIncidentsList').innerHTML = '<p style="color:#ef4444;text-align:center;padding:40px;">Error cargando datos</p>';
             }
+        }
+        
+        // Alias para backwards compat
+        async function loadMaintenanceIncidents() { return loadWorkflowPanel(); }
+        
+        // ---- RENDER PRINCIPAL ----
+        function renderWorkflowPanel() {
+            if (!currentUser) return;
+            const level = currentUser.level;
+            const incidents = wfData.incidents;
+            const isSupervisor = level === 'supervisorMtto';
+            const isGerente = level === 'gerenteMtto';
+            const isTecnico = level === 'tecnicoMtto';
+            const isAdmin = level === 'admin';
+            const isLegacy = level === 'mantenimiento';
+            
+            // Shift info
+            const shiftEl = document.getElementById('wfShiftInfo');
+            if (shiftEl && wfData.currentSupervisor.nombre) {
+                shiftEl.innerHTML = `👷 Turno: <strong>${wfData.currentSupervisor.turno}</strong> · ${wfData.currentSupervisor.nombre}`;
+            }
+            
+            // Welcome
+            const titles = {
+                'supervisorMtto': ['👷 Panel del Supervisor', 'Recibe tickets, asigna técnicos y verifica reparaciones'],
+                'gerenteMtto': ['🏗️ Panel del Gerente', 'Aprueba reparaciones y monitorea SLA del equipo'],
+                'tecnicoMtto': ['🔧 Mis Tickets Asignados', 'Acepta, revisa y repara las incidencias asignadas'],
+                'mantenimiento': ['🔧 Panel de Mantenimiento', 'Gestiona incidencias asignadas a tu equipo'],
+                'admin': ['🔧 Panel de Mantenimiento (Admin)', 'Vista completa de todas las incidencias de mantenimiento']
+            };
+            const [title, subtitle] = titles[level] || titles['mantenimiento'];
+            document.getElementById('wfWelcomeTitle').textContent = title;
+            document.getElementById('wfWelcomeSubtitle').textContent = subtitle;
+            
+            // Stats
+            renderWfStats(incidents, level);
+            
+            // Show appropriate UI
+            const subTabs = document.getElementById('wfSubTabs');
+            const techFilters = document.getElementById('wfTechFilters');
+            const approveTab = document.getElementById('wfApproveTab');
+            
+            if (isSupervisor || isGerente || isAdmin) {
+                subTabs.style.display = 'block';
+                techFilters.style.display = 'none';
+                if (isGerente || isAdmin) approveTab.style.display = 'inline-block';
+                wfSwitchSection(wfCurrentSection);
+            } else if (isTecnico) {
+                subTabs.style.display = 'none';
+                techFilters.style.display = 'block';
+                renderTechnicianView(incidents);
+            } else {
+                subTabs.style.display = 'none';
+                techFilters.style.display = 'none';
+                renderLegacyView(incidents);
+            }
+            
+            // Instructions
+            renderWfInstructions(level);
+            
+            // Update badge
+            updateMaintenanceStats();
+        }
+        
+        // ---- ESTADÍSTICAS ----
+        function renderWfStats(incidents, level) {
+            const grid = document.getElementById('wfStatsGrid');
+            const pending = incidents.filter(i => i.status === 'pendiente' || i.status === 'asignado').length;
+            const enRevision = incidents.filter(i => i.status === 'en_revision').length;
+            const enReparacion = incidents.filter(i => i.status === 'en_reparacion').length;
+            const reparados = incidents.filter(i => i.status === 'reparado').length;
+            const verificados = incidents.filter(i => i.status === 'verificado').length;
+            const noReparable = incidents.filter(i => i.status === 'no_reparable' || i.status === 'esperando_recurso').length;
+            const liberados = incidents.filter(i => i.status === 'liberado').length;
+            const escalados = incidents.filter(i => i.status === 'escalado').length;
+            
+            const stats = [
+                { val: pending, label: '📥 Entrantes', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' },
+                { val: enRevision + enReparacion, label: '🔨 En Proceso', color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.3)' },
+                { val: reparados + verificados, label: '✅ Reparados', color: '#10b981', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)' },
+                { val: noReparable, label: '⏳ En Espera', color: '#f97316', bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.3)' },
+                { val: liberados, label: '🏁 Liberados', color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)', border: 'rgba(139,92,246,0.3)' },
+                { val: escalados, label: '🔺 Escalados', color: '#ef4444', bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.3)' }
+            ];
+            
+            grid.innerHTML = stats.map(s => `
+                <div style="background:${s.bg};border:1px solid ${s.border};border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:2rem;font-weight:bold;color:${s.color};">${s.val}</div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);">${s.label}</div>
+                </div>`).join('');
         }
         
         function updateMaintenanceStats() {
+            const incidents = wfData.incidents || allMaintenanceIncidents;
+            const pending = incidents.filter(i => ['pendiente','asignado'].includes(i.status)).length;
+            const inProg = incidents.filter(i => ['en_revision','en_reparacion'].includes(i.status)).length;
             const today = getMXDate().toDateString();
+            const resolved = incidents.filter(i => ['reparado','verificado','liberado','resuelto_mant','atendido'].includes(i.status) && new Date(i.timestamp).toDateString() === today).length;
+            const esc = incidents.filter(i => i.status === 'escalado').length;
             
-            const pending = allMaintenanceIncidents.filter(i => i.status === 'pendiente').length;
-            const inProgress = allMaintenanceIncidents.filter(i => i.status === 'en_revision').length;
-            const escalados = allMaintenanceIncidents.filter(i => i.status === 'escalado').length;
-            const resolvedToday = allMaintenanceIncidents.filter(i => {
-                return (i.status === 'resuelto_mant' || i.status === 'atendido') && 
-                       new Date(i.timestamp).toDateString() === today;
-            }).length;
-            
-            const pendingEl = document.getElementById('maintPendingCount');
-            const inProgressEl = document.getElementById('maintInProgressCount');
-            const resolvedEl = document.getElementById('maintResolvedCount');
-            const escaladosEl = document.getElementById('maintEscaladosCount');
-            
-            if (pendingEl) pendingEl.textContent = pending;
-            if (inProgressEl) inProgressEl.textContent = inProgress;
-            if (resolvedEl) resolvedEl.textContent = resolvedToday;
-            if (escaladosEl) escaladosEl.textContent = escalados;
-            
-            // Actualizar badge en el tab
-            const maintBadge = document.getElementById('maintBadge');
-            if (maintBadge) {
-                if (pending > 0) {
-                    maintBadge.textContent = pending;
-                    maintBadge.style.display = 'inline-flex';
-                } else {
-                    maintBadge.style.display = 'none';
-                }
-            }
-        }
-        
-        function filterMaintenanceIncidents(filter) {
-            // Actualizar botones activos
-            document.querySelectorAll('#maintFilterButtons .filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.filter === filter);
+            ['maintPendingCount','maintInProgressCount','maintResolvedCount','maintEscaladosCount'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = id.includes('Pending') ? pending : id.includes('InProgress') ? inProg : id.includes('Resolved') ? resolved : esc;
             });
             
-            let filtered = allMaintenanceIncidents;
-            
-            if (filter !== 'all') {
-                filtered = allMaintenanceIncidents.filter(inc => inc.status === filter);
+            const maintBadge = document.getElementById('maintBadge');
+            if (maintBadge) {
+                if (pending > 0) { maintBadge.textContent = pending; maintBadge.style.display = 'inline-flex'; }
+                else { maintBadge.style.display = 'none'; }
             }
-            
-            renderMaintenanceIncidents(filtered);
         }
         
-        function renderMaintenanceIncidents(incidents) {
-            const container = document.getElementById('maintenanceIncidentsList');
-            if (!container) return;
+        // ---- SUB-TABS (Supervisor/Gerente) ----
+        function wfSwitchSection(section) {
+            wfCurrentSection = section;
+            document.querySelectorAll('[data-wfsection]').forEach(b => b.classList.toggle('active', b.dataset.wfsection === section));
             
-            if (incidents.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-                        <div style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
-                        <p>No hay incidencias pendientes</p>
-                    </div>`;
+            const incidents = wfData.incidents;
+            const container = document.getElementById('wfIncidentsList');
+            
+            let filtered = [];
+            switch(section) {
+                case 'incoming': filtered = incidents.filter(i => i.status === 'pendiente'); break;
+                case 'assigned': filtered = incidents.filter(i => ['asignado','en_revision','en_reparacion'].includes(i.status)); break;
+                case 'verify': filtered = incidents.filter(i => i.status === 'reparado'); break;
+                case 'approve': filtered = incidents.filter(i => i.status === 'verificado'); break;
+                case 'waiting': filtered = incidents.filter(i => ['no_reparable','esperando_recurso'].includes(i.status)); break;
+                case 'history': filtered = incidents.filter(i => ['liberado','resuelto_mant','atendido','escalado'].includes(i.status)).slice(0, 30); break;
+                default: filtered = incidents;
+            }
+            
+            if (filtered.length === 0) {
+                const emptyMsgs = {
+                    'incoming': '🎉 Sin tickets entrantes', 'assigned': '📋 Sin tickets en proceso',
+                    'verify': '✅ Sin tickets por verificar', 'approve': '🏗️ Sin tickets por liberar',
+                    'waiting': '⏳ Sin tickets en espera', 'history': '📜 Sin historial'
+                };
+                container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);"><div style="font-size:2.5rem;margin-bottom:10px;">📋</div><p>${emptyMsgs[section] || 'Sin datos'}</p></div>`;
                 return;
             }
             
-            const faultLabels = FAULT_LABELS;
-            
-            const statusLabels = {
-                'pendiente': { text: '⏳ Pendiente', class: 'pending' },
-                'en_revision': { text: '👁️ En Revisión', class: 'in-progress' },
-                'resuelto_mant': { text: '✅ Resuelto', class: 'resolved' },
-                'escalado': { text: '🔺 Escalado', class: 'escalated' },
-                'atendido': { text: '✅ Cerrado', class: 'resolved' }
-            };
-            
-            // Verificar si puede reasignar (mantenimiento, avanzado, admin)
-            const canReassign = currentUser && ['mantenimiento', 'advanced', 'admin'].includes(currentUser.level);
-            
-            container.innerHTML = incidents.map(inc => {
-                const date = new Date(inc.timestamp);
-                const dateStr = date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
-                const timeStr = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-                const status = statusLabels[inc.status] || statusLabels['pendiente'];
-                const isPending = inc.status === 'pendiente';
-                const isInProgress = inc.status === 'en_revision';
-                const canAct = isPending || isInProgress;
-                
-                // Mostrar asignación específica si existe
-                const asignadoInfo = inc.asignadoNombre 
-                    ? `<span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: 8px;">👷 ${inc.asignadoNombre}</span>` 
-                    : '';
-                
-                return `
-                    <div class="maint-incident-card ${status.class}">
-                        <div class="maint-card-header">
-                            <div>
-                                <span class="maint-card-room">🚪 Hab. ${inc.room}</span>
-                                <span style="margin-left: 10px; font-size: 0.9rem;">${faultLabels[inc.faultType] || inc.faultType}</span>
-                                ${asignadoInfo}
-                            </div>
-                            <span class="maint-card-status ${status.class}">${status.text}</span>
-                        </div>
-                        <div class="maint-card-body">
-                            <div>📝 ${inc.description || 'Sin descripción'}</div>
-                            <div style="display: flex; gap: 20px; color: var(--text-muted); font-size: 0.85rem;">
-                                <span>👤 ${inc.reporter}</span>
-                                <span>🕐 ${dateStr} ${timeStr}</span>
-                            </div>
-                            ${inc.notasMant ? `<div style="background: rgba(245, 158, 11, 0.1); padding: 8px 12px; border-radius: 6px; margin-top: 6px; font-size: 0.85rem;">📋 <strong>Notas:</strong> ${inc.notasMant}</div>` : ''}
-                            ${inc.motivoEscalado ? `<div style="background: rgba(239, 68, 68, 0.1); padding: 8px 12px; border-radius: 6px; margin-top: 6px; font-size: 0.85rem;">🔺 <strong>Motivo escalado:</strong> ${inc.motivoEscalado}</div>` : ''}
-                        </div>
-                        ${canAct ? `
-                        <div class="maint-card-actions">
-                            ${isPending ? `<button class="maint-btn maint-btn-review" onclick="markInReview(${inc.id})">👁️ Revisar</button>` : ''}
-                            ${canAct ? `<button class="maint-btn maint-btn-resolve" onclick="showResolveMaintenanceModal(${inc.id}, '${inc.room}')">✅ Resuelto</button>` : ''}
-                            ${canAct ? `<button class="maint-btn maint-btn-escalate" onclick="showEscalateModal(${inc.id}, '${inc.room}')">🔺 Escalar a Sistemas</button>` : ''}
-                            ${canReassign && canAct ? `<button class="maint-btn" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid #3b82f6;" onclick="showReassignModal(${inc.id}, '${inc.asignadoA}', '${inc.room}')">🔄 Reasignar</button>` : ''}
-                        </div>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
+            container.innerHTML = filtered.map(inc => renderWfCard(inc, section)).join('');
         }
         
-        // Marcar como "En Revisión"
-        async function markInReview(id) {
+        // ---- FILTROS TÉCNICO ----
+        function wfFilterTech(filter) {
+            wfTechFilter = filter;
+            document.querySelectorAll('[data-wftf]').forEach(b => b.classList.toggle('active', b.dataset.wftf === filter));
+            renderTechnicianView(wfData.incidents);
+        }
+        
+        // ---- VISTAS POR ROL ----
+        function renderTechnicianView(incidents) {
+            const myUsername = currentUser?.username?.toLowerCase();
+            let myTickets = incidents.filter(i => 
+                (i.tecnicoAsignado || '').toLowerCase() === myUsername ||
+                (i.asignadoNombre || '').toLowerCase() === myUsername
+            );
+            
+            if (wfTechFilter !== 'all') {
+                myTickets = myTickets.filter(i => i.status === wfTechFilter);
+            }
+            
+            const container = document.getElementById('wfIncidentsList');
+            if (myTickets.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);"><div style="font-size:2.5rem;margin-bottom:10px;">🎉</div><p>No tienes tickets asignados</p></div>';
+                return;
+            }
+            container.innerHTML = myTickets.map(inc => renderWfCard(inc, 'tech')).join('');
+        }
+        
+        function renderLegacyView(incidents) {
+            const container = document.getElementById('wfIncidentsList');
+            if (incidents.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);"><div style="font-size:2.5rem;margin-bottom:10px;">🎉</div><p>No hay incidencias pendientes</p></div>';
+                return;
+            }
+            container.innerHTML = incidents.map(inc => renderWfCard(inc, 'legacy')).join('');
+        }
+        
+        // ---- RENDER TARJETA DE TICKET ----
+        function renderWfCard(inc, context) {
+            const faultLabel = FAULT_LABELS[inc.faultType] || inc.faultType;
+            const date = new Date(inc.timestamp);
+            const dateStr = date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
+            const timeStr = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+            
+            const STATUS_MAP = {
+                'pendiente': { text: '📥 Pendiente', color: '#f59e0b' },
+                'asignado': { text: '👷 Asignado', color: '#06b6d4' },
+                'en_revision': { text: '👁️ En Revisión', color: '#3b82f6' },
+                'en_reparacion': { text: '🔨 En Reparación', color: '#8b5cf6' },
+                'reparado': { text: '✅ Reparado', color: '#10b981' },
+                'verificado': { text: '✔️ Verificado', color: '#14b8a6' },
+                'liberado': { text: '🏁 Liberado', color: '#22c55e' },
+                'no_reparable': { text: '🚫 No Reparable', color: '#ef4444' },
+                'esperando_recurso': { text: '⏳ Esperando Recurso', color: '#f97316' },
+                'escalado': { text: '🔺 Escalado', color: '#ef4444' },
+                'resuelto_mant': { text: '✅ Resuelto', color: '#10b981' },
+                'atendido': { text: '✅ Atendido', color: '#10b981' }
+            };
+            const st = STATUS_MAP[inc.status] || STATUS_MAP['pendiente'];
+            
+            // SLA timer
+            let slaHtml = '';
+            if (inc.fechaAceptacion && !['liberado','resuelto_mant','atendido','escalado'].includes(inc.status)) {
+                const slaStart = new Date(inc.fechaAceptacion).getTime();
+                const elapsed = Math.round((Date.now() - slaStart) / 60000);
+                const paused = Number(inc.slaPausadoMin) || 0;
+                const effective = elapsed - paused;
+                const objetivo = Number(wfData.config.sla_objetivo_min) || 60;
+                const pct = Math.min(100, Math.round((effective / objetivo) * 100));
+                const slaColor = pct < 50 ? '#10b981' : pct < 80 ? '#f59e0b' : '#ef4444';
+                slaHtml = `<div style="margin-top:8px;"><div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);"><span>SLA: ${effective} min</span><span style="color:${slaColor};">${pct}% del objetivo (${objetivo} min)</span></div><div style="background:var(--bg-input);border-radius:4px;height:6px;margin-top:4px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:${slaColor};border-radius:4px;transition:width 0.3s;"></div></div></div>`;
+            } else if (inc.slaMinutos) {
+                slaHtml = `<div style="margin-top:6px;font-size:0.8rem;color:var(--text-muted);">SLA final: <strong>${inc.slaMinutos} min</strong></div>`;
+            }
+            
+            // Actions based on context
+            let actions = '';
+            const id = inc.id;
+            const level = currentUser?.level;
+            
+            if (context === 'incoming' && (level === 'supervisorMtto' || level === 'gerenteMtto' || level === 'admin')) {
+                // Supervisor: assign to technician
+                const techOptions = wfData.technicians.map(t => `<option value="${t.username}" data-name="${t.displayName}">${t.displayName}</option>`).join('');
+                actions = `<div class="maint-card-actions" style="flex-wrap:wrap;">
+                    <select id="techSelect_${id}" style="padding:8px 12px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:0.85rem;flex:1;min-width:150px;">
+                        <option value="">Seleccionar técnico...</option>${techOptions}
+                    </select>
+                    <button class="maint-btn maint-btn-review" onclick="wfAssignToTech('${id}')">👷 Asignar</button>
+                    <button class="maint-btn maint-btn-escalate" onclick="showEscalateModal('${id}', '${inc.room}')">🔺 Escalar</button>
+                </div>`;
+            } else if (context === 'tech' || (context === 'assigned' && level !== 'tecnicoMtto')) {
+                if (inc.status === 'asignado') {
+                    actions = `<div class="maint-card-actions"><button class="maint-btn maint-btn-review" onclick="wfAcceptTicket('${id}')">✋ Aceptar Ticket</button></div>`;
+                } else if (inc.status === 'en_revision') {
+                    const delay = Number(wfData.config.delay_reparacion_min) || 10;
+                    const accepted = inc.fechaAceptacion ? new Date(inc.fechaAceptacion).getTime() : 0;
+                    const canRepair = accepted && (Date.now() - accepted) > (delay * 60000);
+                    actions = `<div class="maint-card-actions">
+                        <button class="maint-btn" style="background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid #8b5cf6;" onclick="wfStartRepair('${id}')" ${canRepair ? '' : 'disabled title="Espera ' + delay + ' min después de aceptar"'}>🔨 En Reparación</button>
+                        <button class="maint-btn maint-btn-escalate" onclick="showEscalateModal('${id}', '${inc.room}')">🔺 Escalar</button>
+                    </div>`;
+                    if (!canRepair && accepted) {
+                        const remaining = Math.ceil((delay * 60000 - (Date.now() - accepted)) / 60000);
+                        actions += `<div style="font-size:0.75rem;color:#f59e0b;margin-top:4px;">⏱️ Botón reparación se habilita en ~${remaining} min</div>`;
+                    }
+                } else if (inc.status === 'en_reparacion') {
+                    actions = `<div class="maint-card-actions">
+                        <button class="maint-btn maint-btn-resolve" onclick="wfCompleteRepair('${id}', '${inc.room}')">✅ Atendido</button>
+                        <button class="maint-btn" style="background:rgba(239,68,68,0.2);color:#f87171;border:1px solid #ef4444;" onclick="wfMarkUnrepairable('${id}', '${inc.room}')">🚫 No Reparable</button>
+                    </div>`;
+                }
+            } else if (context === 'verify') {
+                actions = `<div class="maint-card-actions">
+                    <button class="maint-btn maint-btn-resolve" onclick="wfVerifyRepair('${id}')">✅ Verificar Reparación</button>
+                    <button class="maint-btn" style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid #f59e0b;" onclick="wfRejectRepair('${id}')">↩️ Devolver</button>
+                </div>`;
+            } else if (context === 'approve') {
+                actions = `<div class="maint-card-actions">
+                    <button class="maint-btn" style="background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid #8b5cf6;font-weight:bold;" onclick="wfReleaseTicket('${id}')">🏁 Liberar Ticket</button>
+                </div>`;
+            } else if (context === 'waiting') {
+                actions = `<div class="maint-card-actions">
+                    <div style="font-size:0.85rem;color:#f97316;">🚫 ${inc.motivoNoReparable || 'Sin motivo'}</div>
+                    ${(level === 'supervisorMtto' || level === 'admin') ? `<button class="maint-btn maint-btn-review" onclick="wfResourceReceived('${id}')">📦 Recurso Recibido</button>` : ''}
+                </div>`;
+            } else if (context === 'legacy') {
+                const isPending = inc.status === 'pendiente';
+                const canAct = isPending || inc.status === 'en_revision';
+                if (canAct) {
+                    actions = `<div class="maint-card-actions">
+                        ${isPending ? `<button class="maint-btn maint-btn-review" onclick="wfLegacyReview('${id}')">👁️ Revisar</button>` : ''}
+                        <button class="maint-btn maint-btn-resolve" onclick="showResolveMaintenanceModal('${id}', '${inc.room}')">✅ Resuelto</button>
+                        <button class="maint-btn maint-btn-escalate" onclick="showEscalateModal('${id}', '${inc.room}')">🔺 Escalar</button>
+                    </div>`;
+                }
+            }
+            
+            // Assignee info
+            let assignInfo = '';
+            if (inc.tecnicoAsignado) assignInfo += `<span style="background:rgba(59,130,246,0.2);color:#3b82f6;padding:2px 8px;border-radius:10px;font-size:0.73rem;">🔧 ${inc.asignadoNombre || inc.tecnicoAsignado}</span>`;
+            if (inc.supervisorTurno) assignInfo += `<span style="background:rgba(20,184,166,0.2);color:#2dd4bf;padding:2px 8px;border-radius:10px;font-size:0.73rem;margin-left:4px;">👷 ${inc.supervisorTurno}</span>`;
+            
+            return `<div class="maint-incident-card" style="border-left:4px solid ${st.color};margin-bottom:12px;background:var(--bg-secondary);border-radius:12px;padding:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <span style="font-weight:bold;font-size:1.05rem;">🚪 Hab. ${inc.room}</span>
+                        <span style="margin-left:10px;font-size:0.9rem;">${faultLabel}</span>
+                        ${assignInfo}
+                    </div>
+                    <span style="background:${st.color}22;color:${st.color};padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:bold;white-space:nowrap;">${st.text}</span>
+                </div>
+                <div style="color:var(--text-secondary);font-size:0.9rem;">📝 ${inc.description || 'Sin descripción'}</div>
+                <div style="display:flex;gap:15px;color:var(--text-muted);font-size:0.82rem;margin-top:6px;">
+                    <span>👤 ${inc.reporter}</span><span>🕐 ${dateStr} ${timeStr}</span>
+                </div>
+                ${inc.notaReparacion ? `<div style="background:rgba(16,185,129,0.1);padding:8px 12px;border-radius:6px;margin-top:8px;font-size:0.85rem;">🔧 <strong>Nota técnica:</strong> ${inc.notaReparacion}</div>` : ''}
+                ${inc.notasMant ? `<div style="background:rgba(245,158,11,0.1);padding:8px 12px;border-radius:6px;margin-top:6px;font-size:0.85rem;">📋 ${inc.notasMant}</div>` : ''}
+                ${inc.motivoEscalado ? `<div style="background:rgba(239,68,68,0.1);padding:8px 12px;border-radius:6px;margin-top:6px;font-size:0.85rem;">🔺 ${inc.motivoEscalado}</div>` : ''}
+                ${slaHtml}
+                ${actions}
+            </div>`;
+        }
+        
+        // ---- INSTRUCCIONES POR ROL ----
+        function renderWfInstructions(level) {
+            const el = document.getElementById('wfInstructions');
+            const instructions = {
+                'supervisorMtto': '<h4 style="margin:0 0 12px;">📌 Flujo del Supervisor</h4><ol style="margin:0;padding-left:20px;color:var(--text-secondary);line-height:2;"><li><strong>📥 Entrantes:</strong> Tickets nuevos — asigna a un técnico</li><li><strong>👷 Asignados:</strong> Monitorea el progreso de técnicos</li><li><strong>✅ Verificar:</strong> Confirma que la reparación fue correcta (SLA finaliza)</li><li><strong>⏳ En Espera:</strong> Cuando llegue la refacción/proveedor, marca recurso recibido</li></ol>',
+                'tecnicoMtto': '<h4 style="margin:0 0 12px;">📌 Flujo del Técnico</h4><ol style="margin:0;padding-left:20px;color:var(--text-secondary);line-height:2;"><li><strong>✋ Aceptar:</strong> Acepta el ticket (inicia conteo SLA)</li><li><strong>👁️ Revisión:</strong> Evalúa el problema en sitio</li><li><strong>🔨 Reparar:</strong> Se habilita después de la revisión</li><li><strong>✅ Atendido:</strong> Marca como reparado (pasa a verificación del supervisor)</li><li><strong>🚫 No Reparable:</strong> Si falta refacción o proveedor externo (pausa SLA)</li></ol>',
+                'gerenteMtto': '<h4 style="margin:0 0 12px;">📌 Flujo del Gerente</h4><ol style="margin:0;padding-left:20px;color:var(--text-secondary);line-height:2;"><li><strong>🏗️ Liberar:</strong> Revisa tickets verificados por el supervisor y da liberación final</li><li><strong>📊 Reportes Mtto:</strong> Consulta el dashboard y estadísticas de SLA</li></ol>',
+            };
+            el.innerHTML = instructions[level] || '<h4 style="margin:0 0 12px;">📌 Instrucciones</h4><ul style="margin:0;padding-left:20px;color:var(--text-secondary);line-height:1.8;"><li><strong>👁️ Revisar:</strong> Marca en revisión</li><li><strong>✅ Resuelto:</strong> Marca como resuelto</li><li><strong>🔺 Escalar:</strong> Escala a Sistemas</li></ul>';
+        }
+        
+        // ---- ACCIONES DEL WORKFLOW ----
+        async function wfTransition(id, newStatus, notes, extra) {
             try {
                 const params = new URLSearchParams({
-                    action: 'updateIncidentStatus',
-                    id: id,
-                    status: 'en_revision',
-                    updatedBy: currentUser?.displayName || currentUser?.username || 'Mantenimiento'
+                    action: 'workflowTransition',
+                    id: String(id),
+                    newStatus: newStatus,
+                    actor: currentUser?.displayName || currentUser?.username || 'Sistema',
+                    notes: notes || '',
+                    extra: JSON.stringify(extra || {})
                 });
-                
                 const response = await fetch(`${API_URL}?${params.toString()}`);
                 const result = await response.json();
-                
                 if (result.success) {
-                    showToast('Incidencia marcada en revisión', 'success');
-                    loadMaintenanceIncidents();
+                    showToast(result.message || 'Actualizado', 'success');
+                    loadWorkflowPanel();
                 } else {
-                    showToast(result.error || 'Error al actualizar', 'error');
+                    showToast(result.error || 'Error', 'error');
                 }
+                return result;
             } catch (error) {
                 showToast('Error de conexión', 'error');
+                return { success: false };
             }
+        }
+        
+        // Supervisor asigna a técnico
+        function wfAssignToTech(id) {
+            const select = document.getElementById('techSelect_' + id);
+            if (!select || !select.value) { showToast('Selecciona un técnico', 'warning'); return; }
+            const tecnico = select.value;
+            const nombre = select.options[select.selectedIndex].dataset.name || tecnico;
+            wfTransition(id, 'asignado', '', { 
+                tecnico: tecnico, tecnicoNombre: nombre,
+                supervisor: currentUser?.displayName || currentUser?.username 
+            });
+        }
+        
+        // Técnico acepta ticket
+        function wfAcceptTicket(id) { wfTransition(id, 'en_revision'); }
+        
+        // Técnico inicia reparación
+        function wfStartRepair(id) { wfTransition(id, 'en_reparacion'); }
+        
+        // Técnico completa reparación
+        function wfCompleteRepair(id, room) {
+            const note = prompt('Describe brevemente qué se reparó (obligatorio):');
+            if (!note || !note.trim()) { showToast('Describe la reparación realizada', 'warning'); return; }
+            wfTransition(id, 'reparado', note.trim());
+        }
+        
+        // Técnico marca no reparable
+        function wfMarkUnrepairable(id, room) {
+            const motivo = prompt('Motivo:\n1 = Falta Refacción\n2 = Proveedor Externo\n\nEscribe 1 o 2:');
+            if (!motivo) return;
+            const motivoText = motivo.trim() === '1' ? 'Falta Refacción' : motivo.trim() === '2' ? 'Proveedor Externo' : motivo.trim();
+            const detalle = prompt('Detalla qué se necesita:');
+            if (!detalle || !detalle.trim()) { showToast('Describe qué recurso se necesita', 'warning'); return; }
+            wfTransition(id, 'no_reparable', detalle.trim(), { motivo: motivoText });
+        }
+        
+        // Supervisor verifica reparación
+        function wfVerifyRepair(id) { wfTransition(id, 'verificado', 'Verificado por supervisor'); }
+        
+        // Supervisor devuelve ticket
+        function wfRejectRepair(id) {
+            const nota = prompt('¿Por qué se devuelve al técnico?');
+            if (!nota) return;
+            wfTransition(id, 'en_reparacion', 'Devuelto: ' + nota.trim());
+        }
+        
+        // Gerente libera ticket
+        function wfReleaseTicket(id) {
+            if (confirm('¿Confirmas que la reparación está completa y liberas el ticket?')) {
+                wfTransition(id, 'liberado', 'Liberado por gerente');
+            }
+        }
+        
+        // Supervisor marca recurso recibido
+        function wfResourceReceived(id) {
+            const detalle = prompt('¿Qué recurso se recibió?');
+            if (!detalle) return;
+            wfTransition(id, 'asignado', 'Recurso recibido: ' + detalle.trim());
+        }
+        
+        // Legacy: review (backwards compat)
+        async function wfLegacyReview(id) { wfTransition(id, 'en_revision'); }
+        async function markInReview(id) { wfTransition(id, 'en_revision'); }
+        
+        function filterMaintenanceIncidents(filter) {
+            const container = document.getElementById('wfIncidentsList');
+            if (!container) return;
+            let filtered = wfData.incidents || allMaintenanceIncidents;
+            if (filter !== 'all') filtered = filtered.filter(i => i.status === filter);
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">📋 Sin incidencias</div>';
+                return;
+            }
+            container.innerHTML = filtered.map(i => renderWfCard(i, 'legacy')).join('');
         }
         
         // Modal para resolver incidencia (mantenimiento)
@@ -11951,59 +12219,32 @@ ${sisInfo}
             const modal = document.createElement('div');
             modal.className = 'modal-overlay';
             modal.id = 'resolveMaintenanceModal';
-            modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 20px;';
+            modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:10000;align-items:center;justify-content:center;padding:20px;';
             modal.innerHTML = `
-                <div style="background: var(--bg-secondary); border-radius: 12px; max-width: 450px; width: 100%;">
-                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), transparent); border-radius: 12px 12px 0 0;">
-                        <h3 style="margin: 0; color: #10b981;">✅ Marcar como Resuelto</h3>
-                        <p style="margin: 8px 0 0; color: var(--text-muted); font-size: 0.9rem;">Habitación ${room}</p>
+                <div style="background:var(--bg-secondary);border-radius:12px;max-width:450px;width:100%;">
+                    <div style="padding:20px;border-bottom:1px solid var(--border-color);background:linear-gradient(135deg,rgba(16,185,129,0.1),transparent);border-radius:12px 12px 0 0;">
+                        <h3 style="margin:0;color:#10b981;">✅ Resolver Incidencia</h3>
+                        <p style="margin:8px 0 0;color:var(--text-muted);font-size:0.9rem;">Habitación ${room}</p>
                     </div>
-                    <div style="padding: 20px;">
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">¿Qué se hizo para resolver? (opcional)</label>
-                        <textarea id="maintResolveNotes" placeholder="Ej: Se reconectó el cable del teléfono, se reinició el router, etc." style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; min-height: 100px; resize: vertical;"></textarea>
+                    <div style="padding:20px;">
+                        <label style="display:block;margin-bottom:8px;color:var(--text-secondary);">Notas de la solución (opcional)</label>
+                        <textarea id="resolveMaintenanceNotes" placeholder="Describe lo que se hizo..." style="width:100%;padding:12px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);min-height:80px;resize:vertical;"></textarea>
                     </div>
-                    <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end;">
-                        <button onclick="document.getElementById('resolveMaintenanceModal').remove()" style="padding: 10px 20px; background: var(--bg-input); border: none; border-radius: 8px; color: var(--text-primary); cursor: pointer;">Cancelar</button>
-                        <button onclick="confirmResolveMaintenance(${id})" style="padding: 10px 20px; background: #10b981; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">✅ Confirmar Resuelto</button>
+                    <div style="padding:15px 20px;border-top:1px solid var(--border-color);display:flex;gap:10px;justify-content:flex-end;">
+                        <button onclick="document.getElementById('resolveMaintenanceModal').remove()" style="padding:10px 20px;background:var(--bg-input);border:none;border-radius:8px;color:var(--text-primary);cursor:pointer;">Cancelar</button>
+                        <button onclick="confirmResolveMaintenanceWf(${id})" style="padding:10px 20px;background:#10b981;border:none;border-radius:8px;color:white;cursor:pointer;font-weight:bold;">✅ Confirmar</button>
                     </div>
-                </div>
-            `;
-            
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.remove();
-            });
-            
+                </div>`;
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
             document.body.appendChild(modal);
         }
         
-        async function confirmResolveMaintenance(id) {
-            const notes = document.getElementById('maintResolveNotes')?.value.trim() || '';
-            
-            try {
-                const params = new URLSearchParams({
-                    action: 'updateIncidentStatus',
-                    id: id,
-                    status: 'resuelto_mant',
-                    notasMant: notes,
-                    updatedBy: currentUser?.displayName || currentUser?.username || 'Mantenimiento'
-                });
-                
-                const response = await fetch(`${API_URL}?${params.toString()}`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('resolveMaintenanceModal')?.remove();
-                    showToast('¡Incidencia resuelta! Buen trabajo 👏', 'success');
-                    loadMaintenanceIncidents();
-                } else {
-                    showToast(result.error || 'Error al actualizar', 'error');
-                }
-            } catch (error) {
-                showToast('Error de conexión', 'error');
-            }
+        async function confirmResolveMaintenanceWf(id) {
+            const notes = document.getElementById('resolveMaintenanceNotes')?.value.trim() || '';
+            document.getElementById('resolveMaintenanceModal')?.remove();
+            await wfTransition(id, 'resuelto_mant', notes || 'Resuelto por mantenimiento');
         }
         
-        // Modal para escalar a sistemas
         function showEscalateModal(id, room) {
             const modal = document.createElement('div');
             modal.className = 'modal-overlay';
@@ -12098,7 +12339,7 @@ ${sisInfo}
                 showToast('Error de conexión', 'error');
             }
         }
-        
+
         // ============================================
         // PERMISOS Y CONTROL DE ACCESO
         // ============================================
