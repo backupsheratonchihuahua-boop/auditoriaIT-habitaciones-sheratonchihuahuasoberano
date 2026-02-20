@@ -10006,48 +10006,63 @@ ${sisInfo}
         // ============================================
         
         async function saLoadWorkflowConfig() {
+            const container = document.getElementById('wfCfgSupervisors');
+            if (!container) return; // El elemento no existe (no es admin)
+            
+            // Defaults que siempre se muestran
+            const defaultSupervisores = {
+                matutino: { username: 'jlyanez', nombre: 'Jose Luis Yanez', inicio: '06:00', fin: '14:00' },
+                vespertino: { username: 'wmiramontes', nombre: 'Wethzel Miramontes', inicio: '14:00', fin: '22:00' },
+                nocturno: { username: 'jvaltierra', nombre: 'Javier Valtierra', inicio: '22:00', fin: '06:00' },
+                nocturno_respaldo: { username: 'evaltierra', nombre: 'Emmit Valtierra', inicio: '22:00', fin: '06:00' }
+            };
+            
+            let cfgDelay = 10;
+            let cfgSla = 60;
+            let supervisores = defaultSupervisores;
+            
             try {
                 const response = await fetch(`${API_URL}?action=getWorkflowConfig`);
                 const result = await response.json();
                 
                 if (result.success && result.config) {
                     const cfg = result.config;
-                    
-                    // Tiempos
-                    const delayInput = document.getElementById('wfCfgDelay');
-                    const slaInput = document.getElementById('wfCfgSla');
-                    if (delayInput) delayInput.value = cfg.delay_reparacion_min || 10;
-                    if (slaInput) slaInput.value = cfg.sla_objetivo_min || 60;
-                    
-                    // Supervisores
-                    const container = document.getElementById('wfCfgSupervisors');
-                    if (container && cfg.supervisores_turno) {
-                        const turnos = cfg.supervisores_turno;
-                        const turnoLabels = {
-                            'matutino': '☀️ Matutino',
-                            'vespertino': '🌅 Vespertino',
-                            'nocturno': '🌙 Nocturno',
-                            'nocturno_respaldo': '🌙 Nocturno (Respaldo)'
-                        };
-                        
-                        container.innerHTML = Object.keys(turnos).map(key => {
-                            const t = turnos[key];
-                            return `
-                                <div style="display:grid;grid-template-columns:140px 1fr 1fr 80px 80px;gap:8px;align-items:center;background:var(--bg-input);padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);" data-turno="${key}">
-                                    <span style="font-size:0.8rem;color:var(--text-secondary);font-weight:bold;">${turnoLabels[key] || key}</span>
-                                    <input type="text" class="wfcfg-sup-user" value="${t.username || ''}" placeholder="Username" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;">
-                                    <input type="text" class="wfcfg-sup-name" value="${t.nombre || ''}" placeholder="Nombre completo" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;">
-                                    <input type="text" class="wfcfg-sup-inicio" value="${t.inicio || ''}" placeholder="HH:MM" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;text-align:center;">
-                                    <input type="text" class="wfcfg-sup-fin" value="${t.fin || ''}" placeholder="HH:MM" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;text-align:center;">
-                                </div>`;
-                        }).join('');
+                    cfgDelay = cfg.delay_reparacion_min || 10;
+                    cfgSla = cfg.sla_objetivo_min || 60;
+                    if (cfg.supervisores_turno && typeof cfg.supervisores_turno === 'object') {
+                        supervisores = cfg.supervisores_turno;
                     }
-                    
-                    showToast('Configuración cargada', 'success');
                 }
             } catch (error) {
-                showToast('Error al cargar configuración', 'error');
+                console.warn('No se pudo cargar WorkflowConfig, usando defaults:', error);
             }
+            
+            // Siempre renderizar tiempos
+            const delayInput = document.getElementById('wfCfgDelay');
+            const slaInput = document.getElementById('wfCfgSla');
+            if (delayInput) delayInput.value = cfgDelay;
+            if (slaInput) slaInput.value = cfgSla;
+            
+            // Siempre renderizar tabla de supervisores
+            const turnoLabels = {
+                'matutino': '☀️ Matutino',
+                'vespertino': '🌅 Vespertino',
+                'nocturno': '🌙 Nocturno',
+                'nocturno_respaldo': '🌙 Respaldo'
+            };
+            
+            container.innerHTML = '<div style="display:grid;grid-template-columns:120px 1fr 1fr 70px 70px;gap:6px;padding:4px 12px;margin-bottom:4px;"><span style="font-size:0.7rem;color:var(--text-muted);">Turno</span><span style="font-size:0.7rem;color:var(--text-muted);">Usuario</span><span style="font-size:0.7rem;color:var(--text-muted);">Nombre</span><span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Inicio</span><span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Fin</span></div>' +
+                Object.keys(supervisores).map(key => {
+                    const t = supervisores[key];
+                    return `
+                        <div style="display:grid;grid-template-columns:120px 1fr 1fr 70px 70px;gap:6px;align-items:center;background:var(--bg-input);padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);" data-turno="${key}">
+                            <span style="font-size:0.8rem;color:var(--text-secondary);font-weight:bold;">${turnoLabels[key] || key}</span>
+                            <input type="text" class="wfcfg-sup-user" value="${t.username || ''}" placeholder="username" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;">
+                            <input type="text" class="wfcfg-sup-name" value="${t.nombre || ''}" placeholder="Nombre" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;">
+                            <input type="text" class="wfcfg-sup-inicio" value="${t.inicio || ''}" placeholder="HH:MM" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;text-align:center;">
+                            <input type="text" class="wfcfg-sup-fin" value="${t.fin || ''}" placeholder="HH:MM" style="padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.85rem;text-align:center;">
+                        </div>`;
+                }).join('');
         }
         
         async function saSaveWorkflowConfig() {
