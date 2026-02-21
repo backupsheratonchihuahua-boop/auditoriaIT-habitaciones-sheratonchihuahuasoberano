@@ -10020,16 +10020,22 @@ ${sisInfo}
             if (!container) return;
             
             const defaultSupervisores = {
-                matutino: { username: 'jlyanez', nombre: 'Jose Luis Yanez', inicio: '06:00', fin: '14:00' },
-                vespertino: { username: 'wmiramontes', nombre: 'Wethzel Miramontes', inicio: '14:00', fin: '22:00' },
-                nocturno: { username: 'jvaltierra', nombre: 'Javier Valtierra', inicio: '22:00', fin: '06:00' },
-                nocturno_respaldo: { username: 'evaltierra', nombre: 'Emmit Valtierra', inicio: '22:00', fin: '06:00' }
+                matutino: { username: 'jlyanez', nombre: 'Jose Luis Yanez', inicio: '06:00', fin: '14:00', dias: [1,1,1,1,1,1,1] },
+                vespertino: { username: 'wmiramontes', nombre: 'Wethzel Miramontes', inicio: '14:00', fin: '22:00', dias: [1,1,1,1,1,1,1] },
+                nocturno: { username: 'jvaltierra', nombre: 'Javier Valtierra', inicio: '22:00', fin: '06:00', dias: [1,1,1,1,1,1,1] },
+                nocturno_respaldo: { username: 'evaltierra', nombre: 'Emmit Valtierra', inicio: '22:00', fin: '06:00', dias: [1,1,1,1,1,1,1] }
             };
             
-            // Renderizar INMEDIATAMENTE con defaults
-            renderWfCfgTable(container, defaultSupervisores);
+            // Cargar staff list
+            var saStaffList = [];
+            try {
+                var staffRes = await fetch(`${API_URL}?action=getMaintenanceStaff`);
+                var staffData = await staffRes.json();
+                if (staffData.success) saStaffList = staffData.staff || [];
+            } catch(e) {}
             
-            // Luego intentar cargar del API
+            renderWfCfgTable(container, defaultSupervisores, saStaffList);
+            
             try {
                 const response = await fetch(`${API_URL}?action=getWorkflowConfig`);
                 const result = await response.json();
@@ -10044,26 +10050,25 @@ ${sisInfo}
                     if (slaInput) slaInput.value = cfg.sla_objetivo_min || 60;
                     if (slaAssignInput) slaAssignInput.value = cfg.sla_asignacion_min || 60;
                     
-                    // Parsear supervisores (puede venir como string o como objeto)
                     let supervisores = null;
                     if (cfg.supervisores_turno) {
                         if (typeof cfg.supervisores_turno === 'string') {
-                            try { supervisores = JSON.parse(cfg.supervisores_turno); } catch(e) { console.warn('Error parsing supervisores:', e); }
+                            try { supervisores = JSON.parse(cfg.supervisores_turno); } catch(e) {}
                         } else if (typeof cfg.supervisores_turno === 'object') {
                             supervisores = cfg.supervisores_turno;
                         }
                     }
                     
                     if (supervisores && Object.keys(supervisores).length > 0) {
-                        renderWfCfgTable(container, supervisores);
+                        renderWfCfgTable(container, supervisores, saStaffList);
                     }
                 }
             } catch (error) {
-                console.warn('WorkflowConfig API error, usando defaults:', error);
+                console.warn('WorkflowConfig API error:', error);
             }
         }
         
-        function renderWfCfgTable(container, supervisores) {
+        function renderWfCfgTable(container, supervisores, staffList) {
             var turnoLabels = {
                 'matutino': '☀️ Matutino',
                 'vespertino': '🌅 Vespertino',
@@ -10071,9 +10076,23 @@ ${sisInfo}
                 'nocturno_respaldo': '🌙 Respaldo'
             };
             var DIAS = ['L','M','Mi','J','V','S','D'];
+            staffList = staffList || [];
+            
+            function buildSelect(turnoKey, selectedUser) {
+                var s = '<select class="wfcfg-sup-user" onchange="wfCfgStaffChanged(this)" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;width:100%;">';
+                s += '<option value="">-- Seleccionar --</option>';
+                for (var i = 0; i < staffList.length; i++) {
+                    var st = staffList[i];
+                    var sel = (st.username === selectedUser) ? ' selected' : '';
+                    var roleTag = st.role === 'supervisorMtto' ? ' [Sup]' : st.role === 'gerenteMtto' ? ' [Gte]' : st.role === 'tecnicoMtto' ? ' [Téc]' : ' [Mtt]';
+                    s += '<option value="' + st.username + '" data-name="' + st.displayName + '"' + sel + '>' + st.displayName + roleTag + '</option>';
+                }
+                s += '</select>';
+                return s;
+            }
             
             container.innerHTML = 
-                '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px 1fr;gap:6px;padding:4px 8px;margin-bottom:4px;">' +
+                '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px auto;gap:6px;padding:4px 8px;margin-bottom:4px;">' +
                     '<span style="font-size:0.7rem;color:var(--text-muted);">Turno</span>' +
                     '<span style="font-size:0.7rem;color:var(--text-muted);">Usuario</span>' +
                     '<span style="font-size:0.7rem;color:var(--text-muted);">Nombre</span>' +
@@ -10094,15 +10113,22 @@ ${sisInfo}
                             '<span style="font-size:0.6rem;color:var(--text-muted);">' + DIAS[d] + '</span></label>';
                     }
                     
-                    return '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px 1fr;gap:6px;align-items:center;background:var(--bg-input);padding:8px;border-radius:8px;border:1px solid var(--border-color);margin-bottom:4px;" data-turno="' + key + '">' +
+                    return '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px auto;gap:6px;align-items:center;background:var(--bg-input);padding:8px;border-radius:8px;border:1px solid var(--border-color);margin-bottom:4px;" data-turno="' + key + '">' +
                         '<span style="font-size:0.78rem;color:var(--text-secondary);font-weight:bold;">' + label + '</span>' +
-                        '<input type="text" class="wfcfg-sup-user" value="' + (t.username || '') + '" placeholder="username" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;">' +
-                        '<input type="text" class="wfcfg-sup-name" value="' + (t.nombre || '') + '" placeholder="Nombre" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;">' +
+                        buildSelect(key, t.username || '') +
+                        '<span class="wfcfg-sup-name" style="padding:5px 6px;font-size:0.82rem;color:var(--text-muted);">' + (t.nombre || '—') + '</span>' +
                         '<input type="text" class="wfcfg-sup-inicio" value="' + (t.inicio || '') + '" placeholder="HH:MM" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;text-align:center;">' +
                         '<input type="text" class="wfcfg-sup-fin" value="' + (t.fin || '') + '" placeholder="HH:MM" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;text-align:center;">' +
                         '<div style="display:flex;align-items:center;gap:1px;">' + diasHtml + '</div>' +
                     '</div>';
                 }).join('');
+        }
+        
+        function wfCfgStaffChanged(selectEl) {
+            var opt = selectEl.options[selectEl.selectedIndex];
+            var name = opt ? opt.dataset.name || '' : '';
+            var nameSpan = selectEl.closest('[data-turno]').querySelector('.wfcfg-sup-name');
+            if (nameSpan) nameSpan.textContent = name || '—';
         }
         
         async function saSaveWorkflowConfig() {
@@ -10124,7 +10150,7 @@ ${sisInfo}
                 
                 supervisores[turno] = {
                     username: row.querySelector('.wfcfg-sup-user')?.value.trim() || '',
-                    nombre: row.querySelector('.wfcfg-sup-name')?.value.trim() || '',
+                    nombre: (function(){ var sel = row.querySelector('.wfcfg-sup-user'); return sel ? (sel.options[sel.selectedIndex]?.dataset?.name || '') : ''; })(),
                     inicio: row.querySelector('.wfcfg-sup-inicio')?.value.trim() || '',
                     fin: row.querySelector('.wfcfg-sup-fin')?.value.trim() || '',
                     dias: dias
@@ -12355,6 +12381,27 @@ ${sisInfo}
                 nocturno_respaldo: { username: 'evaltierra', nombre: 'Emmit Valtierra', inicio: '22:00', fin: '06:00', dias: [1,1,1,1,1,1,1] }
             };
             
+            // Cargar lista de personal mtto
+            var staffList = [];
+            try {
+                var staffRes = await fetch(API_URL + '?action=getMaintenanceStaff');
+                var staffData = await staffRes.json();
+                if (staffData.success) staffList = staffData.staff || [];
+            } catch(e) {}
+            
+            function buildStaffSelect(turnoKey, selectedUsername) {
+                var s = '<select class="wfil-user" data-turno="' + turnoKey + '" onchange="wfInlineStaffChanged(this)" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;width:100%;">';
+                s += '<option value="">-- Seleccionar --</option>';
+                for (var i = 0; i < staffList.length; i++) {
+                    var st = staffList[i];
+                    var sel = (st.username === selectedUsername) ? ' selected' : '';
+                    var roleTag = st.role === 'supervisorMtto' ? ' [Sup]' : st.role === 'gerenteMtto' ? ' [Gte]' : st.role === 'tecnicoMtto' ? ' [Téc]' : ' [Mtt]';
+                    s += '<option value="' + st.username + '" data-name="' + st.displayName + '"' + sel + '>' + st.displayName + roleTag + '</option>';
+                }
+                s += '</select>';
+                return s;
+            }
+            
             function buildHtml(cfg, supervisores) {
                 var h = '<div style="background:var(--bg-secondary);border:2px solid rgba(245,158,11,0.4);border-radius:12px;padding:20px;">';
                 h += '<h3 style="margin:0 0 16px;color:#f59e0b;">⚙️ Configuración de Workflow</h3>';
@@ -12365,7 +12412,7 @@ ${sisInfo}
                 h += '</div>';
                 
                 h += '<h4 style="margin:0 0 10px;color:var(--text-secondary);">👷 Supervisores por Turno</h4>';
-                h += '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px 1fr;gap:6px;padding:4px 8px;margin-bottom:4px;"><span style="font-size:0.7rem;color:var(--text-muted);">Turno</span><span style="font-size:0.7rem;color:var(--text-muted);">Usuario</span><span style="font-size:0.7rem;color:var(--text-muted);">Nombre</span><span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Inicio</span><span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Fin</span><span style="font-size:0.7rem;color:var(--text-muted);">Días</span></div>';
+                h += '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px auto;gap:6px;padding:4px 8px;margin-bottom:4px;"><span style="font-size:0.7rem;color:var(--text-muted);">Turno</span><span style="font-size:0.7rem;color:var(--text-muted);">Usuario</span><span style="font-size:0.7rem;color:var(--text-muted);">Nombre</span><span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Inicio</span><span style="font-size:0.7rem;color:var(--text-muted);text-align:center;">Fin</span><span style="font-size:0.7rem;color:var(--text-muted);">Días</span></div>';
                 
                 Object.keys(supervisores).forEach(function(key) {
                     var t = supervisores[key] || {};
@@ -12375,10 +12422,10 @@ ${sisInfo}
                     for (var d = 0; d < 7; d++) {
                         diasHtml += '<label style="display:inline-flex;flex-direction:column;align-items:center;cursor:pointer;margin-right:2px;" title="' + DIAS_FULL[d] + '"><input type="checkbox" class="wfil-dia-' + key + '" data-day="' + d + '" ' + (dias[d] ? 'checked' : '') + ' style="margin:0;accent-color:#f59e0b;width:14px;height:14px;"><span style="font-size:0.6rem;color:var(--text-muted);">' + DIAS[d] + '</span></label>';
                     }
-                    h += '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px 1fr;gap:6px;align-items:center;background:var(--bg-input);padding:8px;border-radius:8px;border:1px solid var(--border-color);margin-bottom:6px;" data-ilturno="' + key + '">' +
+                    h += '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px 60px auto;gap:6px;align-items:center;background:var(--bg-input);padding:8px;border-radius:8px;border:1px solid var(--border-color);margin-bottom:6px;" data-ilturno="' + key + '">' +
                         '<span style="font-size:0.78rem;color:var(--text-secondary);font-weight:bold;">' + label + '</span>' +
-                        '<input type="text" class="wfil-user" value="' + (t.username || '') + '" placeholder="username" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;">' +
-                        '<input type="text" class="wfil-name" value="' + (t.nombre || '') + '" placeholder="Nombre" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;">' +
+                        buildStaffSelect(key, t.username || '') +
+                        '<span class="wfil-name" style="padding:5px 6px;font-size:0.82rem;color:var(--text-muted);">' + (t.nombre || '—') + '</span>' +
                         '<input type="text" class="wfil-inicio" value="' + (t.inicio || '') + '" placeholder="HH:MM" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;text-align:center;">' +
                         '<input type="text" class="wfil-fin" value="' + (t.fin || '') + '" placeholder="HH:MM" style="padding:5px 6px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.82rem;text-align:center;">' +
                         '<div style="display:flex;align-items:center;gap:1px;">' + diasHtml + '</div></div>';
@@ -12391,10 +12438,10 @@ ${sisInfo}
                 return h;
             }
             
-            // 1) Render INMEDIATAMENTE con defaults
+            // 1) Render inmediato con defaults
             container.innerHTML = buildHtml({}, defaultSup);
             
-            // 2) Luego cargar del API y re-render si hay datos
+            // 2) Cargar del API y re-render
             try {
                 var res = await fetch(API_URL + '?action=getWorkflowConfig');
                 var r = await res.json();
@@ -12415,6 +12462,13 @@ ${sisInfo}
             }
         }
         
+        function wfInlineStaffChanged(selectEl) {
+            var opt = selectEl.options[selectEl.selectedIndex];
+            var name = opt ? opt.dataset.name || '' : '';
+            var nameSpan = selectEl.closest('[data-ilturno]').querySelector('.wfil-name');
+            if (nameSpan) nameSpan.textContent = name || '—';
+        }
+        
         async function saveWfInlineConfig() {
             var delay = document.getElementById('wfInlineDelay')?.value || '10';
             var sla = document.getElementById('wfInlineSla')?.value || '60';
@@ -12432,7 +12486,7 @@ ${sisInfo}
                 
                 supervisores[turno] = {
                     username: row.querySelector('.wfil-user')?.value.trim() || '',
-                    nombre: row.querySelector('.wfil-name')?.value.trim() || '',
+                    nombre: (function(){ var sel = row.querySelector('.wfil-user'); return sel ? (sel.options[sel.selectedIndex]?.dataset?.name || '') : ''; })(),
                     inicio: row.querySelector('.wfil-inicio')?.value.trim() || '',
                     fin: row.querySelector('.wfil-fin')?.value.trim() || '',
                     dias: dias
