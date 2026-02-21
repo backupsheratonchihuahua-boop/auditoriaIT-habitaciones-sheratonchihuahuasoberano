@@ -3127,6 +3127,9 @@
                 </div>
                 <div class="login-error" id="loginError">Usuario o contraseña incorrectos</div>
                 <button type="submit" class="login-btn" id="loginBtn">Iniciar Sesión</button>
+                <div style="text-align:center;margin-top:12px;">
+                    <a href="#" onclick="event.preventDefault();clearAppCache();" style="font-size:0.75rem;color:var(--text-muted);text-decoration:none;">🔄 ¿Problemas al cambiar perfil? Limpiar caché</a>
+                </div>
             </form>
         </div>
     </div>
@@ -3415,6 +3418,9 @@
                     </div>
                 </div>
                 <button class="logout-btn" onclick="handleLogout()">Cerrar Sesión</button>
+                <button onclick="clearAppCache()" title="Limpiar caché y recargar" style="background:none;border:1px solid var(--border-color);color:var(--text-muted);padding:6px 10px;border-radius:8px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;gap:4px;">
+                    🗑️ <span style="font-size:0.7rem;">Caché</span>
+                </button>
                 <span id="activeUsers" style="font-size: 0.8rem; color: var(--text-muted);"></span>
                 <button class="sync-btn" onclick="syncData()" id="syncBtn">
                     <span class="sync-icon">🔄</span> Sincronizar
@@ -5395,10 +5401,50 @@
             if (confirm('¿Deseas cerrar sesión?')) {
                 localStorage.removeItem('audit_session');
                 currentUser = null;
+                
+                // Limpiar todas las variables en memoria
+                allMaintenanceIncidents = [];
+                wfData = { incidents: [], config: {}, currentSupervisor: {}, technicians: [] };
+                
+                // Limpiar caches del Service Worker
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        names.forEach(function(name) { caches.delete(name); });
+                    });
+                }
+                
+                // Limpiar inputs
                 document.getElementById('loginUsername').value = '';
                 document.getElementById('loginPassword').value = '';
+                
+                // Forzar recarga limpia
                 showLogin();
+                window.location.reload(true);
             }
+        }
+        
+        async function clearAppCache() {
+            var msg = '🔄 Limpiando caché...';
+            showToast(msg, 'info');
+            
+            // 1. Limpiar Service Worker caches
+            if ('caches' in window) {
+                var names = await caches.keys();
+                await Promise.all(names.map(function(n) { return caches.delete(n); }));
+            }
+            
+            // 2. Desregistrar Service Worker
+            if ('serviceWorker' in navigator) {
+                var registrations = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(registrations.map(function(r) { return r.unregister(); }));
+            }
+            
+            // 3. Limpiar session pero NO credenciales guardadas
+            localStorage.removeItem('audit_session');
+            
+            // 4. Recargar sin caché
+            showToast('✅ Caché limpiado — Recargando...', 'success');
+            setTimeout(function() { window.location.reload(true); }, 500);
         }
         
         // Verificar permiso antes de acciones
