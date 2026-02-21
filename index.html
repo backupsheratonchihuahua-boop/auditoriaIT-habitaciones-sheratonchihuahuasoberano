@@ -4090,6 +4090,36 @@
                     <div class="legend-item"><div class="legend-dot issues"></div> Con Incidencias</div>
                 </div>
             </div>
+            
+            <!-- MÓDULO BATERÍAS RFID -->
+            <div id="batteryRfidSection" class="dept-dashboard" style="margin-top: 16px;">
+                <div style="background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(139,92,246,0.05)); border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; padding: 16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleBatteryPanel()">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:1.5rem;">🔋</span>
+                            <div>
+                                <h3 style="margin:0;color:#a78bfa;">Baterías RFID — Cerraduras</h3>
+                                <p style="margin:2px 0 0;font-size:0.75rem;color:var(--text-muted);">Control de pilas de puertas principales</p>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div id="batteryQuickStats" style="display:flex;gap:8px;font-size:0.75rem;"></div>
+                            <span id="batteryToggleIcon" style="font-size:1.2rem;color:var(--text-muted);transition:transform 0.3s;">▼</span>
+                        </div>
+                    </div>
+                    <div id="batteryPanelBody" style="display:none;margin-top:16px;">
+                        <div id="batteryStatsBar" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:16px;"></div>
+                        <div id="batteryFloorTabs" style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;"></div>
+                        <div id="batteryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:4px;"></div>
+                        <div style="display:flex;align-items:center;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border-color);font-size:0.7rem;color:var(--text-muted);">
+                            <span>🟢 OK (&lt;18 meses)</span>
+                            <span>🟡 Alerta (18–29 meses)</span>
+                            <span>🔴 Cambio (30+ meses)</span>
+                            <span style="margin-left:auto;">Clic en habitación para registrar cambio</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- TAB MANTENIMIENTO -->
@@ -5185,14 +5215,14 @@
                 name: 'Auditor Avanzado', 
                 canDelete: false, canClearAll: false, canEditAny: true,
                 canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
-                canViewDeptDashboard: true,
+                canViewDeptDashboard: true, canViewBatteries: true,
                 tabAudit: true, tabReportsIT: true, tabReportsMtto: true, tabMaintenance: false
             },
             'basic': { 
                 name: 'Auditor', 
                 canDelete: false, canClearAll: false, canEditAny: false,
                 canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
-                canViewDeptDashboard: true,
+                canViewDeptDashboard: true, canViewBatteries: true,
                 tabAudit: true, tabReportsIT: true, tabReportsMtto: true, tabMaintenance: false
             },
             'mantenimiento': { 
@@ -5321,6 +5351,9 @@
             });
             var progressSection = document.querySelector('.progress-section');
             if (progressSection) progressSection.style.display = canSeeDash ? '' : 'none';
+            
+            // Inicializar módulo de baterías RFID
+            initBatterySection();
             
             // Si es rol de mantenimiento, filtrar solo mantenimiento
             const maintOnlyRoles = ['amaDeLlaves', 'supervisorMtto', 'gerenteMtto'];
@@ -10319,6 +10352,151 @@ ${sisInfo}
         
         // EDITOR DE ÁREAS COMUNES (SUPER ADMIN)
         // ============================================
+        
+        // MÓDULO BATERÍAS RFID
+        // ============================================
+        const BATTERY_DATA_DEFAULT = {"101":"2026-01-24","201":"2025-12-13","301":"2024-05-15","401":"2025-12-06","501":"2025-10-25","102":"2024-01-25","202":"2024-10-10","302":"2024-10-10","402":"2026-02-21","502":"2023-08-28","103":"2025-06-12","203":"2026-01-24","303":"2025-03-17","403":"2025-10-18","503":"2025-10-25","104":"2025-10-25","204":"2023-08-28","304":"2024-05-25","404":"2023-08-28","504":"2025-11-15","105":"2025-09-20","205":"2023-08-28","305":"2025-02-20","405":"2024-07-15","505":"2025-11-15","106":"2025-08-06","206":"2024-02-12","306":"2024-04-23","406":"2024-06-17","506":"2023-08-29","107":"2025-11-15","207":"2025-12-13","307":"2025-08-01","407":"2023-08-28","507":"2024-05-26","108":"2025-10-11","208":"2024-01-29","308":"2026-01-31","408":"2024-02-19","508":"2024-07-01","109":"2025-08-06","209":"2024-02-14","309":"2025-09-27","409":"2023-08-28","509":"2025-08-22","110":"2024-07-15","210":"2024-01-29","310":"2026-01-24","410":"2023-09-11","510":"2024-08-29","111":"2024-07-15","211":"2024-04-13","311":"2025-12-06","411":"2024-05-24","511":"2024-07-15","112":"2025-06-28","212":"2024-02-12","312":"2025-02-08","412":"2025-02-20","512":"2024-07-15","114":"2025-12-24","214":"2025-12-24","314":"2024-02-19","414":"2025-09-09","514":"2024-07-15","115":"2025-12-24","215":"2026-01-24","315":"2024-07-19","415":"2025-12-13","515":"2026-01-24","116":"2026-01-03","216":"2024-06-03","316":"2024-12-19","416":"2024-05-24","516":"2024-05-24","117":"2025-09-09","217":"2025-08-22","317":"2025-05-16","417":"2025-11-03","517":"2024-07-31","118":"2025-08-01","218":"2023-08-28","318":"2024-09-03","418":"2023-08-28","518":"2024-05-26","119":"2024-02-04","219":"2024-08-29","319":"2024-01-29","419":"2024-06-05","519":"2023-08-24","120":"2026-01-24","220":"2025-03-15","320":"2024-07-26","420":"2024-04-05","520":"2025-10-11","121":"2023-08-28","221":"2024-07-12","321":"2026-02-21","421":"2025-10-11","521":"2025-11-03","122":"2025-08-22","222":"2024-08-19","322":"2024-01-29","422":"2025-12-13","522":"2025-06-12","123":"2025-09-09","223":"2025-03-08","323":"2023-08-14","423":"2025-11-03","523":"2025-09-09","124":"2024-06-03","224":"2024-10-21","324":"2024-02-15","424":"2023-08-28","524":"2023-09-20","125":"2024-12-05","225":"2024-07-29","325":"2023-08-28","425":"2024-04-24","525":"2025-05-16","126":"2025-11-03","226":"2024-09-03","326":"2024-09-05","426":"2025-11-03","526":"2024-07-18","127":"2025-08-08","227":"2024-10-10","327":"2024-04-24","427":"2025-06-28","528":"2024-05-22","128":"2026-01-03","228":"2024-08-30","328":"2023-08-28","428":"2025-09-27","129":"2024-05-04","229":"2024-07-12","329":"2024-12-20","429":"2025-08-01","529":"2024-11-14","130":"2024-05-04","230":"2025-10-18","330":"2024-05-19","430":"2024-07-15","530":"2024-05-13","131":"2025-06-12","231":"2024-11-11","331":"2024-08-05","431":"2024-02-04","531":"2025-06-12","132":"2025-08-01","232":"2024-12-26","332":"2025-10-11","432":"2025-09-27","532":"2025-11-03","133":"2024-03-13","233":"2025-05-03","333":"2024-07-19","433":"2024-06-11","533":"2025-06-12","134":"2024-01-13","234":"2025-09-27","334":"2026-02-21","434":"2024-05-25","534":"2024-06-15","135":"2024-01-13","235":"2025-09-20","335":"2025-01-22","435":"2026-02-21","535":"2024-04-15","136":"2025-12-24","236":"2025-06-12","336":"2025-11-15","436":"2024-05-13","536":"2024-06-17","137":"2026-02-21","237":"2024-12-26","337":"2024-01-29","437":"2025-05-16","537":"2026-01-24","138":"2025-10-25","238":"2026-02-07","338":"2025-09-09","438":"2024-11-14","538":"2024-06-15","139":"2024-11-15","239":"2025-12-06","339":"2024-12-05","439":"2023-09-20","539":"2025-11-22","140":"2025-10-18","240":"2026-01-03","340":"2025-11-22","440":"2024-10-21","540":"2024-06-15","141":"2025-10-11","241":"2023-08-03","341":"2023-09-19","441":"2025-12-13","541":"2024-08-30","142":"2024-05-04","242":"2025-08-22","342":"2025-12-24","442":"2025-12-13","542":"2025-11-22"};
+        
+        let batteryData = {};
+        let batteryFloor = 0; // 0 = all
+        
+        function loadBatteryData() {
+            var saved = localStorage.getItem('battery_rfid_data');
+            if (saved) {
+                try { batteryData = JSON.parse(saved); } catch(e) { batteryData = {}; }
+            }
+            // Merge defaults for rooms not in saved
+            Object.keys(BATTERY_DATA_DEFAULT).forEach(function(room) {
+                if (!batteryData[room]) batteryData[room] = BATTERY_DATA_DEFAULT[room];
+            });
+        }
+        
+        function saveBatteryData() {
+            localStorage.setItem('battery_rfid_data', JSON.stringify(batteryData));
+        }
+        
+        function getBatteryStatus(dateStr) {
+            var now = new Date();
+            var d = new Date(dateStr);
+            var diffMs = now - d;
+            var totalMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30.44));
+            if (totalMonths >= 30) return { status: 'cambio', months: totalMonths, color: '#ef4444', bg: 'rgba(239,68,68,0.2)', label: 'Cambio' };
+            if (totalMonths >= 18) return { status: 'alerta', months: totalMonths, color: '#f59e0b', bg: 'rgba(245,158,11,0.2)', label: 'Alerta' };
+            return { status: 'ok', months: totalMonths, color: '#10b981', bg: 'rgba(16,185,129,0.2)', label: 'OK' };
+        }
+        
+        function toggleBatteryPanel() {
+            var body = document.getElementById('batteryPanelBody');
+            var icon = document.getElementById('batteryToggleIcon');
+            if (!body) return;
+            var isHidden = body.style.display === 'none';
+            body.style.display = isHidden ? '' : 'none';
+            if (icon) icon.style.transform = isHidden ? 'rotate(180deg)' : '';
+            if (isHidden) renderBatteryModule();
+        }
+        
+        function renderBatteryModule() {
+            loadBatteryData();
+            
+            // Stats
+            var ok = 0, alerta = 0, cambio = 0;
+            Object.keys(batteryData).forEach(function(room) {
+                var s = getBatteryStatus(batteryData[room]);
+                if (s.status === 'ok') ok++;
+                else if (s.status === 'alerta') alerta++;
+                else cambio++;
+            });
+            var total = ok + alerta + cambio;
+            
+            var statsBar = document.getElementById('batteryStatsBar');
+            if (statsBar) {
+                statsBar.innerHTML =
+                    '<div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.3rem;font-weight:bold;color:#10b981;">' + ok + '</div><div style="font-size:0.7rem;color:var(--text-muted);">OK</div></div>' +
+                    '<div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.3rem;font-weight:bold;color:#f59e0b;">' + alerta + '</div><div style="font-size:0.7rem;color:var(--text-muted);">Alerta</div></div>' +
+                    '<div style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.3rem;font-weight:bold;color:#ef4444;">' + cambio + '</div><div style="font-size:0.7rem;color:var(--text-muted);">Cambio</div></div>' +
+                    '<div style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:1.3rem;font-weight:bold;color:#a78bfa;">' + total + '</div><div style="font-size:0.7rem;color:var(--text-muted);">Total</div></div>';
+            }
+            
+            // Quick stats (always visible)
+            var quickStats = document.getElementById('batteryQuickStats');
+            if (quickStats) {
+                quickStats.innerHTML =
+                    '<span style="color:#10b981;font-weight:bold;">' + ok + ' ✓</span>' +
+                    '<span style="color:#f59e0b;font-weight:bold;">' + alerta + ' ⚠</span>' +
+                    (cambio > 0 ? '<span style="color:#ef4444;font-weight:bold;">' + cambio + ' ✕</span>' : '');
+            }
+            
+            // Floor tabs
+            var tabsEl = document.getElementById('batteryFloorTabs');
+            if (tabsEl) {
+                var tabs = '<button onclick="setBatteryFloor(0)" style="padding:4px 12px;border-radius:8px;border:1px solid ' + (batteryFloor === 0 ? '#a78bfa' : 'var(--border-color)') + ';background:' + (batteryFloor === 0 ? 'rgba(139,92,246,0.2)' : 'transparent') + ';color:' + (batteryFloor === 0 ? '#a78bfa' : 'var(--text-muted)') + ';cursor:pointer;font-size:0.8rem;">Todos</button>';
+                for (var f = 1; f <= 5; f++) {
+                    var active = batteryFloor === f;
+                    tabs += '<button onclick="setBatteryFloor(' + f + ')" style="padding:4px 12px;border-radius:8px;border:1px solid ' + (active ? '#a78bfa' : 'var(--border-color)') + ';background:' + (active ? 'rgba(139,92,246,0.2)' : 'transparent') + ';color:' + (active ? '#a78bfa' : 'var(--text-muted)') + ';cursor:pointer;font-size:0.8rem;">Piso ' + f + '</button>';
+                }
+                tabsEl.innerHTML = tabs;
+            }
+            
+            // Grid
+            var gridEl = document.getElementById('batteryGrid');
+            if (!gridEl) return;
+            var rooms = Object.keys(batteryData).map(Number).sort(function(a, b) { return a - b; });
+            if (batteryFloor > 0) {
+                rooms = rooms.filter(function(r) { return Math.floor(r / 100) === batteryFloor; });
+            }
+            
+            gridEl.innerHTML = rooms.map(function(room) {
+                var s = getBatteryStatus(batteryData[room]);
+                var mLabel = s.months < 12 ? s.months + 'm' : Math.floor(s.months / 12) + 'a' + (s.months % 12) + 'm';
+                return '<div onclick="batteryRoomClick(' + room + ')" title="Hab ' + room + ' — Último cambio: ' + batteryData[room] + ' (' + mLabel + ')" style="background:' + s.bg + ';border:2px solid ' + s.color + ';border-radius:6px;padding:4px;text-align:center;cursor:pointer;transition:transform 0.15s;" onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'\'">' +
+                    '<div style="font-size:0.8rem;font-weight:bold;color:' + s.color + ';">' + room + '</div>' +
+                    '<div style="font-size:0.55rem;color:var(--text-muted);">' + mLabel + '</div>' +
+                '</div>';
+            }).join('');
+        }
+        
+        function setBatteryFloor(f) {
+            batteryFloor = f;
+            renderBatteryModule();
+        }
+        
+        function batteryRoomClick(room) {
+            var current = batteryData[room] || '';
+            var s = getBatteryStatus(current);
+            var msg = 'Habitación ' + room + '\nÚltimo cambio: ' + current + '\nEstatus: ' + s.label + ' (' + s.months + ' meses)\n\n¿Registrar cambio de pila HOY?';
+            if (confirm(msg)) {
+                var today = new Date();
+                var yyyy = today.getFullYear();
+                var mm = String(today.getMonth() + 1).padStart(2, '0');
+                var dd = String(today.getDate()).padStart(2, '0');
+                batteryData[room] = yyyy + '-' + mm + '-' + dd;
+                saveBatteryData();
+                renderBatteryModule();
+                showToast('🔋 Pila actualizada — Hab ' + room, 'success');
+            }
+        }
+        
+        // Init on load
+        function initBatterySection() {
+            var section = document.getElementById('batteryRfidSection');
+            if (!section) return;
+            var perms = currentUser ? (USER_LEVELS[currentUser.level] || {}) : {};
+            var canSee = perms.canViewBatteries === true || currentUser?.level === 'admin';
+            section.style.display = canSee ? '' : 'none';
+            if (canSee) {
+                loadBatteryData();
+                // Update quick stats even when collapsed
+                var ok = 0, alerta = 0, cambio = 0;
+                Object.keys(batteryData).forEach(function(room) {
+                    var s = getBatteryStatus(batteryData[room]);
+                    if (s.status === 'ok') ok++;
+                    else if (s.status === 'alerta') alerta++;
+                    else cambio++;
+                });
+                var qs = document.getElementById('batteryQuickStats');
+                if (qs) qs.innerHTML = '<span style="color:#10b981;font-weight:bold;">' + ok + ' ✓</span><span style="color:#f59e0b;font-weight:bold;">' + alerta + ' ⚠</span>' + (cambio > 0 ? '<span style="color:#ef4444;font-weight:bold;">' + cambio + ' ✕</span>' : '');
+            }
+        }
         let saEditAreas = [];
         
         async function saLoadAreas() {
@@ -10541,6 +10719,7 @@ ${sisInfo}
             canEditWorkflowConfig: { label: '⚙️ Editar Config Workflow', group: 'action', desc: 'Puede editar horarios de supervisores, SLA y configuración de workflow' },
             canAcceptTickets: { label: '🔧 Aceptar Tickets', group: 'action', desc: 'Puede aceptar tickets asignados para revisión' },
             canViewDeptDashboard: { label: '📊 Ver Dashboard Deptos', group: 'tab', desc: 'Puede ver el panel de estado de Sistemas y Mantenimiento' },
+            canViewBatteries: { label: '🔋 Ver Baterías RFID', group: 'tab', desc: 'Puede ver el módulo de control de pilas de cerraduras' },
             // Flags
             maintenanceOnly: { label: '🏨 Solo Mantenimiento', group: 'flag', desc: 'En auditoría solo ve secciones de mantenimiento' },
             onlyOwnIncidents: { label: '📋 Solo sus Incidencias', group: 'flag', desc: 'Solo ve incidencias asignadas a su departamento/persona' }
