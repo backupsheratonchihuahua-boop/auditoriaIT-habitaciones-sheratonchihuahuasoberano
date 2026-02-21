@@ -3526,7 +3526,7 @@
             </div>
 
             <!-- MANTENIMIENTO Dashboard -->
-            <div id="dashMantenimiento" class="dept-dashboard" style="display: none;">
+            <div id="dashMantenimiento" class="dept-dashboard">
                 <div class="dept-dashboard-header mantenimiento">
                     <span class="dept-dashboard-icon">🔧</span>
                     <span class="dept-dashboard-title">Mantenimiento</span>
@@ -3723,8 +3723,14 @@
                 <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(6, 182, 212, 0.3);">
                     <h4 style="color: var(--text-secondary); margin-bottom: 12px; font-size: 0.9rem;">📋 Reportes de hoy (todos los agentes)</h4>
                     <div id="agentRecentReports">
-                        <p style="color: var(--text-muted); font-size: 0.85rem;">No has enviado reportes hoy</p>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">No hay reportes de hoy</p>
                     </div>
+                </div>
+                
+                <!-- Dashboard de Departamentos -->
+                <div id="deptDashboardSection" style="display:none; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(6, 182, 212, 0.3);">
+                    <h4 style="color: var(--text-secondary); margin-bottom: 12px; font-size: 0.9rem;">📊 Estado por Departamento</h4>
+                    <div id="deptDashboardContent" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
                 </div>
             </div>
 
@@ -4044,13 +4050,37 @@
 
             <div class="progress-section">
                 <h3>📊 Progreso de Auditoría</h3>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
+                
+                <!-- Sistemas Progress -->
+                <div style="margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span style="font-size: 0.8rem; font-weight: bold; color: #06b6d4;">💻 Sistemas</span>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">Secciones 1–5</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                        <span><span id="auditedCount">0</span> auditadas</span>
+                        <span><span id="pendingCount">204</span> pendientes</span>
+                    </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
-                    <span><span id="auditedCount">0</span> auditadas</span>
-                    <span><span id="pendingCount">204</span> pendientes</span>
+                
+                <!-- Mantenimiento Progress -->
+                <div style="margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span style="font-size: 0.8rem; font-weight: bold; color: #f59e0b;">🔧 Mantenimiento</span>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">Secciones 6–12</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBarMaint" style="width: 0%; background: linear-gradient(90deg, #f59e0b, #d97706);">0%</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                        <span><span id="maintAuditedCount">0</span> revisadas</span>
+                        <span><span id="maintPendingCount">204</span> pendientes</span>
+                    </div>
                 </div>
+                
                 <div class="legend">
                     <div class="legend-item"><div class="legend-dot sencilla"></div> Sencilla</div>
                     <div class="legend-item"><div class="legend-dot doble"></div> Doble</div>
@@ -5155,12 +5185,14 @@
                 name: 'Auditor Avanzado', 
                 canDelete: false, canClearAll: false, canEditAny: true,
                 canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
+                canViewDeptDashboard: true,
                 tabAudit: true, tabReportsIT: true, tabReportsMtto: true, tabMaintenance: false
             },
             'basic': { 
                 name: 'Auditor', 
                 canDelete: false, canClearAll: false, canEditAny: false,
                 canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
+                canViewDeptDashboard: true,
                 tabAudit: true, tabReportsIT: true, tabReportsMtto: true, tabMaintenance: false
             },
             'mantenimiento': { 
@@ -5174,27 +5206,30 @@
                 name: 'Agente', 
                 canDelete: false, canClearAll: false, canEditAny: false,
                 canAudit: false, canExport: false, canReport: true, canManageIncidents: false,
+                canViewDeptDashboard: true,
                 tabAudit: true, tabReportsIT: false, tabReportsMtto: false, tabMaintenance: false
             },
             'amaDeLlaves': { 
                 name: 'Ama de Llaves', 
                 canDelete: false, canClearAll: false, canEditAny: false,
                 canAudit: true, canExport: true, canReport: true, canManageIncidents: false,
-                maintenanceOnly: true,
+                maintenanceOnly: true, canViewDeptDashboard: true,
                 tabAudit: true, tabReportsIT: false, tabReportsMtto: true, tabMaintenance: false
             },
             'supervisorMtto': {
                 name: 'Supervisor Mtto',
                 canDelete: false, canClearAll: false, canEditAny: false,
                 canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
-                maintenanceOnly: true, canAssignTickets: true, canVerifyRepairs: true,
+                maintenanceOnly: true, canViewDeptDashboard: true,
+                canAssignTickets: true, canVerifyRepairs: true,
                 tabAudit: true, tabReportsIT: false, tabReportsMtto: true, tabMaintenance: true
             },
             'gerenteMtto': {
                 name: 'Gerente Mtto',
                 canDelete: false, canClearAll: false, canEditAny: false,
                 canAudit: true, canExport: true, canReport: true, canManageIncidents: true,
-                maintenanceOnly: true, canApproveTickets: true, canAssignTickets: true, canVerifyRepairs: true,
+                maintenanceOnly: true, canViewDeptDashboard: true,
+                canApproveTickets: true, canAssignTickets: true, canVerifyRepairs: true,
                 canEditWorkflowConfig: true,
                 tabAudit: true, tabReportsIT: false, tabReportsMtto: true, tabMaintenance: true
             },
@@ -5277,7 +5312,16 @@
             loadCustomMaintConfig();
             buildMaintenanceChecklist();
             
-            // Si es amaDeLlaves, filtrar solo mantenimiento
+            // Controlar visibilidad de dashboards por permiso
+            const userPerms = currentUser ? (USER_LEVELS[currentUser.level] || {}) : {};
+            const canSeeDash = userPerms.canViewDeptDashboard === true || currentUser?.level === 'admin';
+            ['dashSistemas', 'dashMantenimiento', 'deptFilterBar'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = canSeeDash ? '' : 'none';
+            });
+            var progressSection = document.querySelector('.progress-section');
+            if (progressSection) progressSection.style.display = canSeeDash ? '' : 'none';
+            
             // Si es rol de mantenimiento, filtrar solo mantenimiento
             const maintOnlyRoles = ['amaDeLlaves', 'supervisorMtto', 'gerenteMtto'];
             if (currentUser && maintOnlyRoles.includes(currentUser.level)) {
@@ -5285,6 +5329,11 @@
                     filterByDepartment('mantenimiento');
                     const filterBar = document.getElementById('deptFilterBar');
                     if (filterBar) filterBar.style.display = 'none';
+                }, 300);
+            } else if (canSeeDash) {
+                // Para admin y demás roles con permiso, inicializar con "Todas"
+                setTimeout(() => {
+                    filterByDepartment('todas');
                 }, 300);
             }
             
@@ -7542,12 +7591,30 @@
         }
 
         function updateProgress() {
+            // Sistemas progress
             const audited = Object.keys(auditData).length;
             const percent = Math.round((audited / TOTAL_ROOMS) * 100);
             document.getElementById('progressBar').style.width = percent + '%';
             document.getElementById('progressBar').textContent = percent + '%';
             document.getElementById('auditedCount').textContent = audited;
             document.getElementById('pendingCount').textContent = TOTAL_ROOMS - audited;
+            
+            // Mantenimiento progress
+            let maintChecked = 0;
+            Object.keys(auditData).forEach(function(room) {
+                var maint = auditData[room]?.maintenance;
+                if (maint && Object.keys(maint).length > 1) maintChecked++;
+            });
+            var maintPercent = Math.round((maintChecked / TOTAL_ROOMS) * 100);
+            var barMaint = document.getElementById('progressBarMaint');
+            if (barMaint) {
+                barMaint.style.width = maintPercent + '%';
+                barMaint.textContent = maintPercent + '%';
+            }
+            var maintAuditEl = document.getElementById('maintAuditedCount');
+            var maintPendEl = document.getElementById('maintPendingCount');
+            if (maintAuditEl) maintAuditEl.textContent = maintChecked;
+            if (maintPendEl) maintPendEl.textContent = TOTAL_ROOMS - maintChecked;
         }
 
         // ============================================
@@ -10473,6 +10540,7 @@ ${sisInfo}
             canApproveTickets: { label: '🏗️ Aprobación Final', group: 'action', desc: 'Puede dar liberación final de tickets (Gerente)' },
             canEditWorkflowConfig: { label: '⚙️ Editar Config Workflow', group: 'action', desc: 'Puede editar horarios de supervisores, SLA y configuración de workflow' },
             canAcceptTickets: { label: '🔧 Aceptar Tickets', group: 'action', desc: 'Puede aceptar tickets asignados para revisión' },
+            canViewDeptDashboard: { label: '📊 Ver Dashboard Deptos', group: 'tab', desc: 'Puede ver el panel de estado de Sistemas y Mantenimiento' },
             // Flags
             maintenanceOnly: { label: '🏨 Solo Mantenimiento', group: 'flag', desc: 'En auditoría solo ve secciones de mantenimiento' },
             onlyOwnIncidents: { label: '📋 Solo sus Incidencias', group: 'flag', desc: 'Solo ve incidencias asignadas a su departamento/persona' }
@@ -11086,6 +11154,9 @@ ${sisInfo}
                     const pendingIT = pendingIncidents.filter(i => i.asignadoA === 'sistemas');
                     const pendingMtto = pendingIncidents.filter(i => i.asignadoA === 'mantenimiento');
                     const escalados = allIncs.filter(i => i.status === 'escalado');
+                    
+                    // Actualizar dashboard de departamentos
+                    renderDeptDashboard(allIncs);
                     
                     // Badge en pestaña Reportes IT (pendientes IT + escalados a IT)
                     const badgeIT = document.getElementById('reportsBadge');
@@ -12140,7 +12211,85 @@ ${sisInfo}
             }
         }
         
-        // Actualizar indicador de turno en panel de agentes
+        // Dashboard de estado por departamento
+        function renderDeptDashboard(incidents) {
+            var section = document.getElementById('deptDashboardSection');
+            var container = document.getElementById('deptDashboardContent');
+            if (!section || !container) return;
+            
+            // Verificar permiso
+            var perms = currentUser ? (USER_LEVELS[currentUser.level] || {}) : {};
+            if (!perms.canViewDeptDashboard && currentUser?.level !== 'admin') {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = 'block';
+            
+            var today = getMXDate().toDateString();
+            var todayIncs = incidents.filter(function(i) {
+                return new Date(i.timestamp).toDateString() === today;
+            });
+            
+            // Stats por departamento
+            function getDeptStats(dept) {
+                var deptIncs = todayIncs.filter(function(i) { return i.asignadoA === dept; });
+                var allDept = incidents.filter(function(i) { return i.asignadoA === dept; });
+                var pending = allDept.filter(function(i) { return i.status === 'pendiente'; }).length;
+                var inProgress = allDept.filter(function(i) { return ['en_revision','en_reparacion','asignado'].indexOf(i.status) !== -1; }).length;
+                var resolved = deptIncs.filter(function(i) { return ['resuelto','verificado','liberado','reparado'].indexOf(i.status) !== -1; }).length;
+                var escalated = allDept.filter(function(i) { return i.status === 'escalado'; }).length;
+                var total = deptIncs.length;
+                return { total: total, pending: pending, inProgress: inProgress, resolved: resolved, escalated: escalated };
+            }
+            
+            var itStats = getDeptStats('sistemas');
+            var mttoStats = getDeptStats('mantenimiento');
+            
+            function buildCard(title, icon, color, stats) {
+                var totalActive = stats.pending + stats.inProgress;
+                var h = '<div style="background:var(--bg-input);border-radius:10px;padding:14px;border:1px solid var(--border-color);border-top:3px solid ' + color + ';">';
+                h += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">';
+                h += '<span style="font-size:1.2rem;">' + icon + '</span>';
+                h += '<span style="font-weight:bold;color:' + color + ';font-size:0.9rem;">' + title + '</span>';
+                h += '</div>';
+                
+                // Counters grid
+                h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">';
+                h += '<div style="text-align:center;background:rgba(0,0,0,0.2);border-radius:8px;padding:8px 4px;">' +
+                    '<div style="font-size:1.3rem;font-weight:bold;color:#f59e0b;">' + stats.pending + '</div>' +
+                    '<div style="font-size:0.65rem;color:var(--text-muted);">Pendientes</div></div>';
+                h += '<div style="text-align:center;background:rgba(0,0,0,0.2);border-radius:8px;padding:8px 4px;">' +
+                    '<div style="font-size:1.3rem;font-weight:bold;color:#3b82f6;">' + stats.inProgress + '</div>' +
+                    '<div style="font-size:0.65rem;color:var(--text-muted);">En Proceso</div></div>';
+                h += '<div style="text-align:center;background:rgba(0,0,0,0.2);border-radius:8px;padding:8px 4px;">' +
+                    '<div style="font-size:1.3rem;font-weight:bold;color:#10b981;">' + stats.resolved + '</div>' +
+                    '<div style="font-size:0.65rem;color:var(--text-muted);">Resueltos Hoy</div></div>';
+                h += '<div style="text-align:center;background:rgba(0,0,0,0.2);border-radius:8px;padding:8px 4px;">' +
+                    '<div style="font-size:1.3rem;font-weight:bold;color:var(--text-muted);">' + stats.total + '</div>' +
+                    '<div style="font-size:0.65rem;color:var(--text-muted);">Total Hoy</div></div>';
+                h += '</div>';
+                
+                // Mini progress bar
+                if (stats.total > 0) {
+                    var pct = Math.round((stats.resolved / stats.total) * 100);
+                    h += '<div style="background:rgba(0,0,0,0.3);border-radius:4px;height:6px;overflow:hidden;">' +
+                        '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:4px;transition:width 0.3s;"></div></div>';
+                    h += '<div style="font-size:0.65rem;color:var(--text-muted);text-align:right;margin-top:2px;">' + pct + '% resueltos</div>';
+                } else {
+                    h += '<div style="font-size:0.7rem;color:var(--text-muted);text-align:center;padding:4px;">Sin reportes hoy</div>';
+                }
+                
+                // Escalados solo para IT
+                if (stats.escalated > 0) {
+                    h += '<div style="margin-top:6px;background:rgba(239,68,68,0.15);border-radius:6px;padding:4px 8px;font-size:0.7rem;color:#f87171;text-align:center;">⚠️ ' + stats.escalated + ' escalado(s)</div>';
+                }
+                
+                h += '</div>';
+                return h;
+            }
+            
+            container.innerHTML = buildCard('Sistemas', '💻', '#06b6d4', itStats) + buildCard('Mantenimiento', '🔧', '#f59e0b', mttoStats);
+        }
         function updateAgentTurnoIndicator(infoTurno) {
             const statusEl = document.getElementById('agentTurnoStatus');
             const msgEl = document.getElementById('agentTurnoMsg');
