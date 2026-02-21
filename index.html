@@ -3578,10 +3578,12 @@
                 
                 <div class="agent-form-grid">
                     <div class="input-group">
-                        <label>Ubicación</label>
-                        <div style="display:flex;gap:4px;margin-bottom:6px;">
-                            <button type="button" id="locTypeRoom" onclick="switchLocationType('room')" class="filter-btn active" style="font-size:0.75rem;padding:4px 10px;">🛏️ Habitación</button>
-                            <button type="button" id="locTypeArea" onclick="switchLocationType('area')" class="filter-btn" style="font-size:0.75rem;padding:4px 10px;">🏢 Área Común</button>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                            <label style="margin:0;">Ubicación</label>
+                            <div style="display:flex;gap:2px;">
+                                <button type="button" id="locTypeRoom" onclick="switchLocationType('room')" style="font-size:0.65rem;padding:2px 8px;border-radius:10px;border:1px solid #22d3ee;background:rgba(6,182,212,0.2);color:#22d3ee;cursor:pointer;font-weight:bold;">🛏️ Hab</button>
+                                <button type="button" id="locTypeArea" onclick="switchLocationType('area')" style="font-size:0.65rem;padding:2px 8px;border-radius:10px;border:1px solid var(--border-color);background:transparent;color:var(--text-muted);cursor:pointer;">🏢 Área</button>
+                            </div>
                         </div>
                         <select id="agentRoom" style="display:block;">
                             <option value="">Selecciona habitación...</option>
@@ -11934,15 +11936,23 @@ ${sisInfo}
                 roomSel.style.display = 'none';
                 areaSel.style.display = 'block';
                 roomSel.value = '';
-                btnRoom.classList.remove('active');
-                btnArea.classList.add('active');
+                btnRoom.style.background = 'transparent';
+                btnRoom.style.borderColor = 'var(--border-color)';
+                btnRoom.style.color = 'var(--text-muted)';
+                btnArea.style.background = 'rgba(6,182,212,0.2)';
+                btnArea.style.borderColor = '#22d3ee';
+                btnArea.style.color = '#22d3ee';
                 loadHotelAreas();
             } else {
                 roomSel.style.display = 'block';
                 areaSel.style.display = 'none';
                 areaSel.value = '';
-                btnRoom.classList.add('active');
-                btnArea.classList.remove('active');
+                btnRoom.style.background = 'rgba(6,182,212,0.2)';
+                btnRoom.style.borderColor = '#22d3ee';
+                btnRoom.style.color = '#22d3ee';
+                btnArea.style.background = 'transparent';
+                btnArea.style.borderColor = 'var(--border-color)';
+                btnArea.style.color = 'var(--text-muted)';
             }
         }
         
