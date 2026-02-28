@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auditoria-integral-v15';
+const CACHE_NAME = 'auditoria-integral-v16-secure';
 const urlsToCache = [
   './',
   './index.html',
@@ -34,8 +34,17 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Estrategia: Network First, fallback to Cache
+// Estrategia: Network First, pero NO cachear peticiones al API
 self.addEventListener('fetch', event => {
+  const url = event.request.url;
+  
+  // NO cachear peticiones al API de Google Apps Script
+  if (url.includes('script.google.com') || url.includes('macros/s/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
+  // Para recursos estáticos: Network First con cache fallback
   event.respondWith(
     fetch(event.request)
       .then(response => {
