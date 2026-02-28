@@ -5968,6 +5968,75 @@
         // Sesión actual
         let currentUser = null;
         
+        // ============================================
+        // SEGURIDAD v4: Funciones auxiliares
+        // ============================================
+        
+        // Sanitizar texto para prevenir XSS
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
+        // Helper: GET con token automático
+        function apiGet(action, params = {}) {
+            params.action = action;
+            if (currentUser && currentUser.token) {
+                params.token = currentUser.token;
+            }
+            const qs = new URLSearchParams(params).toString();
+            const url = localStorage.getItem('auditApiUrl');
+            return fetch(`${url}?${qs}`);
+        }
+        
+        // Helper: POST con token (para operaciones con contraseña)
+        function apiPost(data) {
+            if (currentUser && currentUser.token) {
+                data.token = currentUser.token;
+            }
+            const url = localStorage.getItem('auditApiUrl');
+            return fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(data)
+            });
+        }
+        
+        
+        // SEGURIDAD v4: Inyectar token en URLSearchParams
+        const _origURLSP = URLSearchParams;
+        // No overrideamos URLSearchParams, en su lugar usamos apiParams helper
+        function apiParams(obj) {
+            if (currentUser && currentUser.token) {
+                obj.token = currentUser.token;
+            }
+            return new URLSearchParams(obj);
+        }
+
+        // Interceptor: detectar sesión expirada
+        async function apiResult(responsePromise) {
+            try {
+                const response = await responsePromise;
+                const result = await response.json();
+                if (!result.success && result.error === 'No autorizado') {
+                    showToast('Sesión expirada. Inicia sesión nuevamente.', 'warning');
+                    localStorage.removeItem('audit_session');
+                    currentUser = null;
+                    showLogin();
+                    return null;
+                }
+                return result;
+            } catch(e) {
+                console.error('API error:', e);
+                return null;
+            }
+        }
+        
         // Verificar sesión al cargar
         function checkSession() {
             const savedSession = localStorage.getItem('audit_session');
@@ -6102,14 +6171,18 @@
                 const apiUrl = localStorage.getItem('auditApiUrl');
                 if (!apiUrl) {
                     // Si no hay API URL, mostrar la app para configurarla
-                    currentUser = { username: 'config', level: 'admin', displayName: 'Configuración' };
-                    localStorage.setItem('audit_session', JSON.stringify({ ...currentUser, timestamp: Date.now() }));
+                    currentUser = { username: 'config', level: 'admin', displayName: 'Configuración', token: null, timestamp: Date.now() };
+                    localStorage.setItem('audit_session', JSON.stringify(currentUser));
                     showApp();
                     return;
                 }
                 
                 // Verificar credenciales contra Google Sheets
-                const response = await fetch(`${apiUrl}?action=verifyLogin&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'verifyLogin', username, password })
+                });
                 const result = await response.json();
                 
                 if (result.success && result.user) {
@@ -6117,6 +6190,7 @@
                         username: result.user.username,
                         level: result.user.level,
                         displayName: result.user.displayName,
+                        token: result.token,
                         timestamp: Date.now()
                     };
                     localStorage.setItem('audit_session', JSON.stringify(currentUser));
@@ -6146,6 +6220,9 @@
         // Cerrar sesión
         function handleLogout() {
             if (confirm('¿Deseas cerrar sesión?')) {
+                if (currentUser && currentUser.token) {
+                    apiGet('logout').catch(() => {});
+                }
                 localStorage.removeItem('audit_session');
                 currentUser = null;
                 
@@ -6404,8 +6481,8 @@
             try {
                 // Cargar auditorías e incidencias en paralelo
                 const [historyResponse, incidentsResponse] = await Promise.all([
-                    fetch(`${API_URL}?action=getHistory&room=${roomNum}`),
-                    fetch(`${API_URL}?action=getIncidents`)
+                    apiGet('getHistory', {room: roomNum}),
+                    apiGet('getIncidents')
                 ]);
                 
                 const historyResult = await historyResponse.json();
@@ -6452,7 +6529,7 @@
             const container = document.getElementById('historyContent');
             
             if (history.length === 0 && incidents.length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: var(--text-muted);">No hay historial para la habitación ${roomNum}</p>`;
+                container.innerHTML = `<p style="text-align: center; color: var(--text-muted);">No hay historial para la habitación ${escapeHTML(roomNum)}</p>`;
                 return;
             }
             
@@ -6804,7 +6881,7 @@
             connectionText.textContent = 'Sincronizando...';
 
             try {
-                const response = await fetch(`${API_URL}?action=getAll`);
+                const response = await apiGet('getAll');
                 const result = await response.json();
                 
                 if (result.success) {
@@ -6850,7 +6927,7 @@
 
             try {
                 // Usar GET con datos codificados para evitar problemas de CORS
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'saveRoom',
                     data: JSON.stringify(roomData)
                 });
@@ -6878,7 +6955,7 @@
                     auditor: document.getElementById('auditorName').value
                 };
                 
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'saveRouters',
                     data: JSON.stringify(routerData)
                 });
@@ -6902,7 +6979,7 @@
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             const icons = { 'success': '✅', 'error': '❌', 'warning': '⚠️', 'info': '🔔' };
-            toast.innerHTML = `<span>${icons[type] || '📢'}</span> ${message}`;
+            toast.innerHTML = `<span>${icons[type] || '📢'}</span> ${escapeHTML(message)}`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
@@ -7855,7 +7932,7 @@
         
         async function loadMttoIncidents() {
             try {
-                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const response = await apiGet('getIncidents');
                 const result = await response.json();
                 if (result.success) {
                     // Filtrar solo incidencias asignadas a mantenimiento
@@ -7902,14 +7979,14 @@
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <span style="font-size: 1.4rem;">${icon}</span>
                             <div>
-                                <div style="font-weight: 600; color: var(--text-primary);">Hab. ${inc.room} — ${inc.faultType}</div>
-                                <div style="font-size: 0.8rem; color: var(--text-muted);">${inc.description || 'Sin descripción'}</div>
-                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">📤 ${inc.reporter} · ${inc.timestamp || ''}</div>
+                                <div style="font-weight: 600; color: var(--text-primary);">Hab. ${escapeHTML(inc.room)} — ${escapeHTML(inc.faultType)}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">${escapeHTML(inc.description || 'Sin descripción')}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">📤 ${escapeHTML(inc.reporter)} · ${escapeHTML(inc.timestamp || '')}</div>
                             </div>
                         </div>
                         <div style="text-align: right;">
                             ${statusLabels[inc.status] || inc.status}
-                            ${inc.notasMant ? '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">📝 ' + inc.notasMant + '</div>' : ''}
+                            ${inc.notasMant ? '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">📝 ' + escapeHTML(inc.notasMant) + '</div>' : ''}
                         </div>
                     </div>`;
             });
@@ -7936,7 +8013,7 @@
             container.innerHTML = '<p style="text-align: center; padding: 30px;">⏳ Cargando historial...</p>';
             
             try {
-                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const response = await apiGet('getIncidents');
                 const result = await response.json();
                 
                 if (result.success && result.incidents) {
@@ -7988,12 +8065,12 @@
                     <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <div>
                             <span style="font-weight: 600; color: var(--text-primary);">${statusIcon} Hab. ${inc.room}</span>
-                            <span style="color: var(--text-muted); font-size: 0.85rem;"> — ${inc.faultType}</span>
-                            ${inc.atendidoPor ? '<span style="color: var(--text-muted); font-size: 0.8rem;"> · 👤 ' + inc.atendidoPor + '</span>' : ''}
+                            <span style="color: var(--text-muted); font-size: 0.85rem;"> — ${escapeHTML(inc.faultType)}</span>
+                            ${inc.atendidoPor ? '<span style="color: var(--text-muted); font-size: 0.8rem;"> · 👤 ' + escapeHTML(inc.atendidoPor) + '</span>' : ''}
                         </div>
                         <div style="text-align: right; font-size: 0.8rem;">
                             <div style="color: var(--text-muted);">⏱️ ${tiempoStr}</div>
-                            ${inc.notasMant ? '<div style="color: var(--text-muted);">📝 ' + inc.notasMant + '</div>' : ''}
+                            ${inc.notasMant ? '<div style="color: var(--text-muted);">📝 ' + escapeHTML(inc.notasMant) + '</div>' : ''}
                         </div>
                     </div>`;
             });
@@ -8429,7 +8506,7 @@
                     ['network-wall','network-connection','network-speed'].forEach(k => { if(data.network?.[k]==='fail') issues.push(`Red: ${k.replace('network-','')}`); });
                     
                     issues.forEach(issue => {
-                        issuesList.innerHTML += `<div class="issue-row"><span class="issue-room">${room}</span><span class="issue-type">${getRoomTypeLabel(data.roomType)}</span><span class="issue-detail">${issue}</span><span style="font-size:0.75rem;color:var(--text-muted);">${data.auditor || ''}</span></div>`;
+                        issuesList.innerHTML += `<div class="issue-row"><span class="issue-room">${escapeHTML(room)}</span><span class="issue-type">${escapeHTML(getRoomTypeLabel(data.roomType))}</span><span class="issue-detail">${escapeHTML(issue)}</span><span style="font-size:0.75rem;color:var(--text-muted);">${escapeHTML(data.auditor || '')}</span></div>`;
                     });
                 });
             }
@@ -9212,7 +9289,7 @@
             if (!confirm('¿Eliminar TODOS los datos? Esta acción no se puede deshacer.')) return;
             
             try {
-                const response = await fetch(`${API_URL}?action=clearAll`);
+                const response = await apiGet('clearAll');
                 const result = await response.json();
                 
                 if (result.success) {
@@ -9259,7 +9336,7 @@
             showToast('📄 Generando bitácora...', 'info');
             
             try {
-                const response = await fetch(`${API_URL}?action=getHistory&room=${roomNum}`);
+                const response = await apiGet('getHistory', {room: roomNum});
                 const result = await response.json();
                 
                 if (!result.success) {
@@ -10118,7 +10195,7 @@ ${sisInfo}
         // Cargar configuración de horarios al entrar al tab de usuarios
         async function loadHorariosConfig() {
             try {
-                const response = await fetch(`${API_URL}?action=getInfoTurno`);
+                const response = await apiGet('getInfoTurno');
                 const result = await response.json();
                 
                 if (result.success && result.horarios) {
@@ -10190,7 +10267,7 @@ ${sisInfo}
             }
             
             try {
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'saveHorarios',
                     horarios: JSON.stringify(horarios)
                 });
@@ -10228,7 +10305,7 @@ ${sisInfo}
         // Cargar lista de usuarios de mantenimiento
         async function loadMaintenanceUsersList() {
             try {
-                const response = await fetch(`${API_URL}?action=getMaintenanceUsers`);
+                const response = await apiGet('getMaintenanceUsers');
                 const result = await response.json();
                 
                 if (result.success) {
@@ -10247,7 +10324,7 @@ ${sisInfo}
             // Obtener info del turno actual
             let infoTurno = { enHorario: false };
             try {
-                const response = await fetch(`${API_URL}?action=getInfoTurno`);
+                const response = await apiGet('getInfoTurno');
                 const result = await response.json();
                 if (result.success) {
                     infoTurno = result;
@@ -10334,7 +10411,7 @@ ${sisInfo}
             const asignadoNombre = asignadoA === 'mantenimiento' ? (agentOption?.dataset?.name || '') : '';
             
             try {
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'reassignIncident',
                     id: incidentId,
                     asignadoA: asignadoA,
@@ -10369,7 +10446,7 @@ ${sisInfo}
             container.innerHTML = '<p style="text-align: center; padding: 30px;">⏳ Cargando usuarios...</p>';
             
             try {
-                const response = await fetch(`${API_URL}?action=getUsers`);
+                const response = await apiGet('getUsers');
                 const result = await response.json();
                 
                 if (result.success && result.users) {
@@ -10463,7 +10540,7 @@ ${sisInfo}
             }
             
             try {
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'deleteUserPermanent',
                     username: username
                 });
@@ -10508,15 +10585,13 @@ ${sisInfo}
             }
             
             try {
-                const params = new URLSearchParams({
+                const response = await apiPost({
                     action: 'createUser',
                     username: username,
                     password: password,
                     displayName: displayName,
                     level: level
                 });
-                
-                const response = await fetch(`${API_URL}?${params.toString()}`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -10565,7 +10640,7 @@ ${sisInfo}
             
             try {
                 // Usar parámetros de URL en lugar de JSON body
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'updateUser',
                     username: username,
                     displayName: displayName,
@@ -10692,7 +10767,7 @@ ${sisInfo}
                 if (u.username === currentUser?.username) return; // No mostrar al admin actual
                 const label = u.displayName ? `${u.username} (${u.displayName})` : u.username;
                 const status = u.active ? '' : ' [INACTIVO]';
-                select.innerHTML += `<option value="${u.username}">${label}${status}</option>`;
+                select.innerHTML += `<option value="${escapeHTML(u.username)}">${escapeHTML(label)}${status}</option>`;
             });
         }
         
@@ -10728,7 +10803,7 @@ ${sisInfo}
             
             try {
                 showToast('⏳ Restableciendo contraseña...', 'info');
-                const response = await fetch(`${API_URL}?action=adminResetPassword&username=${encodeURIComponent(username)}&newPassword=${encodeURIComponent(newPwd)}&adminUser=${encodeURIComponent(currentUser.username)}`);
+                const response = await apiPost({ action: 'adminResetPassword', username, newPassword: newPwd });
                 const result = await response.json();
                 
                 if (result.success) {
@@ -10765,7 +10840,7 @@ ${sisInfo}
             
             saConfirm(`Eliminar Habitación ${room}`, items, room, async () => {
                 try {
-                    const params = new URLSearchParams({ action: 'deleteRoom', room: room });
+                    const params = apiParams({ action: 'deleteRoom', room: room });
                     const response = await fetch(`${API_URL}?${params.toString()}`);
                     const result = await response.json();
                     
@@ -10805,7 +10880,7 @@ ${sisInfo}
                 let deleted = 0;
                 for (const r of auditedOnFloor) {
                     try {
-                        const params = new URLSearchParams({ action: 'deleteRoom', room: String(r) });
+                        const params = apiParams({ action: 'deleteRoom', room: String(r) });
                         await fetch(`${API_URL}?${params.toString()}`);
                         delete auditData[r];
                         deleted++;
@@ -10876,7 +10951,7 @@ ${sisInfo}
                 '⚠️ ESTA ACCIÓN ES IRREVERSIBLE ⚠️'
             ], 'ELIMINAR TODO', async () => {
                 try {
-                    const response = await fetch(`${API_URL}?action=clearAll`);
+                    const response = await apiGet('clearAll');
                     const result = await response.json();
                     if (result.success) {
                         auditData = {};
@@ -10907,7 +10982,7 @@ ${sisInfo}
             // Cargar staff list
             var saStaffList = [];
             try {
-                var staffRes = await fetch(`${API_URL}?action=getMaintenanceStaff`);
+                var staffRes = await apiGet('getMaintenanceStaff');
                 var staffData = await staffRes.json();
                 if (staffData.success) saStaffList = staffData.staff || [];
             } catch(e) {}
@@ -10915,7 +10990,7 @@ ${sisInfo}
             renderWfCfgTable(container, defaultSupervisores, saStaffList);
             
             try {
-                const response = await fetch(`${API_URL}?action=getWorkflowConfig`);
+                const response = await apiGet('getWorkflowConfig');
                 const result = await response.json();
                 
                 if (result.success && result.config) {
@@ -11037,16 +11112,16 @@ ${sisInfo}
             
             try {
                 // Guardar delay
-                await fetch(`${API_URL}?action=saveWorkflowConfig&key=delay_reparacion_min&value=${encodeURIComponent(delay)}`);
+                await apiGet('saveWorkflowConfig', {key:'delay_reparacion_min', value:delay});
                 
                 // Guardar SLA reparación
-                await fetch(`${API_URL}?action=saveWorkflowConfig&key=sla_objetivo_min&value=${encodeURIComponent(sla)}`);
+                await apiGet('saveWorkflowConfig', {key:'sla_objetivo_min', value:sla});
                 
                 // Guardar SLA asignación
-                await fetch(`${API_URL}?action=saveWorkflowConfig&key=sla_asignacion_min&value=${encodeURIComponent(slaAssign)}`);
+                await apiGet('saveWorkflowConfig', {key:'sla_asignacion_min', value:slaAssign});
                 
                 // Guardar supervisores
-                await fetch(`${API_URL}?action=saveWorkflowConfig&key=supervisores_turno&value=${encodeURIComponent(JSON.stringify(supervisores))}`);
+                await apiGet('saveWorkflowConfig', {key:'supervisores_turno', value:JSON.stringify(supervisores)});
                 
                 showToast(`Guardado — Delay: ${delay}min, SLA Reparación: ${sla}min, SLA Asignación: ${slaAssign}min`, 'success');
             } catch (error) {
@@ -11209,7 +11284,7 @@ ${sisInfo}
             saEditAreas = [...DEFAULT_HOTEL_AREAS];
             
             try {
-                var res = await fetch(API_URL + '?action=getWorkflowConfig');
+                var res = await apiGet('getWorkflowConfig');
                 var r = await res.json();
                 if (r.success && r.config && r.config.hotel_areas) {
                     var areas = r.config.hotel_areas;
@@ -11250,7 +11325,7 @@ ${sisInfo}
         
         async function saSaveAreas() {
             try {
-                await fetch(API_URL + '?action=saveWorkflowConfig&key=hotel_areas&value=' + encodeURIComponent(JSON.stringify(saEditAreas)));
+                await apiGet('saveWorkflowConfig', {key:'hotel_areas', value:JSON.stringify(saEditAreas)});
                 hotelAreas = [...saEditAreas];
                 showToast('Áreas guardadas (' + saEditAreas.length + ' ubicaciones)', 'success');
             } catch(e) {
@@ -11577,7 +11652,7 @@ ${sisInfo}
             
             try {
                 showToast('⏳ Guardando y enviando notificación...', 'info');
-                const response = await fetch(`${API_URL}?action=sendPermissionChangeEmail&adminUser=${encodeURIComponent(currentUser.username)}&roleName=${encodeURIComponent(roleName)}&changes=${encodeURIComponent(changesHtml)}&reason=${encodeURIComponent(note)}`);
+                const response = await apiGet('sendPermissionChangeEmail', {roleName, changes: changesHtml, reason: note});
                 const result = await response.json();
                 
                 if (result.success) {
@@ -11619,7 +11694,7 @@ ${sisInfo}
                 
                 // Notificar por email
                 try {
-                    await fetch(`${API_URL}?action=sendPermissionChangeEmail&adminUser=${encodeURIComponent(currentUser.username)}&roleName=${encodeURIComponent(roleName)}&changes=${encodeURIComponent('🔄 Todos los permisos restaurados a configuración original')}&reason=${encodeURIComponent('Restauración de permisos originales del rol')}`);
+                    await apiGet('sendPermissionChangeEmail', {roleName, changes: '🔄 Todos los permisos restaurados a configuración original', reason: 'Restauración de permisos originales del rol'});
                 } catch(e) { /* silencioso */ }
                 
                 showToast(`✅ Permisos de "${roleName}" restaurados al original`, 'success');
@@ -11649,7 +11724,7 @@ ${sisInfo}
                 applyPermissions();
                 
                 try {
-                    await fetch(`${API_URL}?action=sendPermissionChangeEmail&adminUser=${encodeURIComponent(currentUser.username)}&roleName=${encodeURIComponent('TODOS LOS ROLES')}&changes=${encodeURIComponent('🔄 Todos los roles restaurados: ' + roleNames)}&reason=${encodeURIComponent('Restauración masiva de permisos originales')}`);
+                    await apiGet('sendPermissionChangeEmail', {roleName: 'TODOS LOS ROLES', changes: '🔄 Todos los roles restaurados: ' + roleNames, reason: 'Restauración masiva de permisos originales'});
                 } catch(e) { /* silencioso */ }
                 
                 showToast('✅ Todos los permisos restaurados', 'success');
@@ -11695,7 +11770,7 @@ ${sisInfo}
                 let cleaned = 0;
                 for (const inc of resolved) {
                     try {
-                        const params = new URLSearchParams({ action: 'deleteIncident', id: inc.id || inc.timestamp });
+                        const params = apiParams({ action: 'deleteIncident', id: inc.id || inc.timestamp });
                         await fetch(`${API_URL}?${params.toString()}`);
                         cleaned++;
                     } catch(e) { /* continue */ }
@@ -11719,7 +11794,7 @@ ${sisInfo}
                 'Esta acción NO se puede deshacer'
             ], 'ELIMINAR INCIDENCIAS', async () => {
                 try {
-                    const params = new URLSearchParams({ action: 'clearAllIncidents' });
+                    const params = apiParams({ action: 'clearAllIncidents' });
                     const response = await fetch(`${API_URL}?${params.toString()}`);
                     const result = await response.json();
                     if (result.success) {
@@ -12025,7 +12100,7 @@ ${sisInfo}
         // Cargar contador de incidencias pendientes y actualizar badge
         async function loadPendingIncidentsCount(showWelcome = false) {
             try {
-                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const response = await apiGet('getIncidents');
                 const result = await response.json();
                 
                 if (result.success && result.incidents) {
@@ -12116,7 +12191,7 @@ ${sisInfo}
                             
                             addNotification(
                                 `${deptIcon} Nueva incidencia — Hab. ${inc.room}`,
-                                `${faultLabel} · Reportó: ${inc.reporter || 'Anónimo'}${inc.description ? ' · ' + inc.description.substring(0, 60) : ''}`,
+                                `${escapeHTML(faultLabel)} · Reportó: ${escapeHTML(inc.reporter || 'Anónimo')}${inc.description ? ' · ' + escapeHTML(inc.description.substring(0, 60)) : ''}`,
                                 'incident',
                                 inc.room
                             );
@@ -12203,7 +12278,7 @@ ${sisInfo}
             const recentList = recentIncidents.map(inc => {
                 const icon = faultLabels[inc.faultType] || '📋';
                 return `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    ${icon} <strong>Hab ${inc.room}</strong> - ${inc.reporter}
+                    ${icon} <strong>Hab ${escapeHTML(inc.room)}</strong> - ${escapeHTML(inc.reporter)}
                 </div>`;
             }).join('');
             
@@ -12236,7 +12311,7 @@ ${sisInfo}
         
         async function loadIncidents() {
             try {
-                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const response = await apiGet('getIncidents');
                 const result = await response.json();
                 
                 if (result.success) {
@@ -12276,7 +12351,7 @@ ${sisInfo}
                 statusEl.innerHTML = '🔧 FUERA DE HORARIO';
                 statusEl.style.background = 'rgba(245, 158, 11, 0.2)';
                 statusEl.style.color = '#f59e0b';
-                asignacionEl.innerHTML = `Las incidencias se asignan a <strong style="color: #f59e0b;">Mantenimiento</strong> | Próximo turno: ${infoTurno.proximoHorario || ''}`;
+                asignacionEl.innerHTML = `Las incidencias se asignan a <strong style="color: #f59e0b;">Mantenimiento</strong> | Próximo turno: ${escapeHTML(infoTurno.proximoHorario || '')}`;
             }
         }
         
@@ -12293,7 +12368,7 @@ ${sisInfo}
             container.innerHTML = '<p style="text-align: center; padding: 30px;">⏳ Cargando historial...</p>';
             
             try {
-                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const response = await apiGet('getIncidents');
                 const result = await response.json();
                 
                 if (result.success && result.incidents) {
@@ -12450,7 +12525,7 @@ ${sisInfo}
                 html += `
                     <tr style="border-bottom: 1px solid var(--border-color);">
                         <td style="padding: 10px 8px;"><strong>${inc.room}</strong></td>
-                        <td style="padding: 10px 8px;">${faultLabels[inc.faultType] || inc.faultType}</td>
+                        <td style="padding: 10px 8px;">${escapeHTML(faultLabels[inc.faultType] || inc.faultType)}</td>
                         <td style="padding: 10px 8px; font-size: 0.8rem; color: var(--text-secondary);">${reporteStr}</td>
                         <td style="padding: 10px 8px; font-size: 0.8rem; color: var(--text-secondary);">${cierreStr}</td>
                         <td style="padding: 10px 8px; text-align: center;">
@@ -12458,7 +12533,7 @@ ${sisInfo}
                                 ${tiempoStr}
                             </span>
                         </td>
-                        <td style="padding: 10px 8px; font-size: 0.85rem;">${inc.atendidoPor || '--'}</td>
+                        <td style="padding: 10px 8px; font-size: 0.85rem;">${escapeHTML(inc.atendidoPor || '--')}</td>
                         <td style="padding: 10px 8px; text-align: center;">${estadoBadge}</td>
                     </tr>
                 `;
@@ -12538,8 +12613,8 @@ ${sisInfo}
                 const dateStr = date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
                 const timeStr = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
                 const descPreview = inc.description && inc.description.length > 25 
-                    ? inc.description.substring(0, 25) + '...' 
-                    : (inc.description || '-');
+                    ? escapeHTML(inc.description.substring(0, 25)) + '...' 
+                    : escapeHTML(inc.description || '-');
                 const hasLongDesc = inc.description && inc.description.length > 25;
                 
                 // Badge de asignación
@@ -12567,7 +12642,7 @@ ${sisInfo}
                 html += `
                     <tr ${inc.status === 'escalado' ? 'style="background: rgba(239, 68, 68, 0.05);"' : ''}>
                         <td><strong>${inc.room}</strong></td>
-                        <td>${faultLabels[inc.faultType] || inc.faultType}</td>
+                        <td>${escapeHTML(faultLabels[inc.faultType] || inc.faultType)}</td>
                         <td style="max-width: 150px;">
                             <span title="${inc.description || ''}">${descPreview}</span>
                             ${hasLongDesc || inc.motivoEscalado || inc.notasMant ? `<button onclick="showIncidentDetailFull(${JSON.stringify(inc).replace(/"/g, '&quot;')})" style="background: none; border: none; color: #06b6d4; cursor: pointer; padding: 2px 6px; font-size: 0.75rem;">👁️</button>` : ''}
@@ -12805,7 +12880,7 @@ ${sisInfo}
             }
             
             try {
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'updateIncident',
                     id: id,
                     status: 'atendido',
@@ -12832,7 +12907,7 @@ ${sisInfo}
             if (!confirm('¿Marcar esta incidencia como atendida?')) return;
             
             try {
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'updateIncident',
                     id: id,
                     status: 'atendido'
@@ -12857,7 +12932,7 @@ ${sisInfo}
             if (!confirm('¿Eliminar esta incidencia?')) return;
             
             try {
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'deleteIncident',
                     id: id
                 });
@@ -12962,7 +13037,7 @@ ${sisInfo}
             
             // Intentar cargar del config
             try {
-                var res = await fetch(API_URL + '?action=getWorkflowConfig');
+                var res = await apiGet('getWorkflowConfig');
                 var r = await res.json();
                 if (r.success && r.config && r.config.hotel_areas) {
                     var areas = r.config.hotel_areas;
@@ -13001,7 +13076,7 @@ ${sisInfo}
             
             try {
                 const faultDept = FAULT_DEPT[faultType] || 'ambos';
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'reportIncident',
                     room: room,
                     faultType: faultType,
@@ -13051,7 +13126,7 @@ ${sisInfo}
             if (!container) return;
             
             try {
-                const response = await fetch(`${API_URL}?action=getIncidents`);
+                const response = await apiGet('getIncidents');
                 const result = await response.json();
                 
                 if (result.success && result.incidents) {
@@ -13191,7 +13266,7 @@ ${sisInfo}
                 statusEl.innerHTML = '🌙 Fuera de horario Sistemas';
                 statusEl.style.background = 'rgba(245, 158, 11, 0.2)';
                 statusEl.style.color = '#f59e0b';
-                msgEl.innerHTML = `Fallas de IT se asignan a Mtto | Fallas de Mtto se asignan normalmente | Sistemas regresa: ${infoTurno.proximoHorario || ''}`;
+                msgEl.innerHTML = `Fallas de IT se asignan a Mtto | Fallas de Mtto se asignan normalmente | Sistemas regresa: ${escapeHTML(infoTurno.proximoHorario || '')}`;
             }
         }
         
@@ -13242,8 +13317,8 @@ ${sisInfo}
         async function loadWorkflowPanel() {
             try {
                 const [wfRes, techRes] = await Promise.all([
-                    fetch(`${API_URL}?action=getWorkflowIncidents`).then(r => r.json()),
-                    fetch(`${API_URL}?action=getTechnicians`).then(r => r.json())
+                    apiGet('getWorkflowIncidents').then(r => r.json()),
+                    apiGet('getTechnicians').then(r => r.json())
                 ]);
                 
                 if (wfRes.success) {
@@ -13280,7 +13355,7 @@ ${sisInfo}
             // Shift info
             const shiftEl = document.getElementById('wfShiftInfo');
             if (shiftEl && wfData.currentSupervisor.nombre) {
-                shiftEl.innerHTML = `👷 Turno: <strong>${wfData.currentSupervisor.turno}</strong> · ${wfData.currentSupervisor.nombre}`;
+                shiftEl.innerHTML = `👷 Turno: <strong>${escapeHTML(wfData.currentSupervisor.turno)}</strong> · ${escapeHTML(wfData.currentSupervisor.nombre)}`;
             }
             
             // Welcome
@@ -13632,7 +13707,7 @@ ${sisInfo}
             // Cargar lista de personal mtto
             var staffList = [];
             try {
-                var staffRes = await fetch(API_URL + '?action=getMaintenanceStaff');
+                var staffRes = await apiGet('getMaintenanceStaff');
                 var staffData = await staffRes.json();
                 if (staffData.success) staffList = staffData.staff || [];
             } catch(e) {}
@@ -13691,7 +13766,7 @@ ${sisInfo}
             
             // 2) Cargar del API y re-render
             try {
-                var res = await fetch(API_URL + '?action=getWorkflowConfig');
+                var res = await apiGet('getWorkflowConfig');
                 var r = await res.json();
                 if (r.success && r.config) {
                     var cfg = r.config;
@@ -13742,10 +13817,10 @@ ${sisInfo}
             });
             
             try {
-                await fetch(API_URL + '?action=saveWorkflowConfig&key=delay_reparacion_min&value=' + encodeURIComponent(delay));
-                await fetch(API_URL + '?action=saveWorkflowConfig&key=sla_objetivo_min&value=' + encodeURIComponent(sla));
-                await fetch(API_URL + '?action=saveWorkflowConfig&key=sla_asignacion_min&value=' + encodeURIComponent(slaAssign));
-                await fetch(API_URL + '?action=saveWorkflowConfig&key=supervisores_turno&value=' + encodeURIComponent(JSON.stringify(supervisores)));
+                await apiGet('saveWorkflowConfig', {key:'delay_reparacion_min', value:delay});
+                await apiGet('saveWorkflowConfig', {key:'sla_objetivo_min', value:sla});
+                await apiGet('saveWorkflowConfig', {key:'sla_asignacion_min', value:slaAssign});
+                await apiGet('saveWorkflowConfig', {key:'supervisores_turno', value:JSON.stringify(supervisores)});
                 
                 // Actualizar wfData local
                 wfData.config.delay_reparacion_min = Number(delay);
@@ -13772,7 +13847,7 @@ ${sisInfo}
         // ---- ACCIONES DEL WORKFLOW ----
         async function wfTransition(id, newStatus, notes, extra) {
             try {
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'workflowTransition',
                     id: String(id),
                     newStatus: newStatus,
@@ -13999,7 +14074,7 @@ ${sisInfo}
             const fullReason = notes ? `${reason}. Notas: ${notes}` : reason;
             
             try {
-                const params = new URLSearchParams({
+                const params = apiParams({
                     action: 'updateIncidentStatus',
                     id: id,
                     status: 'escalado',
