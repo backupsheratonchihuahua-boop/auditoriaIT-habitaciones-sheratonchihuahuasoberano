@@ -3108,6 +3108,7 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
     <!-- Login Screen -->
@@ -5268,6 +5269,113 @@
                     </div>
                 </div>
                 
+
+                <!-- WL: EDITOR DE LAYOUT (FASE 2) -->
+                <div style="background:var(--bg-secondary);border-radius:12px;padding:20px;border:1px solid rgba(139,92,246,0.4);">
+                    <h3 style="color:#a78bfa;margin-bottom:12px;">📐 Editor de Layout</h3>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:16px;">Arrastra para reordenar pestañas y secciones. Los cambios se aplican al publicar.</p>
+                    
+                    <!-- Selector de rol target -->
+                    <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+                        <div class="input-group" style="margin-bottom:0;flex:1;min-width:200px;">
+                            <label style="font-size:0.75rem;">Editando layout para:</label>
+                            <select id="wlLayoutTarget" onchange="wlLoadLayoutForTarget()" style="font-size:0.85rem;">
+                                <option value="default">📋 Default (todos los roles)</option>
+                                <option value="amaDeLlaves">🏨 Ama de Llaves</option>
+                                <option value="supervisorMtto">🔧 Supervisor Mtto</option>
+                                <option value="gerenteMtto">🔧 Gerente Mtto</option>
+                                <option value="tecnicoMtto">⚙️ Técnico Mtto</option>
+                                <option value="mantenimiento">🛠️ Mantenimiento</option>
+                                <option value="agente">📞 Agente</option>
+                                <option value="basic">👤 Básico</option>
+                                <option value="advanced">⭐ Avanzado</option>
+                                <option value="admin">🔑 Admin</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:6px;">
+                            <button class="btn" onclick="wlDeleteRoleLayout()" style="border-color:#ef4444;color:#f87171;font-size:0.8rem;" id="wlBtnDeleteRole" title="Eliminar override de este rol">🗑️ Quitar Override</button>
+                        </div>
+                    </div>
+                    
+                    <div id="wlLayoutStatus" style="display:none;padding:8px 12px;border-radius:8px;font-size:0.8rem;margin-bottom:12px;"></div>
+                    
+                    <!-- PESTANAS: drag & drop -->
+                    <div style="margin-bottom:16px;">
+                        <p style="font-size:0.8rem;color:#a78bfa;font-weight:600;margin-bottom:8px;">📑 PESTAÑAS <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">(arrastra ≡ para reordenar)</span></p>
+                        <div id="wlTabsList" style="display:grid;gap:6px;"></div>
+                    </div>
+                    
+                    <!-- SECCIONES de la pestana seleccionada -->
+                    <div style="margin-bottom:16px;">
+                        <p style="font-size:0.8rem;color:#a78bfa;font-weight:600;margin-bottom:8px;">📄 SECCIONES DE: <span id="wlSectionsTitle" style="color:#eab308;">—</span></p>
+                        <div id="wlSectionsList" style="display:grid;gap:6px;"></div>
+                        <p id="wlNoSections" style="display:none;color:var(--text-muted);font-size:0.8rem;padding:12px;text-align:center;">Selecciona una pestaña para ver sus secciones</p>
+                    </div>
+                    
+                    <!-- Nota y botones -->
+                    <div class="input-group" style="margin-bottom:12px;">
+                        <label style="font-size:0.75rem;">Nota del cambio (opcional)</label>
+                        <input type="text" id="wlLayoutNote" placeholder="Ej: Reordené tabs para ama de llaves" style="font-size:0.85rem;">
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="wlPublishLayout()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;font-size:0.9rem;padding:10px 24px;">🚀 Publicar Layout</button>
+                        <button class="btn" onclick="wlLoadLayoutForTarget()" style="border-color:#8b5cf6;color:#a78bfa;font-size:0.85rem;">🔄 Recargar</button>
+                        <button class="btn" onclick="wlResetToDefault()" style="border-color:#ef4444;color:#f87171;font-size:0.85rem;">↩️ Restaurar Default</button>
+                    </div>
+                </div>
+                
+                <!-- WL: FEATURE FLAGS (FASE 2) -->
+                <div style="background:var(--bg-secondary);border-radius:12px;padding:20px;border:1px solid rgba(16,185,129,0.4);">
+                    <h3 style="color:#34d399;margin-bottom:12px;">🧩 Feature Flags</h3>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:16px;">Activa o desactiva módulos del sistema. Los módulos desactivados no aparecerán para ningún usuario.</p>
+                    <div id="wlFeaturesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;"></div>
+                    <div style="display:flex;gap:8px;margin-top:12px;">
+                        <button class="btn btn-primary" onclick="wlSaveFeatures()" style="background:linear-gradient(135deg,#10b981,#059669);border:none;">💾 Guardar Features</button>
+                    </div>
+                </div>
+                
+                <!-- WL: PLAN Y ADD-ONS (FASE 2) -->
+                <div style="background:var(--bg-secondary);border-radius:12px;padding:20px;border:1px solid rgba(59,130,246,0.4);">
+                    <h3 style="color:#60a5fa;margin-bottom:12px;">📦 Plan y Add-Ons</h3>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:16px;">Selecciona el plan activo y gestiona add-ons.</p>
+                    <div style="display:flex;gap:12px;align-items:start;flex-wrap:wrap;">
+                        <div class="input-group" style="flex:1;min-width:200px;">
+                            <label>Plan Activo</label>
+                            <select id="wlPlanSelector" onchange="wlChangePlan()" style="font-size:0.9rem;"></select>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding-top:22px;">
+                            <label style="font-size:0.8rem;color:var(--text-secondary);">Owner Override:</label>
+                            <label style="position:relative;display:inline-block;width:44px;height:24px;">
+                                <input type="checkbox" id="wlOwnerOverride" onchange="wlToggleOwnerOverride()" style="opacity:0;width:0;height:0;">
+                                <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#374151;border-radius:12px;transition:.3s;" onclick="this.previousElementSibling.click()"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="wlPlanInfo" style="margin-top:12px;padding:12px;background:var(--bg-input);border-radius:8px;font-size:0.8rem;"></div>
+                    <div id="wlAddonsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:12px;"></div>
+                </div>
+                
+                <!-- WL: HISTORIAL DE CAMBIOS (FASE 2) -->
+                <div style="background:var(--bg-secondary);border-radius:12px;padding:20px;border:1px solid rgba(234,179,8,0.3);">
+                    <h3 style="color:#eab308;margin-bottom:12px;">📜 Historial de Cambios</h3>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px;">Todos los cambios de configuración con opción de rollback.</p>
+                    <div class="input-group" style="margin-bottom:8px;">
+                        <label style="font-size:0.75rem;">Filtrar por clave</label>
+                        <select id="wlHistoryFilter" onchange="wlLoadHistory()" style="font-size:0.85rem;">
+                            <option value="">Todas las claves</option>
+                            <option value="BRANDING">BRANDING</option>
+                            <option value="THEME">THEME</option>
+                            <option value="LAYOUT_DEFAULT">LAYOUT_DEFAULT</option>
+                            <option value="FEATURES">FEATURES</option>
+                            <option value="PLAN_ACTIVE">PLAN_ACTIVE</option>
+                            <option value="ADDONS_ACTIVE">ADDONS_ACTIVE</option>
+                            <option value="ROLE_PERMISSIONS">ROLE_PERMISSIONS</option>
+                        </select>
+                    </div>
+                    <div id="wlHistoryList" style="max-height:400px;overflow-y:auto;"></div>
+                    <button class="btn" onclick="wlLoadHistory()" style="margin-top:8px;border-color:#eab308;color:#fbbf24;font-size:0.85rem;">🔄 Actualizar Historial</button>
+                </div>
+
                 <!-- 3. NOMBRES DE DEPARTAMENTOS Y SECCIONES -->
                 <div style="background:var(--bg-secondary);border-radius:12px;padding:20px;border:1px solid rgba(234,179,8,0.3);">
                     <h3 style="color:#eab308;margin-bottom:16px;">🏷️ Nombres de Departamentos y Pestañas</h3>
@@ -5857,6 +5965,528 @@
         }
         
         // ============================================
+        // WHITE-LABEL FASE 2: Layout Editor, Feature Flags, Plan Selector, History
+        // ============================================
+        
+        // Estado del editor de layout
+        let wlCurrentLayout = null;
+        let wlSelectedTabId = null;
+        let wlTabSortable = null;
+        let wlSecSortable = null;
+        
+        // Cargar layout para el target seleccionado
+        async function wlLoadLayoutForTarget() {
+            if (!ConfigManager.loaded) {
+                wlShowStatus('⚠️ Config no cargada. Reloguea.', '#f59e0b');
+                return;
+            }
+            const target = document.getElementById('wlLayoutTarget').value;
+            const cfg = ConfigManager.current;
+            const allConfigResp = await apiGet('getSystemConfig', { token: currentUser.token });
+            const allConfig = await allConfigResp.json();
+            
+            if (!allConfig || !allConfig.success) {
+                wlShowStatus('❌ Error cargando config', '#ef4444');
+                return;
+            }
+            
+            let layout;
+            if (target === 'default') {
+                layout = allConfig.config.LAYOUT_DEFAULT;
+                document.getElementById('wlBtnDeleteRole').style.display = 'none';
+            } else {
+                layout = allConfig.config['LAYOUT_ROLE_' + target];
+                document.getElementById('wlBtnDeleteRole').style.display = '';
+                if (!layout) {
+                    // No hay override, copiar del default
+                    layout = JSON.parse(JSON.stringify(allConfig.config.LAYOUT_DEFAULT || { tabs: [] }));
+                    wlShowStatus('ℹ️ Este rol usa layout default. Edítalo para crear un override.', '#3b82f6');
+                } else {
+                    wlShowStatus('✅ Layout override cargado para: ' + target, '#10b981');
+                }
+            }
+            
+            wlCurrentLayout = JSON.parse(JSON.stringify(layout));
+            wlSelectedTabId = null;
+            wlRenderTabs();
+            wlRenderSections();
+            
+            // También cargar los otros paneles
+            wlLoadFeatures(allConfig.config);
+            wlLoadPlans(allConfig.config);
+            wlLoadHistory();
+        }
+        
+        function wlShowStatus(msg, color) {
+            var el = document.getElementById('wlLayoutStatus');
+            if (el) {
+                el.style.display = 'block';
+                el.style.background = color + '1a';
+                el.style.borderLeft = '3px solid ' + color;
+                el.style.color = color;
+                el.textContent = msg;
+                setTimeout(function() { el.style.display = 'none'; }, 4000);
+            }
+        }
+        
+        // Renderizar lista de pestañas
+        function wlRenderTabs() {
+            var container = document.getElementById('wlTabsList');
+            if (!container || !wlCurrentLayout) return;
+            container.innerHTML = '';
+            
+            var tabs = wlCurrentLayout.tabs || [];
+            tabs.sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
+            
+            tabs.forEach(function(tab, idx) {
+                var div = document.createElement('div');
+                div.className = 'wl-sortable-item';
+                div.dataset.tabId = tab.id;
+                div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg-input);border-radius:8px;border:1px solid ' + (wlSelectedTabId === tab.id ? '#a78bfa' : 'var(--border-color)') + ';cursor:pointer;transition:all .2s;';
+                
+                var grip = document.createElement('span');
+                grip.textContent = '≡';
+                grip.className = 'wl-drag-handle';
+                grip.style.cssText = 'cursor:grab;font-size:1.2rem;color:var(--text-muted);user-select:none;';
+                
+                var icon = document.createElement('span');
+                icon.textContent = tab.icon || '📄';
+                icon.style.fontSize = '1.1rem';
+                
+                var label = document.createElement('input');
+                label.type = 'text';
+                label.value = tab.label || tab.id;
+                label.style.cssText = 'flex:1;background:transparent;border:1px solid transparent;color:var(--text-primary);font-size:0.85rem;padding:2px 6px;border-radius:4px;';
+                label.onfocus = function() { this.style.borderColor = '#a78bfa'; };
+                label.onblur = function() { this.style.borderColor = 'transparent'; var t = wlFindTab(tab.id); if (t) t.label = this.value; };
+                
+                var iconEdit = document.createElement('input');
+                iconEdit.type = 'text';
+                iconEdit.value = tab.icon || '';
+                iconEdit.style.cssText = 'width:36px;text-align:center;background:transparent;border:1px solid transparent;font-size:1rem;border-radius:4px;';
+                iconEdit.onblur = function() { var t = wlFindTab(tab.id); if (t) t.icon = this.value; wlRenderTabs(); };
+                
+                var toggleBtn = document.createElement('button');
+                toggleBtn.textContent = tab.visible !== false ? '👁️' : '🚫';
+                toggleBtn.style.cssText = 'background:none;border:1px solid var(--border-color);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.85rem;';
+                toggleBtn.title = tab.visible !== false ? 'Visible - clic para ocultar' : 'Oculto - clic para mostrar';
+                toggleBtn.onclick = function(e) { e.stopPropagation(); var t = wlFindTab(tab.id); if (t) t.visible = !(t.visible !== false); wlRenderTabs(); };
+                
+                var badges = '';
+                if (tab.requiredFeature) badges += '<span style="font-size:0.65rem;background:#8b5cf620;color:#a78bfa;padding:2px 6px;border-radius:4px;">🧩' + tab.requiredFeature + '</span> ';
+                if (tab.requiredRole) badges += '<span style="font-size:0.65rem;background:#f59e0b20;color:#fbbf24;padding:2px 6px;border-radius:4px;">🔒' + (Array.isArray(tab.requiredRole) ? tab.requiredRole.join(',') : tab.requiredRole) + '</span>';
+                
+                var badgeSpan = document.createElement('span');
+                badgeSpan.innerHTML = badges;
+                badgeSpan.style.cssText = 'display:flex;gap:4px;';
+                
+                div.appendChild(grip);
+                div.appendChild(iconEdit);
+                div.appendChild(label);
+                div.appendChild(badgeSpan);
+                div.appendChild(toggleBtn);
+                
+                div.onclick = function() { wlSelectedTabId = tab.id; wlRenderTabs(); wlRenderSections(); };
+                
+                if (tab.visible === false) div.style.opacity = '0.5';
+                
+                container.appendChild(div);
+            });
+            
+            // Init SortableJS for tabs
+            if (wlTabSortable) wlTabSortable.destroy();
+            if (typeof Sortable !== 'undefined') {
+                wlTabSortable = new Sortable(container, {
+                    animation: 150,
+                    handle: '.wl-drag-handle',
+                    ghostClass: 'wl-sortable-ghost',
+                    onEnd: function(evt) {
+                        // Reorder tabs based on new DOM order
+                        var items = container.querySelectorAll('.wl-sortable-item');
+                        items.forEach(function(item, i) {
+                            var t = wlFindTab(item.dataset.tabId);
+                            if (t) t.order = i + 1;
+                        });
+                    }
+                });
+            }
+        }
+        
+        // Renderizar secciones de la pestaña seleccionada
+        function wlRenderSections() {
+            var container = document.getElementById('wlSectionsList');
+            var titleEl = document.getElementById('wlSectionsTitle');
+            var noSec = document.getElementById('wlNoSections');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (!wlSelectedTabId || !wlCurrentLayout) {
+                if (noSec) noSec.style.display = 'block';
+                if (titleEl) titleEl.textContent = '—';
+                return;
+            }
+            
+            var tab = wlFindTab(wlSelectedTabId);
+            if (!tab || !tab.sections || tab.sections.length === 0) {
+                if (noSec) noSec.style.display = 'block';
+                if (titleEl) titleEl.textContent = tab ? (tab.icon + ' ' + tab.label) : '—';
+                container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;padding:12px;text-align:center;">Esta pestaña no tiene secciones editables</p>';
+                return;
+            }
+            
+            if (noSec) noSec.style.display = 'none';
+            if (titleEl) titleEl.textContent = (tab.icon || '') + ' ' + (tab.label || tab.id);
+            
+            tab.sections.sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
+            
+            tab.sections.forEach(function(sec) {
+                var div = document.createElement('div');
+                div.className = 'wl-sortable-item';
+                div.dataset.secId = sec.id;
+                div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-input);border-radius:8px;border:1px solid var(--border-color);';
+                
+                var grip = document.createElement('span');
+                grip.textContent = '≡';
+                grip.className = 'wl-drag-handle';
+                grip.style.cssText = 'cursor:grab;font-size:1.1rem;color:var(--text-muted);user-select:none;';
+                
+                var icon = document.createElement('span');
+                icon.textContent = sec.icon || '📄';
+                icon.style.fontSize = '1rem';
+                
+                var label = document.createElement('input');
+                label.type = 'text';
+                label.value = sec.label || sec.id;
+                label.style.cssText = 'flex:1;background:transparent;border:1px solid transparent;color:var(--text-primary);font-size:0.8rem;padding:2px 6px;border-radius:4px;';
+                label.onblur = function() { sec.label = this.value; };
+                
+                var toggleBtn = document.createElement('button');
+                toggleBtn.textContent = sec.visible !== false ? '👁️' : '🚫';
+                toggleBtn.style.cssText = 'background:none;border:1px solid var(--border-color);border-radius:6px;padding:3px 6px;cursor:pointer;font-size:0.8rem;';
+                toggleBtn.onclick = function() { sec.visible = !(sec.visible !== false); wlRenderSections(); };
+                
+                if (sec.visible === false) div.style.opacity = '0.5';
+                
+                div.appendChild(grip);
+                div.appendChild(icon);
+                div.appendChild(label);
+                if (sec.requiredFeature) {
+                    var badge = document.createElement('span');
+                    badge.style.cssText = 'font-size:0.6rem;background:#8b5cf620;color:#a78bfa;padding:2px 5px;border-radius:4px;';
+                    badge.textContent = '🧩' + sec.requiredFeature;
+                    div.appendChild(badge);
+                }
+                div.appendChild(toggleBtn);
+                container.appendChild(div);
+            });
+            
+            if (wlSecSortable) wlSecSortable.destroy();
+            if (typeof Sortable !== 'undefined') {
+                wlSecSortable = new Sortable(container, {
+                    animation: 150,
+                    handle: '.wl-drag-handle',
+                    ghostClass: 'wl-sortable-ghost',
+                    onEnd: function() {
+                        var items = container.querySelectorAll('.wl-sortable-item');
+                        items.forEach(function(item, i) {
+                            var s = wlFindSection(wlSelectedTabId, item.dataset.secId);
+                            if (s) s.order = i + 1;
+                        });
+                    }
+                });
+            }
+        }
+        
+        function wlFindTab(id) {
+            if (!wlCurrentLayout || !wlCurrentLayout.tabs) return null;
+            for (var i = 0; i < wlCurrentLayout.tabs.length; i++) {
+                if (wlCurrentLayout.tabs[i].id === id) return wlCurrentLayout.tabs[i];
+            }
+            return null;
+        }
+        
+        function wlFindSection(tabId, secId) {
+            var tab = wlFindTab(tabId);
+            if (!tab || !tab.sections) return null;
+            for (var i = 0; i < tab.sections.length; i++) {
+                if (tab.sections[i].id === secId) return tab.sections[i];
+            }
+            return null;
+        }
+        
+        // Publicar layout
+        async function wlPublishLayout() {
+            if (!wlCurrentLayout || !currentUser) return;
+            var target = document.getElementById('wlLayoutTarget').value;
+            var note = document.getElementById('wlLayoutNote').value || '';
+            
+            // Actualizar orders
+            var tabs = wlCurrentLayout.tabs || [];
+            tabs.forEach(function(tab, i) { tab.order = i + 1; });
+            
+            var body = { token: currentUser.token, layout: wlCurrentLayout, note: note };
+            var result;
+            
+            if (target === 'default') {
+                body.action = 'saveDefaultLayout';
+                var pubResp = await apiPost(body);
+                result = await pubResp.json();
+            } else {
+                body.action = 'saveLayoutForRole';
+                body.role = target;
+                var pubResp2 = await apiPost(body);
+                result = await pubResp2.json();
+            }
+            
+            if (result && result.success) {
+                wlShowStatus('✅ Layout publicado exitosamente', '#10b981');
+                showToast('🚀 Layout publicado para ' + (target === 'default' ? 'Default' : target), 'success');
+                // Recargar ConfigManager
+                await ConfigManager.load(currentUser.token);
+            } else {
+                wlShowStatus('❌ Error: ' + (result?.error || 'desconocido'), '#ef4444');
+            }
+        }
+        
+        // Eliminar override de rol
+        async function wlDeleteRoleLayout() {
+            var target = document.getElementById('wlLayoutTarget').value;
+            if (target === 'default') return;
+            if (!confirm('¿Eliminar el layout personalizado de "' + target + '"? Usará el layout default.')) return;
+            
+            // Guardar valor vacío para eliminar
+            var delResp = await apiPost({
+                action: 'saveSystemConfig',
+                token: currentUser.token,
+                key: 'LAYOUT_ROLE_' + target,
+                value: '',
+                note: 'Layout override eliminado para: ' + target
+            }); var result = await delResp.json();
+            
+            if (result && result.success) {
+                wlShowStatus('✅ Override eliminado. Rol usará layout default.', '#10b981');
+                wlLoadLayoutForTarget();
+            }
+        }
+        
+        // Restaurar al default original
+        async function wlResetToDefault() {
+            if (!confirm('¿Restaurar layout al valor por defecto original? Se perderán los cambios no publicados.')) return;
+            wlLoadLayoutForTarget();
+        }
+        
+        // ====== FEATURE FLAGS ======
+        let wlFeaturesData = {};
+        let wlPlanFeatures = [];
+        let wlAddonsList = [];
+        
+        function wlLoadFeatures(config) {
+            if (!config) return;
+            wlFeaturesData = config.FEATURES || {};
+            var plan = config.PLAN_ACTIVE || {};
+            wlPlanFeatures = plan.features || [];
+            wlAddonsList = config.ADDONS_ACTIVE || [];
+            
+            var grid = document.getElementById('wlFeaturesGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            var keys = Object.keys(wlFeaturesData);
+            keys.forEach(function(key) {
+                var feat = wlFeaturesData[key];
+                var inPlan = wlPlanFeatures.indexOf(key) !== -1;
+                var isAddon = feat.isAddon === true;
+                var addonActive = false;
+                if (isAddon) {
+                    for (var i = 0; i < wlAddonsList.length; i++) {
+                        if (wlAddonsList[i].addonId === key) { addonActive = true; break; }
+                    }
+                }
+                var enabled = inPlan || addonActive;
+                
+                var card = document.createElement('div');
+                card.style.cssText = 'padding:12px;background:var(--bg-input);border-radius:8px;border:1px solid ' + (enabled ? '#10b98140' : '#ef444440') + ';display:flex;align-items:center;gap:10px;';
+                
+                card.innerHTML = '<span style="font-size:1.3rem;">' + (feat.icon || '📦') + '</span>' +
+                    '<div style="flex:1;">' +
+                    '<p style="font-size:0.85rem;color:var(--text-primary);margin:0;">' + (feat.name || key) + '</p>' +
+                    '<p style="font-size:0.7rem;color:var(--text-muted);margin:2px 0 0 0;">' +
+                    (isAddon ? '🛒 Add-on ' + (feat.addonPrice || '') : (inPlan ? '✅ En plan' : '❌ No en plan')) +
+                    '</p>' +
+                    '</div>' +
+                    '<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;background:' + (enabled ? '#10b98120' : '#ef444420') + ';color:' + (enabled ? '#34d399' : '#f87171') + ';">' + (enabled ? 'ON' : 'OFF') + '</span>';
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        async function wlSaveFeatures() {
+            showToast('ℹ️ Las features se controlan desde el Plan y Add-ons activos', 'info');
+        }
+        
+        // ====== PLAN Y ADD-ONS ======
+        async function wlLoadPlans(config) {
+            var selector = document.getElementById('wlPlanSelector');
+            var info = document.getElementById('wlPlanInfo');
+            var addonsGrid = document.getElementById('wlAddonsGrid');
+            if (!selector) return;
+            
+            // Cargar planes disponibles
+            var plansResp = await apiGet('getPlans', { token: currentUser.token }); var plansResult = await plansResp.json();
+            selector.innerHTML = '';
+            
+            if (plansResult && plansResult.success && plansResult.plans) {
+                plansResult.plans.forEach(function(p) {
+                    var opt = document.createElement('option');
+                    opt.value = p.planId;
+                    opt.textContent = p.name + ' (' + p.price + ')';
+                    selector.appendChild(opt);
+                });
+            }
+            
+            var plan = config.PLAN_ACTIVE || {};
+            selector.value = plan.planId || 'enterprise';
+            
+            // Owner override
+            var ovCheck = document.getElementById('wlOwnerOverride');
+            if (ovCheck) ovCheck.checked = plan.ownerOverride === true;
+            
+            // Info
+            if (info) {
+                info.innerHTML = '<strong style="color:var(--text-primary);">' + (plan.planName || 'Sin plan') + '</strong> — ' +
+                    '<span style="color:var(--text-muted);">Features: ' + (plan.features ? plan.features.length : 0) + ' | Max usuarios: ' + (plan.maxUsers || '?') + '</span>';
+            }
+            
+            // Add-ons
+            if (addonsGrid) {
+                addonsGrid.innerHTML = '';
+                var features = config.FEATURES || {};
+                var activeAddons = config.ADDONS_ACTIVE || [];
+                
+                Object.keys(features).forEach(function(key) {
+                    var feat = features[key];
+                    if (!feat.isAddon) return;
+                    
+                    var isActive = false;
+                    for (var i = 0; i < activeAddons.length; i++) {
+                        if (activeAddons[i].addonId === key) { isActive = true; break; }
+                    }
+                    
+                    var card = document.createElement('div');
+                    card.style.cssText = 'padding:10px;background:var(--bg-input);border-radius:8px;display:flex;align-items:center;gap:8px;border:1px solid ' + (isActive ? '#3b82f640' : 'var(--border-color)') + ';';
+                    card.innerHTML = '<span style="font-size:1.1rem;">' + (feat.icon || '📦') + '</span>' +
+                        '<div style="flex:1;"><p style="font-size:0.8rem;margin:0;color:var(--text-primary);">' + (feat.name || key) + '</p>' +
+                        '<p style="font-size:0.7rem;margin:0;color:var(--text-muted);">' + (feat.addonPrice || '') + '</p></div>' +
+                        '<button onclick="wlToggleAddon(\'' + key + '\',' + !isActive + ')" style="background:' + (isActive ? '#ef444420' : '#10b98120') + ';color:' + (isActive ? '#f87171' : '#34d399') + ';border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.8rem;">' + (isActive ? 'Desactivar' : 'Activar') + '</button>';
+                    addonsGrid.appendChild(card);
+                });
+            }
+        }
+        
+        async function wlChangePlan() {
+            var planId = document.getElementById('wlPlanSelector').value;
+            if (!confirm('¿Cambiar plan activo a "' + planId + '"? Las features disponibles cambiarán.')) {
+                wlLoadLayoutForTarget();
+                return;
+            }
+            var resultResp = await apiPost({ action: 'setActivePlan', token: currentUser.token, planId: planId }); var result = await resultResp.json();
+            if (result && result.success) {
+                showToast('📦 Plan cambiado a: ' + planId, 'success');
+                await ConfigManager.load(currentUser.token);
+                wlLoadLayoutForTarget();
+            } else {
+                showToast('❌ Error: ' + (result?.error || ''), 'error');
+            }
+        }
+        
+        async function wlToggleAddon(addonId, enable) {
+            var resultResp = await apiPost({ action: 'toggleAddon', token: currentUser.token, addonId: addonId, enable: enable }); var result = await resultResp.json();
+            if (result && result.success) {
+                showToast((enable ? '✅ ' : '❌ ') + 'Add-on: ' + addonId, 'success');
+                await ConfigManager.load(currentUser.token);
+                wlLoadLayoutForTarget();
+            } else {
+                showToast('❌ Error: ' + (result?.error || ''), 'error');
+            }
+        }
+        
+        async function wlToggleOwnerOverride() {
+            var enable = document.getElementById('wlOwnerOverride').checked;
+            var resultResp = await apiPost({ action: 'setOwnerOverride', token: currentUser.token, enable: enable }); var result = await resultResp.json();
+            if (result && result.success) {
+                showToast('🔑 Owner Override: ' + (enable ? 'ON' : 'OFF'), 'success');
+                await ConfigManager.load(currentUser.token);
+            } else {
+                showToast('❌ Error: ' + (result?.error || ''), 'error');
+            }
+        }
+        
+        // ====== HISTORIAL DE CAMBIOS ======
+        async function wlLoadHistory() {
+            var container = document.getElementById('wlHistoryList');
+            if (!container) return;
+            container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;">Cargando...</p>';
+            
+            var filter = document.getElementById('wlHistoryFilter')?.value || '';
+            var params = { token: currentUser.token, limit: '30' };
+            if (filter) params.key = filter;
+            
+            var histResp = await apiGet('getConfigVersions', params); var result = await histResp.json();
+            if (!result || !result.success) {
+                container.innerHTML = '<p style="color:#f87171;font-size:0.8rem;">Error cargando historial</p>';
+                return;
+            }
+            
+            if (!result.versions || result.versions.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;text-align:center;padding:20px;">Sin cambios registrados</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            result.versions.forEach(function(v) {
+                var div = document.createElement('div');
+                div.style.cssText = 'padding:10px;border-bottom:1px solid var(--border-color);';
+                
+                var date = new Date(v.timestamp);
+                var dateStr = date.toLocaleDateString('es-MX') + ' ' + date.toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
+                
+                div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">' +
+                    '<div>' +
+                    '<p style="font-size:0.8rem;color:var(--text-primary);margin:0;"><strong>' + (v.key || '') + '</strong></p>' +
+                    '<p style="font-size:0.7rem;color:var(--text-muted);margin:2px 0 0 0;">👤 ' + (v.author || '?') + ' — ' + dateStr + '</p>' +
+                    (v.note ? '<p style="font-size:0.7rem;color:#a78bfa;margin:2px 0 0 0;">📝 ' + v.note + '</p>' : '') +
+                    '</div>' +
+                    '<button onclick="wlRollback(\'' + v.id + '\',\'' + (v.key || '').replace(/'/g,'') + '\')" style="background:#ef444420;color:#f87171;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.75rem;white-space:nowrap;">↩️ Rollback</button>' +
+                    '</div>';
+                container.appendChild(div);
+            });
+        }
+        
+        async function wlRollback(versionId, keyName) {
+            var note = prompt('Nota para el rollback de "' + keyName + '" (opcional):');
+            if (note === null) return; // cancelled
+            
+            var rbResp = await apiPost({
+                action: 'rollbackConfig',
+                token: currentUser.token,
+                versionId: versionId,
+                note: note || ''
+            });
+            var result = await rbResp.json();
+            
+            if (result && result.success) {
+                showToast('↩️ Rollback exitoso: ' + keyName, 'success');
+                await ConfigManager.load(currentUser.token);
+                wlLoadHistory();
+                wlLoadLayoutForTarget();
+            } else {
+                showToast('❌ Error: ' + (result?.error || ''), 'error');
+            }
+        }
+        
+        // (apiPost ya existe en el sistema principal)
+
+        // ============================================
         // SISTEMA DE AUTENTICACIÓN
         // ============================================
         
@@ -5977,7 +6607,8 @@
             loaded: false,
             async load(token) {
                 try {
-                    const resp = await apiGet('resolveUserConfig', { token: token });
+                    const fetchResp = await apiGet('resolveUserConfig', { token: token });
+                    const resp = await fetchResp.json();
                     if (resp && resp.success) {
                         this.current = resp;
                         this.loaded = true;
@@ -7120,7 +7751,13 @@
                 saLoadAreas(); // Cargar áreas comunes
             }
             if (tabName === 'maintenance') loadMaintenanceIncidents();
-            if (tabName === 'master') msLoadFormValues();
+            if (tabName === 'master') {
+                msLoadFormValues();
+                // WHITE-LABEL: Cargar paneles Fase 2
+                if (ConfigManager.loaded && currentUser && currentUser.level === 'master') {
+                    wlLoadLayoutForTarget();
+                }
+            }
         }
 
         function getRoomType(roomNum) {
@@ -9640,7 +10277,13 @@ table.checklist th { background: #e8e8e8; font-size: 8px; }
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .no-print { display: none; }
 }
-</style>
+
+        /* WHITE-LABEL: Layout Editor drag & drop */
+        .wl-sortable-ghost { opacity: 0.4; background: #8b5cf620 !important; border: 2px dashed #8b5cf6 !important; }
+        .wl-sortable-item:hover { border-color: #a78bfa !important; }
+        .wl-drag-handle:active { cursor: grabbing; }
+
+        </style>
 </head>
 <body>
 <div class="no-print" style="background:#1a1a2e; color:#fff; padding:10px; text-align:center; margin-bottom:10px;">
