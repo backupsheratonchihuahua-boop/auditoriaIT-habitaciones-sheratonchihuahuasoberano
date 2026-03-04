@@ -5967,6 +5967,78 @@
         
         // Sesión actual
         let currentUser = null;
+
+        // ============================================
+        // WHITE-LABEL: ConfigManager (Fase 1)
+        // Carga config desde servidor, cachea en memoria JS
+        // ============================================
+        const ConfigManager = {
+            current: null,
+            loaded: false,
+            async load(token) {
+                try {
+                    const resp = await apiGet('resolveUserConfig', { token: token });
+                    if (resp && resp.success) {
+                        this.current = resp;
+                        this.loaded = true;
+                        console.log('[WL] Config cargada. Plan:', resp.plan?.planName, '| Features:', resp.enabledFeatures?.length);
+                        return true;
+                    }
+                    console.warn('[WL] resolveUserConfig fallo:', resp?.error);
+                    return false;
+                } catch(e) {
+                    console.warn('[WL] Error cargando config:', e);
+                    return false;
+                }
+            },
+            getLayout() { return this.current?.layout || { tabs: [] }; },
+            getBranding() { return this.current?.branding || {}; },
+            getTheme() { return this.current?.theme || {}; },
+            getPermissions() { return this.current?.permissions || {}; },
+            getEnabledFeatures() { return this.current?.enabledFeatures || []; },
+            isFeatureEnabled(id) { return this.getEnabledFeatures().includes(id); },
+            isOwner() { return this.current?.isOwner === true; },
+            getPlan() { return this.current?.plan || {}; },
+            getUserInfo() { return this.current?.user || {}; }
+        };
+
+        // Aplicar branding desde config del servidor
+        function applyBrandingFromConfig(branding) {
+            if (!branding) return;
+            try {
+                if (branding.hotelName) {
+                    var titleEl = document.querySelector('.login-title');
+                    if (titleEl) titleEl.textContent = branding.hotelName;
+                }
+                if (branding.systemTitle) {
+                    var headerTitle = document.querySelector('.app-title');
+                    if (headerTitle) headerTitle.textContent = branding.systemTitle;
+                }
+                if (branding.loginSubtitle) {
+                    var subEl = document.querySelector('.login-subtitle');
+                    if (subEl) subEl.textContent = branding.loginSubtitle;
+                }
+                if (branding.logoUrl) {
+                    var logoEl = document.querySelector('.login-logo');
+                    if (logoEl) logoEl.src = branding.logoUrl;
+                }
+            } catch(e) { console.warn('[WL] Error branding:', e); }
+        }
+
+        // Aplicar tema desde config del servidor
+        function applyThemeFromConfig(theme) {
+            if (!theme) return;
+            try {
+                var root = document.documentElement;
+                var map = {bgPrimary:'--bg-primary', bgSecondary:'--bg-secondary', bgCard:'--bg-card', bgInput:'--bg-input', accentPrimary:'--accent-primary', accentWarning:'--accent-warning', accentDanger:'--accent-danger', accentInfo:'--accent-info', textPrimary:'--text-primary', textSecondary:'--text-secondary', borderColor:'--border-color'};
+                for (var k in map) { if (theme[k]) root.style.setProperty(map[k], theme[k]); }
+            } catch(e) { console.warn('[WL] Error tema:', e); }
+        }
+
+        // Verificar si una feature esta habilitada (helper global)
+        function isFeatureEnabled(featureId) {
+            return ConfigManager.isFeatureEnabled(featureId);
+        }
         
         // ============================================
         // SEGURIDAD v4: Funciones auxiliares
@@ -6038,14 +6110,23 @@
         }
         
         // Verificar sesión al cargar
-        function checkSession() {
+        async function checkSession() {
             const savedSession = localStorage.getItem('audit_session');
             if (savedSession) {
                 try {
                     const session = JSON.parse(savedSession);
-                    // Verificar que la sesión no haya expirado (24 horas)
                     if (session.timestamp && (Date.now() - session.timestamp) < 24 * 60 * 60 * 1000) {
                         currentUser = session;
+                        // WHITE-LABEL: Cargar config al restaurar sesion
+                        if (currentUser.token) {
+                            try {
+                                const wlLoaded = await ConfigManager.load(currentUser.token);
+                                if (wlLoaded) {
+                                    applyBrandingFromConfig(ConfigManager.getBranding());
+                                    applyThemeFromConfig(ConfigManager.getTheme());
+                                }
+                            } catch(wlErr) { console.warn('[WL] Config no disponible:', wlErr); }
+                        }
                         showApp();
                         return true;
                     }
@@ -6067,6 +6148,21 @@
         async function showApp() {
             document.getElementById('loginOverlay').classList.add('hidden');
             updateUserBadge();
+            
+            // WHITE-LABEL: Si ConfigManager tiene datos, usar permisos del servidor
+            if (ConfigManager.loaded) {
+                const serverPerms = ConfigManager.getPermissions();
+                if (serverPerms && Object.keys(serverPerms).length > 0) {
+                    // Actualizar USER_LEVELS con permisos del servidor para el rol actual
+                    if (currentUser && currentUser.level) {
+                        USER_LEVELS[currentUser.level] = Object.assign(
+                            USER_LEVELS[currentUser.level] || {},
+                            serverPerms
+                        );
+                    }
+                }
+            }
+            
             applyPermissions();
             loadSavedSettings();
             
@@ -6194,6 +6290,17 @@
                         timestamp: Date.now()
                     };
                     localStorage.setItem('audit_session', JSON.stringify(currentUser));
+                    
+                    // WHITE-LABEL: Cargar config desde servidor
+                    if (currentUser.token) {
+                        const wlLoaded = await ConfigManager.load(currentUser.token);
+                        if (wlLoaded) {
+                            applyBrandingFromConfig(ConfigManager.getBranding());
+                            applyThemeFromConfig(ConfigManager.getTheme());
+                            console.log('[WL] Config white-label aplicada al login');
+                        }
+                    }
+                    
                     showApp();
                     syncData(); // Sincronizar al iniciar sesión
                     
